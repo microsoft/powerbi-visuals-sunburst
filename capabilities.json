@@ -1,0 +1,51 @@
+{
+  "dataRoles": [
+    {
+      "displayName": "Category",
+      "name": "Category",
+      "kind": "Grouping"
+    },
+    {
+      "displayName": "Values",
+      "name": "Values",
+      "kind": "Measure"
+    }
+  ],
+  "objects": {
+    "general": {
+      "displayName": "data.createDisplayNameGetter('Visual_General')",
+      "properties": {
+        "formatString": {
+          "type": { "formatting": { "formatString": "true" } }
+        }
+      }
+    },
+    "group": {
+      "displayName": "Group",
+      "properties": {
+        "showSelected": {
+          "displayName": "Show selected",
+          "type": { "bool": "true" }
+        }
+      }
+    }
+  },
+  "dataViewMappings": [
+    {
+      "conditions": [
+        {
+          "Groups": { "min": "0" },
+          "Values": { "max": "1" }
+        }
+      ],
+      "matrix": {
+        "rows": {
+          "for": { "in": "Category" }
+        },
+        "values": {
+          "for": { "in": "Values" }
+        }
+      }
+    }
+  ]
+}
