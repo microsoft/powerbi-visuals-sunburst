@@ -35,9 +35,9 @@ module powerbi.extensibility.visual {
     export interface SunburstGroupSettings {
         showSelected?: boolean;
     }
-        
-    export interface SunburstSlice {
-        children?: SunburstSlice[];
+
+    export interface SunburstSlice extends d3.layout.partition.Node{
+        Children?: SunburstSlice[];
         value?: any;
         color?: string;
         name?: PrimitiveValue;
@@ -110,7 +110,7 @@ module powerbi.extensibility.visual {
 
                // newSunNode.tooltipInfo = Sunburst.getTooltipData(originParentNode.value, -1);
 
-                newSunNode.children = [];
+                newSunNode.Children = [];
                 for (var i = 0; i < originParentNode.children.length; i++) {
                     var newChild = Sunburst.covertTreeNodeToSunBurstNode(
                         dataView,
@@ -122,7 +122,7 @@ module powerbi.extensibility.visual {
                         newSunNode.color,
                         visualHost);
                         
-                    newSunNode.children.push(newChild);
+                    newSunNode.Children.push(newChild);
                     newSunNode.total += newChild.total;
                 }
             }
@@ -232,11 +232,11 @@ module powerbi.extensibility.visual {
             });
             this.g.attr('transform', visuals.SVGUtil.translate(this.viewport.width / 2, this.viewport.height / 2));
             var radius = Math.min(this.viewport.width, this.viewport.height) / 2;
-            var partition = d3.layout.partition()
+            var partition = d3.layout.partition<SunburstSlice>()
                 .size([2 * Math.PI, radius * radius])
                 .value((d) => { return d.value; });
-            var path = this.g.datum<SunburstSlice>(this.data.root).selectAll("path")
-                .data(partition.nodes);
+            var path = this.g.datum(this.data.root).selectAll("path")
+                .data<SunburstSlice>(partition.nodes);
             path.enter().append("path");
             path.attr("display", (d) => { return d.depth ? null : "none"; })
                 .attr("d", this.arc)
@@ -278,9 +278,9 @@ module powerbi.extensibility.visual {
         }
 
         private onResize(): void {
-            var innerRadius = _.min(this.data.root.children.map(x => this.arc.innerRadius()(x)));
+            var innerRadius = _.min(this.data.root.Children.map(x => this.arc.innerRadius));
             var minRadiusToShowLabels = this.data.settings.labels.show ? 20 : 10;
-            var startHeight = (this.viewport.height - innerRadius * 2) / 2;
+            var startHeight:any = (this.viewport.height - innerRadius * 2) / 2;
             
             var getCenterY = (multipler: number) => startHeight
                 + innerRadius * 2 * multipler;
