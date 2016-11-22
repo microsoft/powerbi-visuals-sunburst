@@ -1,31 +1,25 @@
 {
   "dataRoles": [
     {
-      "displayName": "Category",
-      "name": "Category",
+      "name": "Nodes",
+      "displayName": "Groups",
       "kind": "Grouping"
     },
     {
-      "displayName": "Values",
       "name": "Values",
+      "displayName": "Values",
       "kind": "Measure"
     }
   ],
   "objects": {
-    "general": {
-      "displayName": "data.createDisplayNameGetter('Visual_General')",
-      "properties": {
-        "formatString": {
-          "type": { "formatting": { "formatString": "true" } }
-        }
-      }
-    },
     "group": {
       "displayName": "Group",
       "properties": {
         "showSelected": {
           "displayName": "Show selected",
-          "type": { "bool": "true" }
+          "type": {
+            "bool": true
+          }
         }
       }
     }
@@ -34,16 +28,24 @@
     {
       "conditions": [
         {
-          "Groups": { "min": "0" },
-          "Values": { "max": "1" }
+          "Groups": {
+            "min": 0
+          },
+          "Values": {
+            "max": 1
+          }
         }
       ],
       "matrix": {
         "rows": {
-          "for": { "in": "Category" }
+          "for": {
+            "in": "Nodes"
+          }
         },
         "values": {
-          "for": { "in": "Values" }
+          "for": {
+            "in": "Values"
+          }
         }
       }
     }
