@@ -182,18 +182,18 @@ module powerbi.extensibility.visual {
         private selectedCategoryLabel: d3.Selection<any>;
         private data: SunburstData;
         private g: d3.Selection<SunburstSlice>;
-        private arc: d3.svg.Arc<any>;
+        private arc: d3.svg.Arc<SunburstSlice>;
         private viewport: IViewport;
         private colors: IColorPalette;
         private selectionManager: ISelectionManager;
 
         constructor(options: VisualConstructorOptions) {
             this.visualHost = options.host;
-            //this.arc = d3.svg.arc()
-            //    .startAngle(function (d, i) { return d.startAngle; })
-            //    .endAngle(function (d, i) { return d.endAngle; })
-            //    .innerRadius(function (d) { return Math.sqrt(d.y); })
-            //    .outerRadius(function (d) { return Math.sqrt(d.y + d.dy); });
+            this.arc = d3.svg.arc<SunburstSlice>()
+                .startAngle((slice: SunburstSlice) => slice.x)
+                .endAngle((slice: SunburstSlice) => slice.x + slice.dx)
+                .innerRadius((slice: SunburstSlice) => Math.sqrt(slice.y))
+                .outerRadius((slice: SunburstSlice) => Math.sqrt(slice.y + slice.dy));
 
             this.colors = options.host.colorPalette;
             this.selectionManager = options.host.createSelectionManager();
