@@ -41,7 +41,7 @@ module powerbi.extensibility.visual {
         public show: boolean = false;
         public color: string = "#777777";
         public displayUnits: number = 0;
-        public precision: number = undefined;
+        public precision: number = 2;
         public fontSize: number = 9;
     }
 

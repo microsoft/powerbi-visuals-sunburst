@@ -86,6 +86,7 @@ module powerbi.extensibility.visual {
             }
 
             let categorical = SunburstColumns.getCategoricalColumns(dataView);
+            debugger;
             let selectionId: ISelectionId = pathIdentity.length === 0 ? null : visualHost.createSelectionIdBuilder()
                 .withCategory(categorical.Category, i)
                 .withMeasure(categorical.Category.source.queryName)
@@ -145,13 +146,10 @@ module powerbi.extensibility.visual {
             let categorical = SunburstColumns.getCategoricalColumns(dataView);
             let catValues = SunburstColumns.getCategoricalValues(dataView);
             if (!categorical
-                || !categorical.Category
-                || _.isEmpty(categorical.Category.values)
-                || _.isEmpty(categorical.Y)
-                || _.isEmpty(categorical.Y[0].values)) {
+                || !categorical.Category) {
                 return;
             }
-            let settings: SunburstSettings = Sunburst.parseSettings(dataView, categorical.Category.source);
+            let settings: SunburstSettings = Sunburst.parseSettings(dataView);
 
             var data: SunburstData = {
                 total: 0,
@@ -163,14 +161,13 @@ module powerbi.extensibility.visual {
             return data;
         }
 
-        public static parseSettings(dataView: DataView, categorySource: DataViewMetadataColumn): SunburstSettings {
-            let settings: SunburstSettings = powerbi.extensibility.visual.settingsParser.SettingsParser.parse<SunburstSettings>(dataView);
-
+        public static parseSettings(dataView: DataView): SunburstSettings {
+            let settings: SunburstSettings = SunburstSettings.parse<SunburstSettings>(dataView);
             settings.labels.precision = Math.min(17, Math.max(0, settings.labels.precision));
             settings.outerLine.thickness = Math.min(25, Math.max(1, settings.outerLine.thickness));
 
             if (_.isEmpty(settings.legend.titleText)) {
-                settings.legend.titleText = categorySource.displayName;
+                settings.legend.titleText = dataView.metadata.columns["0"].displayName;
             }
 
             return settings;
@@ -192,11 +189,11 @@ module powerbi.extensibility.visual {
 
         constructor(options: VisualConstructorOptions) {
             this.visualHost = options.host;
-            this.arc = d3.svg.arc();
-            //.startAngle(function (d) { return d.startAngle; })
-            //.endAngle(function (d) { return d.endAngle; })
-            //.innerRadius(function (d) { return Math.sqrt(d.y); })
-            //.outerRadius(function (d) { return Math.sqrt(d.y + d.dy); });
+            //this.arc = d3.svg.arc()
+            //    .startAngle(function (d, i) { return d.startAngle; })
+            //    .endAngle(function (d, i) { return d.endAngle; })
+            //    .innerRadius(function (d) { return Math.sqrt(d.y); })
+            //    .outerRadius(function (d) { return Math.sqrt(d.y + d.dy); });
 
             this.colors = options.host.colorPalette;
             this.selectionManager = options.host.createSelectionManager();
