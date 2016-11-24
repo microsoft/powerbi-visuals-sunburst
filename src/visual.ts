@@ -77,7 +77,8 @@ module powerbi.extensibility.visual {
             pathIdentity: DataViewScopeIdentity[],
             data: SunburstData,
             color: string,
-            visualHost: IVisualHost): SunburstSlice {
+            visualHost: IVisualHost,
+            level: number): SunburstSlice {
 
             var selector: powerbi.data.Selector; // TODO: remote it.
             if (originParentNode.identity) {
@@ -85,11 +86,10 @@ module powerbi.extensibility.visual {
                 selector = { data: pathIdentity, };
             }
 
-            let categorical = SunburstColumns.getCategoricalColumns(dataView);
-            debugger;
+            //let categorical = SunburstColumns.getCategoricalColumns(dataView);
             let selectionId: ISelectionId = pathIdentity.length === 0 ? null : visualHost.createSelectionIdBuilder()
-                .withCategory(categorical.Category, i)
-                .withMeasure(categorical.Category.source.queryName)
+                //.withCategory(categorical.Category, level)
+                .withMeasure(originParentNode.identity.key)
                 .createSelectionId();
 
 
@@ -126,7 +126,8 @@ module powerbi.extensibility.visual {
                         pathIdentity,
                         data,
                         newSunNode.color,
-                        visualHost);
+                        visualHost,
+                        level + 1);
 
                     newSunNode.Children.push(newChild);
                     newSunNode.total += newChild.total;
@@ -157,7 +158,7 @@ module powerbi.extensibility.visual {
                 root: null
             };
 
-            data.root = Sunburst.covertTreeNodeToSunBurstNode(dataView, dataView.matrix.rows.root, null, colors, [], data, undefined, visualHost);
+            data.root = Sunburst.covertTreeNodeToSunBurstNode(dataView, dataView.matrix.rows.root, null, colors, [], data, undefined, visualHost, 1);
             return data;
         }
 
@@ -192,7 +193,9 @@ module powerbi.extensibility.visual {
             this.arc = d3.svg.arc<SunburstSlice>()
                 .startAngle((slice: SunburstSlice) => slice.x)
                 .endAngle((slice: SunburstSlice) => slice.x + slice.dx)
-                .innerRadius((slice: SunburstSlice) => Math.sqrt(slice.y))
+                .innerRadius((slice: SunburstSlice) => {
+                    return Math.sqrt(slice.y)
+                })
                 .outerRadius((slice: SunburstSlice) => Math.sqrt(slice.y + slice.dy));
 
             this.colors = options.host.colorPalette;
@@ -234,6 +237,7 @@ module powerbi.extensibility.visual {
         }
 
         private updateInternal(): void {
+           
             this.svg.attr({
                 'height': this.viewport.height,
                 'width': this.viewport.width
@@ -247,36 +251,26 @@ module powerbi.extensibility.visual {
 
             var partition = d3.layout.partition<SunburstSlice>()
                 .size([2 * Math.PI, radius * radius])
-                .value((d) => { return d.value; });
-
-            var pathSelection = this.g.datum(this.data.root).selectAll("path")
-                .data<SunburstSlice>(partition.nodes);
-
-            pathSelection
-                .enter()
-                .append("path");
-
-            pathSelection
-                .attr("display", (d) => { return d.depth ? null : "none"; })
+                .value((d) => {
+                    return d.value;
+                });
+            var path = this.g.datum(this.data.root.Children).selectAll("path")
+                .data(partition.nodes);
+            debugger;
+            path.enter().append("path");
+            path.attr("display", (d) => { return d.depth ? null : "none"; })
                 .attr("d", this.arc)
                 .style("stroke", "#fff")
                 .style("fill", (d) => { return d.color; })
                 .style("fill-rule", "evenodd")
-                .on("mousedown", (d) => {
+                .on("mousedown", (d: SunburstSlice) => {
                     if (d.selector) {
                         this.selectionManager.select(d.selector);
                     }
 
-                    d3.selectAll("path")
-                        .call(Sunburst.setAllUnhide)
-                        .attr('setUnHide', null);
-
+                    d3.selectAll("path").call(Sunburst.setAllUnhide).attr('setUnHide', null);
                     this.highlightPath(d, this, true);
-
-                    var percentage = this.data.total === 0
-                        ? 0
-                        : (100 * d.total / this.data.total).toPrecision(3);
-
+                    var percentage = this.data.total === 0 ? 0 : (100 * d.total / this.data.total).toPrecision(3);
                     this.percentageLabel.data([d ? percentage + "%" : ""]);
                     this.percentageLabel.style("fill", d.color);
 
@@ -286,11 +280,8 @@ module powerbi.extensibility.visual {
                     this.onResize();
                     event.stopPropagation();
                 });
-
             //this.renderTooltip(path);
-            pathSelection
-                .exit()
-                .remove();
+            path.exit().remove();
 
             this.onResize();
         }
@@ -320,8 +311,8 @@ module powerbi.extensibility.visual {
                     : innerRadius * 2 - heightInChord) * 2;
             };
 
-            this.setPercentageLabelPosition(getCenterY, getChord);
-            this.setSelectedCategoryLabelPosition(getCenterY, getChord);
+            //this.setPercentageLabelPosition(getCenterY, getChord);
+           // this.setSelectedCategoryLabelPosition(getCenterY, getChord);
         }
 
         private setPercentageLabelPosition(getCenterY: (height: number) => number, getChord: (height: number) => number): void {
@@ -390,23 +381,5 @@ module powerbi.extensibility.visual {
                 this.settings || SunburstSettings.getDefault(),
                 options);
         }
-
-        //public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions)
-        //    : VisualObjectInstance[] {
-        //    var instances: VisualObjectInstance[] = [];
-        //    var settings = this.data && this.data.settings;
-
-        //    switch (settings && options.objectName) {
-        //        case "group":
-        //            instances.push({
-        //                objectName: options.objectName,
-        //                selector: null,
-        //                properties:  <any>settings.group
-        //            });
-        //            break;
-        //    }
-
-        //    return  instances;
-        //}
     }
 }
