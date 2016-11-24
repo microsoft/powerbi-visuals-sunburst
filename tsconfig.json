@@ -41,12 +41,7 @@
     "node_modules/@powerbi-visuals-utils/animatorcommon/lib/index.d.ts",
     "node_modules/@powerbi-visuals-utils/regexpextensions/lib/index.d.ts",
     "src/dataInterfaces.ts",
-    "src/utils.ts",
-    "src/helpers.ts",
-    "src/behavior.ts",
-    "src/columns.ts",
     "src/settings.ts",
-    "src/visualLayout.ts",
     "src/visual.ts"
   ]
 }

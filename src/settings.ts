@@ -32,30 +32,10 @@ module powerbi.extensibility.visual {
     import SettingsParser = powerbi.extensibility.visual.settingsParser.SettingsParser;
 
     export class SunburstSettings extends SettingsParser {
-        public labels: LabelsSettings = new LabelsSettings();
-        public legend: LegendSettings = new LegendSettings();
-        public outerLine: OuterLineSettings = new OuterLineSettings();
+        public group: SunburstGroupSettings = new SunburstGroupSettings();
     }
 
-    export class LabelsSettings {
-        public show: boolean = false;
-        public color: string = "#777777";
-        public displayUnits: number = 0;
-        public precision: number = 2;
-        public fontSize: number = 9;
-    }
-
-    export class LegendSettings {
-        public show: boolean = false;
-        public position: string = LegendPosition[LegendPosition.Top];
-        public showTitle: boolean = true;
-        public titleText: string = "";
-        public labelColor: string = '#666666';
-        public fontSize: number = 8;
-    }
-
-    export class OuterLineSettings {
-        public show: boolean = false;
-        public thickness: number = 1;
+    export class SunburstGroupSettings {
+        public showSelected: boolean = true;
     }
 }

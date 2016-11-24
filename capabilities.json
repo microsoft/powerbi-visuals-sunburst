@@ -1,53 +1,53 @@
 {
-  "dataRoles": [
-    {
-      "name": "Nodes",
-      "displayName": "Groups",
-      "kind": "Grouping"
-    },
-    {
-      "name": "Values",
-      "displayName": "Values",
-      "kind": "Measure"
-    }
-  ],
-  "objects": {
-    "group": {
-      "displayName": "Group",
-      "properties": {
-        "showSelected": {
-          "displayName": "Show selected",
-          "type": {
-            "bool": true
-          }
-        }
-      }
-    }
-  },
-  "dataViewMappings": [
-    {
-      "conditions": [
+    "dataRoles": [
         {
-          "Groups": {
-            "min": 0
-          },
-          "Values": {
-            "max": 1
-          }
-        }
-      ],
-      "matrix": {
-        "rows": {
-          "for": {
-            "in": "Nodes"
-          }
+            "name": "Nodes",
+            "displayName": "Groups",
+            "kind": "Grouping"
         },
-        "values": {
-          "for": {
-            "in": "Values"
-          }
+        {
+            "name": "Values",
+            "displayName": "Values",
+            "kind": "Measure"
         }
-      }
+    ],
+    "dataViewMappings": [
+        {
+            "conditions": [
+                {
+                    "Groups": {
+                        "min": 0
+                    },
+                    "Values": {
+                        "max": 1
+                    }
+                }
+            ],
+            "matrix": {
+                "rows": {
+                    "for": {
+                        "in": "Nodes"
+                    }
+                },
+                "values": {
+                    "for": {
+                        "in": "Values"
+                    }
+                }
+            }
+        }
+    ],
+    "objects": {
+        "group": {
+            "displayName": "Group",
+            "properties": {
+                "showSelected": {
+                    "displayName": "Show selected",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        }
     }
-  ]
 }

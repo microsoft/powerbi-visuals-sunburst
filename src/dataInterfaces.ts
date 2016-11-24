@@ -25,18 +25,26 @@
  */
 
 module powerbi.extensibility.visual {
-    // d3
-    import ArcDescriptor = d3.layout.pie.Arc;
-
     // powerbi.visuals
-    import LegendData = powerbi.visuals.LegendData;
-    import IValueFormatter = powerbi.visuals.IValueFormatter;
-    import SelectableDataPoint = powerbi.visuals.SelectableDataPoint;
-    import TooltipDataItem = powerbi.visuals.TooltipDataItem;
+    import TooltipEnabledDataPoint = powerbi.visuals.TooltipEnabledDataPoint;
 
     export interface SunburstData {
         root: SunburstSlice;
         total: number;
         settings: SunburstSettings;
+    }
+
+    export interface SunburstSlice extends
+        d3.layout.treemap.Node,
+        TooltipEnabledDataPoint {
+
+        children?: SunburstSlice[];
+        value?: any;
+        color?: string;
+        name?: PrimitiveValue;
+        parent?: SunburstSlice;
+        selector: ISelectionId;
+        total: number;
+        key: string;
     }
 }
