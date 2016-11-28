@@ -121,29 +121,37 @@ module powerbi.extensibility.visual {
             visualHost: IVisualHost,
             level: number): SunburstSlice {
 
-            var selector: powerbi.data.Selector; // TODO: remote it.
             if (originParentNode.identity) {
                 pathIdentity = pathIdentity.concat([originParentNode.identity]);
-                selector = { data: pathIdentity, };
             }
 
-            //let categorical = SunburstColumns.getCategoricalColumns(dataView);
-            let selectionId: ISelectionId = pathIdentity.length === 0 ? null : visualHost.createSelectionIdBuilder()
-                //.withCategory(categorical.Category, level)
-                .withMeasure(originParentNode.identity.key)
-                .createSelectionId();
+            let selectionIdBuilder = visualHost.createSelectionIdBuilder();
 
+            pathIdentity.forEach((identity: DataViewScopeIdentity) => {
+                let categoryColumn: DataViewCategoryColumn = {
+                    source: {
+                        displayName: null,
+                        queryName: identity.key
+                    },
+                    values: null,
+                    identity: [identity]
+                }
 
-            // var selectionId = pathIdentity.length === 0 ? null : new ISelectionId(selector, false);
-            let valueToSet: number = originParentNode.values
-                ? originParentNode.values[0].value as number
-                : 0;
+                selectionIdBuilder.withCategory(categoryColumn, 0);
+            });
+
+            let selectionId: ISelectionId = selectionIdBuilder.createSelectionId(),
+                valueToSet: number = originParentNode.values
+                    ? originParentNode.values[0].value as number
+                    : 0;
 
             let newSunNode: SunburstSlice = {
                 name: originParentNode.name,
                 value: Math.max(valueToSet, 0),
                 selector: selectionId,
-                key: selectionId ? (selectionId as ISelectionId).getKey() : null,
+                key: selectionId
+                    ? selectionId.getKey()
+                    : null,
                 total: valueToSet
             };
 
