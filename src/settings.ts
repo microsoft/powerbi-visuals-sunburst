@@ -25,10 +25,7 @@
  */
 
 module powerbi.extensibility.visual {
-    // powerbi.visuals
-    import LegendPosition = powerbi.visuals.LegendPosition;
-
-    // powerbi.extensibility.visual
+       // powerbi.extensibility.visual
     import SettingsParser = powerbi.extensibility.visual.settingsParser.SettingsParser;
 
     export class SunburstSettings extends SettingsParser {

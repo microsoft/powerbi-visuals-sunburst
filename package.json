@@ -1,7 +1,7 @@
 {
   "name": "powerbi-visuals-sunburst",
   "description": "SunBurst chart.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": {
     "name": "Microsoft",
     "email": "pbicvsupport@microsoft.com"

@@ -45,7 +45,7 @@ module powerbi.extensibility.visual {
     };
 
     export class Sunburst implements IVisual {
-        private static MinOpacity = 0.2;
+        private static MinOpacity: number = 0.2;
         private visualHost: IVisualHost;
         private static RoleNames = {
             nodes: 'Nodes',
@@ -61,7 +61,11 @@ module powerbi.extensibility.visual {
         private main: d3.Selection<SunburstSlice>;
         private percentageLabel: d3.Selection<any>;
         private selectedCategoryLabel: d3.Selection<any>;
-
+        public static mainDrawArea: jsCommon.CssConstants.ClassAndSelector = jsCommon.CssConstants.createClassAndSelector('mainDrawArea');
+        public static sunBurstSelectedCategory: jsCommon.CssConstants.ClassAndSelector = jsCommon.CssConstants.createClassAndSelector('sunBurstSelectedCategory');
+        public static sunBurstPercentageFixed: jsCommon.CssConstants.ClassAndSelector = jsCommon.CssConstants.createClassAndSelector('sunBurstPercentageFixed');
+        public static setUnHide: jsCommon.CssConstants.ClassAndSelector = jsCommon.CssConstants.createClassAndSelector('setUnHide');
+        
         private colors: IColorPalette;
         private selectionManager: ISelectionManager;
         private tooltipService: ITooltipService;
@@ -82,17 +86,17 @@ module powerbi.extensibility.visual {
 
             this.svg = d3.select(options.element)
                 .append("svg")
-                .classed('mainDrawArea', true);
+                .classed(Sunburst.mainDrawArea.class, true);
 
             this.main = this.svg.append('g');
             this.main.classed("container", true);
 
             this.selectedCategoryLabel = this.svg
                 .append("text")
-                .classed("sunBurstSelectedCategory", true);
+                .classed(Sunburst.sunBurstSelectedCategory.class, true);
 
             this.percentageLabel = this.svg.append("text")
-                .classed("sunBurstPercentageFixed", true);
+                .classed(Sunburst.sunBurstPercentageFixed.class, true);
 
             this.svg.on('mousedown', (d) => {
                 this.svg
@@ -125,7 +129,7 @@ module powerbi.extensibility.visual {
                 pathIdentity = pathIdentity.concat([originParentNode.identity]);
             }
 
-            let selectionIdBuilder = visualHost.createSelectionIdBuilder();
+            let selectionIdBuilder: visuals.ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
 
             pathIdentity.forEach((identity: DataViewScopeIdentity) => {
                 let categoryColumn: DataViewCategoryColumn = {
@@ -167,7 +171,7 @@ module powerbi.extensibility.visual {
                 newSunNode.tooltipInfo = Sunburst.getTooltipData(originParentNode.value, -1);
 
                 newSunNode.children = [];
-                for (var i = 0; i < originParentNode.children.length; i++) {
+                for (let i: number = 0, iLen: number = originParentNode.children.length; i < iLen; i++) {
                     var newChild = Sunburst.covertTreeNodeToSunBurstNode(
                         dataView,
                         originParentNode.children[i],
@@ -227,7 +231,8 @@ module powerbi.extensibility.visual {
         }
 
         public update(options: VisualUpdateOptions): void {
-            if (options.dataViews.length < 1) {
+            if (options.dataViews === undefined || options.dataViews === null || options.dataViews.length < 1 || options.dataViews[0] === null) {
+                this.clear();
                 return;
             }
 
@@ -246,15 +251,15 @@ module powerbi.extensibility.visual {
                 this.viewport.width / 2,
                 this.viewport.height / 2));
 
-            var radius = Math.min(this.viewport.width, this.viewport.height) / 2;
+            let radius:number = Math.min(this.viewport.width, this.viewport.height) / 2;
 
-            var partition = d3.layout.partition()
+            let partition: d3.layout.Partition<d3.layout.partition.Node> = d3.layout.partition()
                 .size([2 * Math.PI, radius * radius])
                 .value((d) => {
                     return d.value;
                 });
 
-            let pathSelection = this.main.datum<SunburstSlice>(this.data.root)
+            let pathSelection: any = this.main.datum<SunburstSlice>(this.data.root)
                 .selectAll("path")
                 .data<SunburstSlice>(partition.nodes as any);
 
@@ -268,7 +273,7 @@ module powerbi.extensibility.visual {
                 })
                 .attr("d", this.arc)
                 .style("stroke", "#fff")
-                .style("fill", (d) => { return d.color; })
+                .style("fill", (d: SunburstSlice) => { return d.color; })
                 .style("fill-rule", "evenodd")
                 .on("mousedown", (d: SunburstSlice) => {
                     if (d.selector) {
@@ -278,10 +283,10 @@ module powerbi.extensibility.visual {
                     // TODO: why do we need to do this lie below?
                     d3.selectAll("path") // TODO: we shouldn't find all paths in the DOM.
                         .call(Sunburst.setAllUnhide)
-                        .attr('setUnHide', null);
+                        .attr(Sunburst.setUnHide.class, null);
 
                     this.highlightPath(d, this, true);
-                    var percentage = this.data.total === 0 ? 0 : (100 * d.total / this.data.total).toPrecision(3);
+                    let percentage:number|string = this.data.total === 0 ? 0 : (100 * d.total / this.data.total).toPrecision(3);
                     this.percentageLabel.data([d ? percentage + "%" : ""]);
                     this.percentageLabel.style("fill", d.color);
 
@@ -304,7 +309,7 @@ module powerbi.extensibility.visual {
 
         // Get all parents of the node
         private static getTreePath(node) {
-            let path = [],
+            let path: any = [],
                 current = node;
 
             while (current.parent) {
@@ -314,15 +319,16 @@ module powerbi.extensibility.visual {
 
             return path;
         }
-
+        private static minRadius: number = 10;
+        private static maxRadius: number = 20;
         private onResize(): void {
-            let innerRadius = _.min(this.data.root.children.map(x => this.arc.innerRadius()(x, undefined))),
-                minRadiusToShowLabels = this.data.settings.group.showSelected ? 20 : 10,
+            let innerRadius:number = _.min(this.data.root.children.map(x => this.arc.innerRadius()(x, undefined))),
+                minRadiusToShowLabels = this.data.settings.group.showSelected ? Sunburst.maxRadius : Sunburst.minRadius,
                 startHeight: any = (this.viewport.height - innerRadius * 2) / 2;
 
-            var getCenterY = (multipler: number) => startHeight + innerRadius * 2 * multipler;
+            let getCenterY:any = (multipler: number) => startHeight + innerRadius * 2 * multipler;
 
-            var getChord = (height: number) => {
+            let getChord:any = (height: number) => {
                 var heightInChord = height - startHeight;
                 return innerRadius < minRadiusToShowLabels ? 0 : (heightInChord < innerRadius
                     ? heightInChord
@@ -333,17 +339,22 @@ module powerbi.extensibility.visual {
             this.setSelectedCategoryLabelPosition(getCenterY, getChord);
         }
 
+        private static center04: number = 0.4;
+        private static center05: number = 0.5;
+        private static center06: number = 0.6;
+        private static number4: number = 4;
+        private static number5: number = 5;
         private setPercentageLabelPosition(getCenterY: (height: number) => number, getChord: (height: number) => number): void {
             this.percentageLabel.text(x => x);
 
             var height = this.data.settings.group.showSelected
-                ? getCenterY(0.6) + 4
-                : getCenterY(0.5) + 4;
+                ? getCenterY(Sunburst.center06) + Sunburst.number4
+                : getCenterY(Sunburst.center05) + Sunburst.number4;
 
             let percentageLabelElement: SVGTextElement = this.percentageLabel[0][0] as SVGTextElement;
 
-            TextMeasurementService.svgEllipsis(percentageLabelElement, getChord(height) + 5);
-            var textWidth = TextMeasurementService.measureSvgTextElementWidth(percentageLabelElement);
+            TextMeasurementService.svgEllipsis(percentageLabelElement, getChord(height) + Sunburst.number5);
+            let textWidth:number = TextMeasurementService.measureSvgTextElementWidth(percentageLabelElement);
 
             this.percentageLabel.style("opacity", 1);
             this.percentageLabel.attr("y", height);
@@ -351,21 +362,25 @@ module powerbi.extensibility.visual {
         }
 
         private setSelectedCategoryLabelPosition(getCenterY: (height: number) => number, getChord: (height: number) => number): void {
-            this.selectedCategoryLabel.text(x => x);
 
-            let height = getCenterY(0.4) - 4,
-                selectedCategoryLabelElement: SVGTextElement = this.selectedCategoryLabel[0][0] as SVGTextElement;
+            if (this.selectedCategoryLabel) {
 
-            TextMeasurementService.svgEllipsis(selectedCategoryLabelElement, getChord(height) + 5);
-            var textWidth = TextMeasurementService.measureSvgTextElementWidth(selectedCategoryLabelElement);
+                this.selectedCategoryLabel.text(x => x);
 
-            this.selectedCategoryLabel.style("opacity", this.data.settings.group.showSelected ? 1 : 0);
-            this.selectedCategoryLabel.attr("y", height);
-            this.selectedCategoryLabel.attr("x", ((this.viewport.width / 2) - (textWidth / 2)));
+                let height: number = getCenterY(Sunburst.center04) - Sunburst.number4,
+                    selectedCategoryLabelElement: SVGTextElement = this.selectedCategoryLabel[0][0] as SVGTextElement;
+
+                TextMeasurementService.svgEllipsis(selectedCategoryLabelElement, getChord(height) + Sunburst.number5);
+                let textWidth: number = TextMeasurementService.measureSvgTextElementWidth(selectedCategoryLabelElement);
+
+                this.selectedCategoryLabel.style("opacity", this.data.settings.group.showSelected ? 1 : 0);
+                this.selectedCategoryLabel.attr("y", height);
+                this.selectedCategoryLabel.attr("x", ((this.viewport.width / 2) - (textWidth / 2)));
+            }
         }
 
         private highlightPath(d, sunBurst, setUnhide): void {
-            var parentsArray = d ? Sunburst.getTreePath(d) : [];
+            let parentsArray:any = d ? Sunburst.getTreePath(d) : [];
 
             // Set opacity for all the segments.
             sunBurst.svg.selectAll("path").each(function () {
@@ -401,5 +416,14 @@ module powerbi.extensibility.visual {
                 this.settings || SunburstSettings.getDefault(),
                 options);
         }
+
+
+        private clear(): void {
+            this.main
+                .select(Sunburst.mainDrawArea.selector)
+                .selectAll(Sunburst.mainDrawArea.selector)
+                .remove();
+        }
+
     }
 }
