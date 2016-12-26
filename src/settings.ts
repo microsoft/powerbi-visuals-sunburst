@@ -25,10 +25,10 @@
  */
 
 module powerbi.extensibility.visual {
-       // powerbi.extensibility.visual
-    import SettingsParser = powerbi.extensibility.visual.settingsParser.SettingsParser;
+    // powerbi.extensibility.utils.dataview
+    import DataViewObjectsParser = powerbi.extensibility.utils.dataview.DataViewObjectsParser;
 
-    export class SunburstSettings extends SettingsParser {
+    export class SunburstSettings extends DataViewObjectsParser {
         public group: SunburstGroupSettings = new SunburstGroupSettings();
     }
 
