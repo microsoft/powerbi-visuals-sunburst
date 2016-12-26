@@ -25,19 +25,27 @@
  */
 module powerbi.extensibility.visual {
     // powerbi.extensibility
-    import ISelectionManager = powerbi.extensibility.ISelectionManager;
     import IVisual = powerbi.extensibility.IVisual;
     import IColorPalette = powerbi.extensibility.IColorPalette;
+    import ISelectionManager = powerbi.extensibility.ISelectionManager;
     import VisualInitOptions = powerbi.extensibility.VisualConstructorOptions;
 
     // powerbi.visuals
-    import ISelectionHandler = powerbi.visuals.ISelectionHandler;
     import ISelectionId = powerbi.visuals.ISelectionId;
-    import ITooltipService = powerbi.visuals.ITooltipService;
-    import createTooltipService = powerbi.visuals.createTooltipService;
-    import TooltipEnabledDataPoint = powerbi.visuals.TooltipEnabledDataPoint;
-    import TooltipDataItem = powerbi.visuals.TooltipDataItem;
-    import TooltipEventArgs = powerbi.visuals.TooltipEventArgs;
+
+    // powerbi.extensibility.utils.tooltip
+    import TooltipEventArgs = powerbi.extensibility.utils.tooltip.TooltipEventArgs;
+    import ITooltipServiceWrapper = powerbi.extensibility.utils.tooltip.ITooltipServiceWrapper;
+    import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
+    import createTooltipServiceWrapper = powerbi.extensibility.utils.tooltip.createTooltipServiceWrapper;
+
+    // powerbi.extensibility.utils.svg
+    import translate = powerbi.extensibility.utils.svg.translate;
+    import ClassAndSelector = powerbi.extensibility.utils.svg.CssConstants.ClassAndSelector;
+    import createClassAndSelector = powerbi.extensibility.utils.svg.CssConstants.createClassAndSelector;
+
+    // powerbi.extensibility.utils.formatting
+    import textMeasurementService = powerbi.extensibility.utils.formatting.textMeasurementService;
 
     export const sunburstRoleNames = {
         nodes: 'Nodes',
@@ -46,11 +54,12 @@ module powerbi.extensibility.visual {
 
     export class Sunburst implements IVisual {
         private static MinOpacity: number = 0.2;
-        private visualHost: IVisualHost;
         private static RoleNames = {
             nodes: 'Nodes',
             values: 'Values',
         };
+
+        private visualHost: IVisualHost;
 
         private viewport: IViewport;
 
@@ -61,19 +70,22 @@ module powerbi.extensibility.visual {
         private main: d3.Selection<SunburstSlice>;
         private percentageLabel: d3.Selection<any>;
         private selectedCategoryLabel: d3.Selection<any>;
-        public static mainDrawArea: jsCommon.CssConstants.ClassAndSelector = jsCommon.CssConstants.createClassAndSelector('mainDrawArea');
-        public static sunBurstSelectedCategory: jsCommon.CssConstants.ClassAndSelector = jsCommon.CssConstants.createClassAndSelector('sunBurstSelectedCategory');
-        public static sunBurstPercentageFixed: jsCommon.CssConstants.ClassAndSelector = jsCommon.CssConstants.createClassAndSelector('sunBurstPercentageFixed');
-        public static setUnHide: jsCommon.CssConstants.ClassAndSelector = jsCommon.CssConstants.createClassAndSelector('setUnHide');
-        
+
+        public static mainDrawArea: ClassAndSelector = createClassAndSelector('mainDrawArea');
+        public static sunBurstSelectedCategory: ClassAndSelector = createClassAndSelector('sunBurstSelectedCategory');
+        public static sunBurstPercentageFixed: ClassAndSelector = createClassAndSelector('sunBurstPercentageFixed');
+        public static setUnHide: ClassAndSelector = createClassAndSelector('setUnHide');
+
         private colors: IColorPalette;
         private selectionManager: ISelectionManager;
-        private tooltipService: ITooltipService;
+        private tooltipService: ITooltipServiceWrapper;
 
         constructor(options: VisualConstructorOptions) {
             this.visualHost = options.host;
 
-            this.tooltipService = createTooltipService(options.host);
+            this.tooltipService = createTooltipServiceWrapper(
+                options.host.tooltipService,
+                options.element);
 
             this.arc = d3.svg.arc<SunburstSlice>()
                 .startAngle((slice: SunburstSlice) => slice.x)
@@ -139,7 +151,7 @@ module powerbi.extensibility.visual {
                     },
                     values: null,
                     identity: [identity]
-                }
+                };
 
                 selectionIdBuilder.withCategory(categoryColumn, 0);
             });
@@ -172,7 +184,7 @@ module powerbi.extensibility.visual {
 
                 newSunNode.children = [];
                 for (let i: number = 0, iLen: number = originParentNode.children.length; i < iLen; i++) {
-                    var newChild = Sunburst.covertTreeNodeToSunBurstNode(
+                    let newChild = Sunburst.covertTreeNodeToSunBurstNode(
                         dataView,
                         originParentNode.children[i],
                         newSunNode,
@@ -200,7 +212,7 @@ module powerbi.extensibility.visual {
             return newSunNode;
         }
 
-        private static getTooltipData(displayName: any, value: number): TooltipDataItem[] {
+        private static getTooltipData(displayName: any, value: number): VisualTooltipDataItem[] {
             return [{
                 displayName,
                 value: value < 0
@@ -231,7 +243,10 @@ module powerbi.extensibility.visual {
         }
 
         public update(options: VisualUpdateOptions): void {
-            if (options.dataViews === undefined || options.dataViews === null || options.dataViews.length < 1 || options.dataViews[0] === null) {
+            if (!options
+                || !options.dataViews
+                || !options.dataViews[0]
+                || !options.dataViews[0].matrix) {
                 this.clear();
                 return;
             }
@@ -247,11 +262,11 @@ module powerbi.extensibility.visual {
                 'width': this.viewport.width
             });
 
-            this.main.attr('transform', visuals.SVGUtil.translate(
+            this.main.attr('transform', translate(
                 this.viewport.width / 2,
                 this.viewport.height / 2));
 
-            let radius:number = Math.min(this.viewport.width, this.viewport.height) / 2;
+            let radius: number = Math.min(this.viewport.width, this.viewport.height) / 2;
 
             let partition: d3.layout.Partition<d3.layout.partition.Node> = d3.layout.partition()
                 .size([2 * Math.PI, radius * radius])
@@ -286,11 +301,11 @@ module powerbi.extensibility.visual {
                         .attr(Sunburst.setUnHide.class, null);
 
                     this.highlightPath(d, this, true);
-                    let percentage:number|string = this.data.total === 0 ? 0 : (100 * d.total / this.data.total).toPrecision(3);
+                    let percentage: number | string = this.data.total === 0 ? 0 : (100 * d.total / this.data.total).toPrecision(3);
                     this.percentageLabel.data([d ? percentage + "%" : ""]);
                     this.percentageLabel.style("fill", d.color);
 
-                    this.selectedCategoryLabel.data([d ? d.tooltipInfo[0].displayName : ""])
+                    this.selectedCategoryLabel.data([d ? d.tooltipInfo[0].displayName : ""]);
                     this.selectedCategoryLabel.style("fill", d.color);
 
                     this.onResize();
@@ -322,14 +337,15 @@ module powerbi.extensibility.visual {
         private static minRadius: number = 10;
         private static maxRadius: number = 20;
         private onResize(): void {
-            let innerRadius:number = _.min(this.data.root.children.map(x => this.arc.innerRadius()(x, undefined))),
+            let innerRadius: number = _.min(this.data.root.children.map(x => this.arc.innerRadius()(x, undefined))),
                 minRadiusToShowLabels = this.data.settings.group.showSelected ? Sunburst.maxRadius : Sunburst.minRadius,
                 startHeight: any = (this.viewport.height - innerRadius * 2) / 2;
 
-            let getCenterY:any = (multipler: number) => startHeight + innerRadius * 2 * multipler;
+            let getCenterY: any = (multipler: number) => startHeight + innerRadius * 2 * multipler;
 
-            let getChord:any = (height: number) => {
-                var heightInChord = height - startHeight;
+            let getChord: any = (height: number) => {
+                let heightInChord = height - startHeight;
+
                 return innerRadius < minRadiusToShowLabels ? 0 : (heightInChord < innerRadius
                     ? heightInChord
                     : innerRadius * 2 - heightInChord) * 2;
@@ -344,17 +360,18 @@ module powerbi.extensibility.visual {
         private static center06: number = 0.6;
         private static number4: number = 4;
         private static number5: number = 5;
+
         private setPercentageLabelPosition(getCenterY: (height: number) => number, getChord: (height: number) => number): void {
             this.percentageLabel.text(x => x);
 
-            var height = this.data.settings.group.showSelected
+            let height = this.data.settings.group.showSelected
                 ? getCenterY(Sunburst.center06) + Sunburst.number4
                 : getCenterY(Sunburst.center05) + Sunburst.number4;
 
             let percentageLabelElement: SVGTextElement = this.percentageLabel[0][0] as SVGTextElement;
 
-            TextMeasurementService.svgEllipsis(percentageLabelElement, getChord(height) + Sunburst.number5);
-            let textWidth:number = TextMeasurementService.measureSvgTextElementWidth(percentageLabelElement);
+            textMeasurementService.svgEllipsis(percentageLabelElement, getChord(height) + Sunburst.number5);
+            let textWidth: number = textMeasurementService.measureSvgTextElementWidth(percentageLabelElement);
 
             this.percentageLabel.style("opacity", 1);
             this.percentageLabel.attr("y", height);
@@ -370,8 +387,8 @@ module powerbi.extensibility.visual {
                 let height: number = getCenterY(Sunburst.center04) - Sunburst.number4,
                     selectedCategoryLabelElement: SVGTextElement = this.selectedCategoryLabel[0][0] as SVGTextElement;
 
-                TextMeasurementService.svgEllipsis(selectedCategoryLabelElement, getChord(height) + Sunburst.number5);
-                let textWidth: number = TextMeasurementService.measureSvgTextElementWidth(selectedCategoryLabelElement);
+                textMeasurementService.svgEllipsis(selectedCategoryLabelElement, getChord(height) + Sunburst.number5);
+                let textWidth: number = textMeasurementService.measureSvgTextElementWidth(selectedCategoryLabelElement);
 
                 this.selectedCategoryLabel.style("opacity", this.data.settings.group.showSelected ? 1 : 0);
                 this.selectedCategoryLabel.attr("y", height);
@@ -380,7 +397,7 @@ module powerbi.extensibility.visual {
         }
 
         private highlightPath(d, sunBurst, setUnhide): void {
-            let parentsArray:any = d ? Sunburst.getTreePath(d) : [];
+            let parentsArray: any = d ? Sunburst.getTreePath(d) : [];
 
             // Set opacity for all the segments.
             sunBurst.svg.selectAll("path").each(function () {

@@ -25,8 +25,8 @@
  */
 
 module powerbi.extensibility.visual {
-    // powerbi.visuals
-    import TooltipEnabledDataPoint = powerbi.visuals.TooltipEnabledDataPoint;
+    // powerbi.extensibility.utils.tooltip
+    import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
 
     export interface SunburstData {
         root: SunburstSlice;
