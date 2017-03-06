@@ -47,21 +47,15 @@ module powerbi.extensibility.visual {
     // powerbi.extensibility.utils.formatting
     import textMeasurementService = powerbi.extensibility.utils.formatting.textMeasurementService;
 
-    export const sunburstRoleNames = {
-        nodes: 'Nodes',
-        values: 'Values',
-    };
-
     export class Sunburst implements IVisual {
         private static MinOpacity: number = 0.2;
-        private static RoleNames = {
-            nodes: 'Nodes',
-            values: 'Values',
-        };
+        private static VIEWBOX_SIZE: number = 100;
+        private static CENTER_POINT: number = Sunburst.VIEWBOX_SIZE / 2;
+        private static OUTER_RADUIS: number = Sunburst.VIEWBOX_SIZE / 2;
+        private static MIN_RADIUS: number = 10;
+        private static MAX_RADIUS: number = 20;
 
         private visualHost: IVisualHost;
-
-        private viewport: IViewport;
 
         private data: SunburstData;
         private arc: d3.svg.Arc<SunburstSlice>;
@@ -98,9 +92,14 @@ module powerbi.extensibility.visual {
 
             this.svg = d3.select(options.element)
                 .append("svg")
+                .attr("viewBox", "0 0 " + Sunburst.VIEWBOX_SIZE + " " + Sunburst.VIEWBOX_SIZE)
+                .attr("width", "100%")
+                .attr("height", "100%")
+                .attr("preserveAspectRatio", "xMidYMid meet")
                 .classed(Sunburst.mainDrawArea.class, true);
 
             this.main = this.svg.append('g');
+            this.main.attr("transform", translate(Sunburst.CENTER_POINT, Sunburst.CENTER_POINT));
             this.main.classed("container", true);
 
             this.selectedCategoryLabel = this.svg
@@ -178,11 +177,11 @@ module powerbi.extensibility.visual {
             }
 
             data.total += newSunNode.value;
-            if (originParentNode.children && originParentNode.children.length > 0) {
+            newSunNode.children = [];
 
+            if (originParentNode.children && originParentNode.children.length > 0) {
                 newSunNode.tooltipInfo = Sunburst.getTooltipData(originParentNode.value, -1);
 
-                newSunNode.children = [];
                 for (let i: number = 0, iLen: number = originParentNode.children.length; i < iLen; i++) {
                     let newChild = Sunburst.covertTreeNodeToSunBurstNode(
                         dataView,
@@ -243,6 +242,10 @@ module powerbi.extensibility.visual {
         }
 
         public update(options: VisualUpdateOptions): void {
+            if (options.type !== VisualUpdateType.Data) {
+                return;
+            }
+
             if (!options
                 || !options.dataViews
                 || !options.dataViews[0]
@@ -252,24 +255,13 @@ module powerbi.extensibility.visual {
             }
 
             this.data = Sunburst.converter(options.dataViews[0], this.colors, this.visualHost);
-            this.viewport = options.viewport;
             this.updateInternal();
         }
 
         private updateInternal(): void {
-            this.svg.attr({
-                'height': this.viewport.height,
-                'width': this.viewport.width
-            });
-
-            this.main.attr('transform', translate(
-                this.viewport.width / 2,
-                this.viewport.height / 2));
-
-            let radius: number = Math.min(this.viewport.width, this.viewport.height) / 2;
 
             let partition: d3.layout.Partition<d3.layout.partition.Node> = d3.layout.partition()
-                .size([2 * Math.PI, radius * radius])
+                .size([2 * Math.PI, Sunburst.OUTER_RADUIS * Sunburst.OUTER_RADUIS])
                 .value((d) => {
                     return d.value;
                 });
@@ -323,7 +315,7 @@ module powerbi.extensibility.visual {
         }
 
         // Get all parents of the node
-        private static getTreePath(node) {
+        private static getTreePath(node): Array<any> {
             let path: any = [],
                 current = node;
 
@@ -334,65 +326,56 @@ module powerbi.extensibility.visual {
 
             return path;
         }
-        private static minRadius: number = 10;
-        private static maxRadius: number = 20;
+
         private onResize(): void {
             let innerRadius: number = _.min(this.data.root.children.map(x => this.arc.innerRadius()(x, undefined))),
-                minRadiusToShowLabels = this.data.settings.group.showSelected ? Sunburst.maxRadius : Sunburst.minRadius,
-                startHeight: any = (this.viewport.height - innerRadius * 2) / 2;
+                minRadiusToShowLabels = this.data.settings.group.showSelected ? Sunburst.MAX_RADIUS : Sunburst.MIN_RADIUS,
+                startHeight: number = Sunburst.CENTER_POINT - innerRadius;
 
-            let getCenterY: any = (multipler: number) => startHeight + innerRadius * 2 * multipler;
-
-            let getChord: any = (height: number) => {
-                let heightInChord = height - startHeight;
-
-                return innerRadius < minRadiusToShowLabels ? 0 : (heightInChord < innerRadius
-                    ? heightInChord
-                    : innerRadius * 2 - heightInChord) * 2;
+            let getChord = (height: number, fontSize: number) => {
+                return innerRadius < minRadiusToShowLabels ? 0 : (innerRadius - fontSize / 2) * 2;
             };
 
-            this.setPercentageLabelPosition(getCenterY, getChord);
-            this.setSelectedCategoryLabelPosition(getCenterY, getChord);
+            this.setPercentageLabelPosition(getChord);
+            this.setSelectedCategoryLabelPosition(getChord);
         }
 
-        private static center04: number = 0.4;
-        private static center05: number = 0.5;
-        private static center06: number = 0.6;
-        private static number4: number = 4;
-        private static number5: number = 5;
-
-        private setPercentageLabelPosition(getCenterY: (height: number) => number, getChord: (height: number) => number): void {
+        private setPercentageLabelPosition(getChord: (height: number, fontSize: number) => number): void {
             this.percentageLabel.text(x => x);
 
-            let height = this.data.settings.group.showSelected
-                ? getCenterY(Sunburst.center06) + Sunburst.number4
-                : getCenterY(Sunburst.center05) + Sunburst.number4;
+            let height = Sunburst.CENTER_POINT + (this.data.settings.group.showSelected ? this.data.settings.group.labelSize : 0);
 
             let percentageLabelElement: SVGTextElement = this.percentageLabel[0][0] as SVGTextElement;
 
-            textMeasurementService.svgEllipsis(percentageLabelElement, getChord(height) + Sunburst.number5);
+            textMeasurementService.svgEllipsis(percentageLabelElement, getChord(height, this.data.settings.group.labelSize * 2));
             let textWidth: number = textMeasurementService.measureSvgTextElementWidth(percentageLabelElement);
 
             this.percentageLabel.style("opacity", 1);
+            this.percentageLabel.attr("x", Sunburst.CENTER_POINT);
             this.percentageLabel.attr("y", height);
-            this.percentageLabel.attr("x", ((this.viewport.width / 2) - (textWidth / 2)));
+            this.percentageLabel.attr("text-anchor", "middle");
+            this.percentageLabel.attr("font-size", this.data.settings.group.labelSize * 2);
         }
 
-        private setSelectedCategoryLabelPosition(getCenterY: (height: number) => number, getChord: (height: number) => number): void {
+        private setSelectedCategoryLabelPosition(getChord: (height: number, fontSize: number) => number): void {
 
             if (this.selectedCategoryLabel) {
 
                 this.selectedCategoryLabel.text(x => x);
 
-                let height: number = getCenterY(Sunburst.center04) - Sunburst.number4,
+                let height: number = Sunburst.CENTER_POINT - this.data.settings.group.labelSize,
                     selectedCategoryLabelElement: SVGTextElement = this.selectedCategoryLabel[0][0] as SVGTextElement;
 
-                textMeasurementService.svgEllipsis(selectedCategoryLabelElement, getChord(height) + Sunburst.number5);
+                textMeasurementService.svgEllipsis(selectedCategoryLabelElement, getChord(height, this.data.settings.group.labelSize));
                 let textWidth: number = textMeasurementService.measureSvgTextElementWidth(selectedCategoryLabelElement);
 
+
                 this.selectedCategoryLabel.style("opacity", this.data.settings.group.showSelected ? 1 : 0);
+                this.selectedCategoryLabel.attr("x", Sunburst.CENTER_POINT);
                 this.selectedCategoryLabel.attr("y", height);
-                this.selectedCategoryLabel.attr("x", ((this.viewport.width / 2) - (textWidth / 2)));
+                this.selectedCategoryLabel.attr("text-anchor", "middle");
+                this.selectedCategoryLabel.attr("font-size", this.data.settings.group.labelSize);
+
             }
         }
 
@@ -433,7 +416,6 @@ module powerbi.extensibility.visual {
                 this.settings || SunburstSettings.getDefault(),
                 options);
         }
-
 
         private clear(): void {
             this.main

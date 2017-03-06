@@ -46,6 +46,12 @@
                     "type": {
                         "bool": true
                     }
+                },
+                "labelSize": {
+                    "displayName": "Label size",
+                    "type": {
+                        "numeric": true
+                    }
                 }
             }
         }
