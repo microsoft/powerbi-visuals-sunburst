@@ -1,8 +1,8 @@
-﻿/*
+/*
  *  Power BI Visualizations
  *
  *  Copyright (c) Microsoft Corporation
- *  All rights reserved. 
+ *  All rights reserved.
  *  MIT License
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -11,14 +11,14 @@
  *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  *  copies of the Software, and to permit persons to whom the Software is
  *  furnished to do so, subject to the following conditions:
- *   
- *  The above copyright notice and this permission notice shall be included in 
+ *
+ *  The above copyright notice and this permission notice shall be included in
  *  all copies or substantial portions of the Software.
- *   
- *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ *
+ *  THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
@@ -48,15 +48,15 @@ module powerbi.extensibility.visual {
     import textMeasurementService = powerbi.extensibility.utils.formatting.textMeasurementService;
 
     export const sunburstRoleNames = {
-        nodes: 'Nodes',
-        values: 'Values',
+        nodes: "Nodes",
+        values: "Values",
     };
 
     export class Sunburst implements IVisual {
         private static MinOpacity: number = 0.2;
         private static RoleNames = {
-            nodes: 'Nodes',
-            values: 'Values',
+            nodes: "Nodes",
+            values: "Values",
         };
 
         private visualHost: IVisualHost;
@@ -71,10 +71,10 @@ module powerbi.extensibility.visual {
         private percentageLabel: d3.Selection<any>;
         private selectedCategoryLabel: d3.Selection<any>;
 
-        public static mainDrawArea: ClassAndSelector = createClassAndSelector('mainDrawArea');
-        public static sunBurstSelectedCategory: ClassAndSelector = createClassAndSelector('sunBurstSelectedCategory');
-        public static sunBurstPercentageFixed: ClassAndSelector = createClassAndSelector('sunBurstPercentageFixed');
-        public static setUnHide: ClassAndSelector = createClassAndSelector('setUnHide');
+        public static mainDrawArea: ClassAndSelector = createClassAndSelector("sunBurstDrawArea");
+        public static sunBurstSelectedCategory: ClassAndSelector = createClassAndSelector("sunBurstSelectedCategory");
+        public static sunBurstPercentageFixed: ClassAndSelector = createClassAndSelector("sunBurstPercentageFixed");
+        public static setUnHide: ClassAndSelector = createClassAndSelector("setUnHide");
 
         private colors: IColorPalette;
         private selectionManager: ISelectionManager;
@@ -100,7 +100,7 @@ module powerbi.extensibility.visual {
                 .append("svg")
                 .classed(Sunburst.mainDrawArea.class, true);
 
-            this.main = this.svg.append('g');
+            this.main = this.svg.append("g");
             this.main.classed("container", true);
 
             this.selectedCategoryLabel = this.svg
@@ -110,7 +110,7 @@ module powerbi.extensibility.visual {
             this.percentageLabel = this.svg.append("text")
                 .classed(Sunburst.sunBurstPercentageFixed.class, true);
 
-            this.svg.on('mousedown', (d) => {
+            this.svg.on("mousedown", (d) => {
                 this.svg
                     .selectAll("path")
                     .style("opacity", 1);
@@ -168,7 +168,8 @@ module powerbi.extensibility.visual {
                 key: selectionId
                     ? selectionId.getKey()
                     : null,
-                total: valueToSet
+                total: valueToSet,
+                children: []
             };
 
             if (originParentNode.value) {
@@ -181,8 +182,6 @@ module powerbi.extensibility.visual {
             if (originParentNode.children && originParentNode.children.length > 0) {
 
                 newSunNode.tooltipInfo = Sunburst.getTooltipData(originParentNode.value, -1);
-
-                newSunNode.children = [];
                 for (let i: number = 0, iLen: number = originParentNode.children.length; i < iLen; i++) {
                     let newChild = Sunburst.covertTreeNodeToSunBurstNode(
                         dataView,
@@ -246,7 +245,11 @@ module powerbi.extensibility.visual {
             if (!options
                 || !options.dataViews
                 || !options.dataViews[0]
-                || !options.dataViews[0].matrix) {
+                || !options.dataViews[0].matrix
+                || !options.dataViews[0].matrix.rows
+                || !options.dataViews[0].matrix.rows.root
+                || !options.dataViews[0].matrix.rows.root.children
+                || !options.dataViews[0].matrix.rows.root.children.length) {
                 this.clear();
                 return;
             }
@@ -258,11 +261,11 @@ module powerbi.extensibility.visual {
 
         private updateInternal(): void {
             this.svg.attr({
-                'height': this.viewport.height,
-                'width': this.viewport.width
+                "height": this.viewport.height,
+                "width": this.viewport.width
             });
 
-            this.main.attr('transform', translate(
+            this.main.attr("transform", translate(
                 this.viewport.width / 2,
                 this.viewport.height / 2));
 
@@ -274,7 +277,7 @@ module powerbi.extensibility.visual {
                     return d.value;
                 });
 
-            let pathSelection: any = this.main.datum<SunburstSlice>(this.data.root)
+            let pathSelection: d3.selection.Update<TooltipEnabledDataPoint> = this.main.datum<SunburstSlice>(this.data.root)
                 .selectAll("path")
                 .data<SunburstSlice>(partition.nodes as any);
 
@@ -401,7 +404,7 @@ module powerbi.extensibility.visual {
 
             // Set opacity for all the segments.
             sunBurst.svg.selectAll("path").each(function () {
-                if (d3.select(this).attr('setUnHide') !== 'true') {
+                if (d3.select(this).attr("setUnHide") !== "true") {
                     d3.select(this).style("opacity", Sunburst.MinOpacity);
                 }
             });
@@ -413,7 +416,7 @@ module powerbi.extensibility.visual {
                 }).each(function () {
                     d3.select(this).style("opacity", 1);
                     if (setUnhide === true) {
-                        d3.select(this).attr('setUnHide', 'true');
+                        d3.select(this).attr("setUnHide", "true");
                     }
                 });
         }
