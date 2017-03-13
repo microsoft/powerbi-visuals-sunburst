@@ -33,7 +33,8 @@ module powerbi.extensibility.visual {
     }
 
     export class SunburstGroupSettings {
+
+        public labelSize: number = 14;
         public showSelected: boolean = true;
-        public labelSize: number = 8;
     }
 }

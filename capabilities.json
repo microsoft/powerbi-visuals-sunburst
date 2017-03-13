@@ -42,16 +42,16 @@
             "displayName": "Group",
             "properties": {
                 "showSelected": {
-                    "displayName": "Show selected",
+                    "displayName": "Show category label",
                     "type": {
                         "bool": true
                     }
                 },
                 "labelSize": {
-                    "displayName": "Label size",
-                    "type": {
-                        "numeric": true
-                    }
+                   "displayName": "Label size",
+                   "type": {
+                       "numeric": true
+                   }
                 }
             }
         }
