@@ -15,13 +15,14 @@
         "no-trailing-whitespace": true,
         "no-unsafe-finally": true,
         "no-var-keyword": true,
+        "curly": true,
         "one-line": [
             true,
             "check-open-brace",
             "check-whitespace"
         ],
         "quotemark": [
-            false,
+            true,
             "double"
         ],
         "semicolon": [
@@ -44,6 +45,8 @@
         ],
         "variable-name": [
             true,
+            "check-format",
+            "allow-pascal-case",
             "ban-keywords"
         ],
         "whitespace": [
