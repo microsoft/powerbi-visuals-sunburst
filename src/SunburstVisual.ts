@@ -64,6 +64,9 @@ module powerbi.extensibility.visual {
         private static DefaultPercentageLineInterval: number = 0.25;
         private static MultilinePercentageLineInterval: number = 0.6;
 
+        private static ChangeDataType: number = 2;
+        private static ChangeAllType: number = 62;
+
         private _labelsHidden: boolean = true;
         private set labelsHidden(hidden: boolean) {
             this._labelsHidden = hidden;
@@ -76,19 +79,19 @@ module powerbi.extensibility.visual {
         }
         private set settings(settings: SunburstSettings) {
             if (!this._settings
-                || this.settings.group.labelSize !== settings.group.labelSize
+                || this.settings.group.fontSize !== settings.group.fontSize
                 || this.settings.group.showSelected !== settings.group.showSelected) {
                 this._settings = settings;
                 if (this.labelsHidden) {
                     return;
                 }
-                this.svg.style(CssConstants.fontSizeProperty, `${settings.group.labelSize}px`);
+                this.svg.style(CssConstants.fontSizeProperty, `${settings.group.fontSize}px`);
                 this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.class, this.settings.group.showSelected);
                 this.calculateLabelPosition();
             }
         }
         private visualHost: IVisualHost;
-        private rawData: DataViewHierarchy;
+        private rawData: DataViewMatrix;
         private data: SunburstData;
         private arc: d3.svg.Arc<SunburstSlice>;
         private svg: d3.Selection<{}>;
@@ -158,7 +161,7 @@ module powerbi.extensibility.visual {
         }
 
         public update(options: VisualUpdateOptions): void {
-            if (options.type !== 2 && options.type !== 62) {
+            if (options.type !== Sunburst.ChangeDataType && options.type !== Sunburst.ChangeAllType) {
                 return;
             }
 
@@ -173,8 +176,8 @@ module powerbi.extensibility.visual {
                 this.clear();
                 return;
             }
-            if (!_.isEqual(this.rawData, options.dataViews[0].matrix.rows)) {
-                this.rawData = options.dataViews[0].matrix.rows;
+            if (!_.isEqual(this.rawData, options.dataViews[0].matrix)) {
+                this.rawData = options.dataViews[0].matrix;
                 this.data = this.convert(options.dataViews[0], this.colors, this.visualHost);
                 this.updateInternal();
             }
@@ -375,8 +378,8 @@ module powerbi.extensibility.visual {
                     if (textWidth < innerRadius) {
                         return text;
                     }
-                    if (maxSymbolHeight < this.settings.group.labelSize) {
-                        this.settings.group.labelSize = maxSymbolHeight;
+                    if (maxSymbolHeight < this.settings.group.fontSize) {
+                        this.settings.group.fontSize = maxSymbolHeight;
                         return "...";
                     }
                     return `${text.substr(0, Math.round(innerRadius / fontSize) - 3)}...`;
@@ -388,16 +391,16 @@ module powerbi.extensibility.visual {
 
         private setCategoryLabelPosition(ellipsedText: (text: string, fontSize: number) => string): void {
             if (this.selectedCategoryLabel) {
-                this.selectedCategoryLabel.text((x: string) => ellipsedText(x, this.settings.group.labelSize));
+                this.selectedCategoryLabel.text((x: string) => ellipsedText(x, this.settings.group.fontSize));
                 this.selectedCategoryLabel.attr(
                     CssConstants.transformProperty,
-                    translate(0, this.settings.group.labelSize * -Sunburst.CategoryLineInterval)
+                    translate(0, this.settings.group.fontSize * -Sunburst.CategoryLineInterval)
                 );
             }
         }
 
         private setPercentageLabelPosition(ellipsedText: (text: string, fontSize: number) => string): void {
-            const labelSize: number = this.settings.group.labelSize * Sunburst.PercentageFontSizeMultiplier;
+            const labelSize: number = this.settings.group.fontSize * Sunburst.PercentageFontSizeMultiplier;
             const labelTransform: number = labelSize *
                 (this.settings.group.showSelected ?
                     Sunburst.MultilinePercentageLineInterval :

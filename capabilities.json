@@ -47,11 +47,13 @@
                         "bool": true
                     }
                 },
-                "labelSize": {
-                   "displayName": "Label size",
-                   "type": {
-                       "numeric": true
-                   }
+                "fontSize": {
+                    "displayName": "Font size",
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
                 }
             }
         }
