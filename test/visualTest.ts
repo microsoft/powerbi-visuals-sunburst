@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Power BI Visualizations
  *
  *  Copyright (c) Microsoft Corporation
@@ -24,96 +24,111 @@
  *  THE SOFTWARE.
  */
 
+// tslint:disable-next-line:no-reference
 /// <reference path="_references.ts"/>
 
 namespace powerbi.extensibility.visual.test {
     // powerbi.extensibility.visual.test
-    import VisualData = powerbi.extensibility.visual.test.SunburstData;
-    import VisualBuilder = powerbi.extensibility.visual.test.SunburstBuilder;
-    import colorHelpers = powerbi.extensibility.utils.test.helpers.color;
-    import IVisual = powerbi.extensibility.IVisual;
-    import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
-    import VisualUpdateOptions = powerbi.extensibility.VisualUpdateOptions;
-    import DataViewMatrix = powerbi.DataViewMatrix;
+    import SunburstData = powerbi.extensibility.visual.test.SunburstData;
+    import SunburstBuilder = powerbi.extensibility.visual.test.SunburstBuilder;
     import DataView = powerbi.DataView;
-    import DataViewMetadata = powerbi.DataViewMetadata;
-    import createSelectionId = powerbi.extensibility.utils.test.mocks.createSelectionId;
 
-    // Sunburst1445472000808
-    import VisualClass = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
-    import SunburstSlice = powerbi.extensibility.visual.Sunburst1445472000808.SunburstSlice;
-
-    const DefaultWaitForRender = 500;
-    const VisualSelector = ".sunBurstDrawArea";
+    const DefaultWaitForRender: number = 500;
+    const SliceSelector: string = ".sunburst__slice";
+    const LabelVisibleSelector: string = ".sunburst__label--visible";
 
     describe("Sunburst", () => {
-        let visualBuilder: VisualBuilder,
-            defaultDataViewBuilder: VisualData,
-            dataView: DataView;
+        let visualBuilder: SunburstBuilder;
+        let defaultDataViewBuilder: SunburstData;
+        let dataView: DataView;
 
         beforeEach(() => {
-            visualBuilder = new VisualBuilder(500, 500);
-            defaultDataViewBuilder = new VisualData();
+            visualBuilder = new SunburstBuilder(500, 500);
+            defaultDataViewBuilder = new SunburstData();
         });
 
-        it("sunburst slices dom validation", (done) => {
-            let dataView: DataView = defaultDataViewBuilder.getDataView(
+        it("sunburst slices dom validation", (done: DoneFn) => {
+            dataView = defaultDataViewBuilder.getDataView(
                 [
                     defaultDataViewBuilder.RegionsDataSet,
                     defaultDataViewBuilder.CountriesDataSet
                 ]);
 
-            visualBuilder.updateRenderTimeout(dataView, () => {
-                expect($(`${VisualSelector} path`).length).toBe(13);
-                done();
-            }, DefaultWaitForRender);
+            visualBuilder.updateRenderTimeout(
+                dataView,
+                () => {
+                    expect($(SliceSelector).length).toBe(13);
+                    done();
+                },
+                2,
+                DefaultWaitForRender);
         });
 
-        it("slices onDataChanged dom validation", (done) => {
-            let initialDataView: DataView = defaultDataViewBuilder.getDataView(
+        it("slices onDataChanged dom validation", (done: DoneFn) => {
+            const initialDataView: DataView = defaultDataViewBuilder.getDataView(
                 [
                     defaultDataViewBuilder.RegionsDataSet,
                     defaultDataViewBuilder.CountriesDataSet
                 ]);
 
-            let updatedDataView: DataView = defaultDataViewBuilder.getDataView(
+            const updatedDataView: DataView = defaultDataViewBuilder.getDataView(
                 [
                     defaultDataViewBuilder.RegionsDataSet,
                     defaultDataViewBuilder.CountriesDataSet,
                     defaultDataViewBuilder.StatesDataSet
                 ]);
 
-            visualBuilder.updateRenderTimeout(initialDataView, () => {
-                expect($(`${VisualSelector} path`).length).toBe(13);
-                visualBuilder.update(dataView);
-                visualBuilder.updateRenderTimeout(updatedDataView, () => {
-                    expect($(`${VisualSelector} path`).length).toBe(40);
-                    done();
-                }, DefaultWaitForRender);
-            }, DefaultWaitForRender);
+            visualBuilder.updateRenderTimeout(
+                initialDataView,
+                () => {
+                    expect($(SliceSelector).length).toBe(13);
+                    visualBuilder.updateRenderTimeout(
+                        updatedDataView,
+                        () => {
+                            expect($(SliceSelector).length).toBe(40);
+                            done();
+                        },
+                        2,
+                        DefaultWaitForRender);
+                },
+                2,
+                DefaultWaitForRender);
         });
 
         describe("Labels", () => {
-            it("category labels should be visible by default", (done) => {
-                let dataView: DataView = defaultDataViewBuilder.getDataView(
+            it("category labels should be visible by default", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
                     [
                         defaultDataViewBuilder.RegionsDataSet,
                         defaultDataViewBuilder.CountriesDataSet,
                         defaultDataViewBuilder.StatesDataSet
                     ]);
 
-                visualBuilder.updateRenderTimeout(dataView, () => {
-                    const firstPoint: JQuery = visualBuilder.mainElement.find("path").last();
-                    firstPoint.d3MouseDown(5, 5);
-                    setTimeout(() => {
-                        expect($(`${VisualSelector} text[style*="opacity: 1"]`).length).toBe(2);
-                        done();
-                    }, DefaultWaitForRender);
-                }, DefaultWaitForRender);
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        const firstPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
+                        const secondClickPoint: JQuery = visualBuilder.mainElement;
+                        firstPoint.d3Click(5, 5);
+                        setTimeout(
+                            () => {
+                                expect($(LabelVisibleSelector).length).toBe(2);
+                                secondClickPoint.d3Click(1, 1);
+                                setTimeout(
+                                    () => {
+                                        expect($(LabelVisibleSelector).length).toBe(0);
+                                        done();
+                                    },
+                                    DefaultWaitForRender);
+                            },
+                            DefaultWaitForRender);
+                    },
+                    2,
+                    DefaultWaitForRender);
             });
 
-            it("category labels should be hidden", (done) => {
-                let dataView: DataView = defaultDataViewBuilder.getDataView(
+            it("category labels should be hidden", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
                     [
                         defaultDataViewBuilder.RegionsDataSet,
                         defaultDataViewBuilder.CountriesDataSet
@@ -123,29 +138,46 @@ namespace powerbi.extensibility.visual.test {
                     group: { showSelected: false }
                 };
 
-                visualBuilder.updateRenderTimeout(dataView, () => {
-                    const clickPoint: JQuery = visualBuilder.mainElement.find("path").last();
-                    clickPoint.d3MouseDown(5, 5);
-                    setTimeout(() => {
-                        expect($(`${VisualSelector} text[style*="opacity: 1"]`).length).toBe(1);
-                        done();
-                    }, DefaultWaitForRender);
-                }, DefaultWaitForRender);
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        const firstClickPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
+                        const secondClickPoint: JQuery = visualBuilder.mainElement;
+                        firstClickPoint.d3Click(5, 5);
+                        setTimeout(
+                            () => {
+                                expect($(LabelVisibleSelector).length).toBe(1);
+                                secondClickPoint.d3Click(1, 1);
+                                setTimeout(
+                                    () => {
+                                        expect($(LabelVisibleSelector).length).toBe(0);
+                                        done();
+                                    },
+                                    DefaultWaitForRender);
+                            },
+                            DefaultWaitForRender);
+                    },
+                    2,
+                    DefaultWaitForRender);
             });
         });
 
         describe("Test invalid input data", () => {
-            it("The data is empty", (done) => {
-                let dataView: DataView = defaultDataViewBuilder.getDataView(
+            it("The data is empty", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
                     [
                         defaultDataViewBuilder.RegionsDataSet
                     ]);
                 dataView.matrix.rows.root.children = [];
 
-                visualBuilder.updateRenderTimeout(dataView, () => {
-                    expect($(`${VisualSelector} path`).length).toBe(0);
-                    done();
-                }, DefaultWaitForRender);
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(SliceSelector).length).toBe(0);
+                        done();
+                    },
+                    2,
+                    DefaultWaitForRender);
             });
         });
     });

@@ -31,7 +31,6 @@ module powerbi.extensibility.visual {
     export interface SunburstData {
         root: SunburstSlice;
         total: number;
-        settings: SunburstSettings;
     }
 
     export interface SunburstSlice extends
@@ -39,7 +38,7 @@ module powerbi.extensibility.visual {
         TooltipEnabledDataPoint {
 
         children?: SunburstSlice[];
-        value?: any;
+        value?: number;
         color?: string;
         name?: PrimitiveValue;
         parent?: SunburstSlice;

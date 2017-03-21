@@ -1,4 +1,7 @@
 {
+    "extends": [
+        "tslint-microsoft-contrib"
+    ],
     "rules": {
         "class-name": true,
         "comment-format": [
@@ -9,6 +12,25 @@
             true,
             "spaces"
         ],
+        "missing-jsdoc": false,
+        "member-ordering": [
+            false,
+            {
+                "order": [
+                    "static-field",
+                    "instance-field",
+                    "constructor",
+                    "public-instance-method",
+                    "protected-instance-method",
+                    "private-instance-method"
+                ]
+            }
+        ],
+        "interface-name": [
+            false
+        ],
+        "restrict-plus-operands": false,
+        "no-for-in-array": false,
         "no-duplicate-variable": true,
         "no-eval": true,
         "no-internal-module": false,
@@ -46,6 +68,7 @@
         "variable-name": [
             true,
             "check-format",
+            "allow-leading-underscore",
             "allow-pascal-case",
             "ban-keywords"
         ],

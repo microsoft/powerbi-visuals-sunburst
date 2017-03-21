@@ -1,17 +1,17 @@
 {
   "name": "powerbi-visuals-sunburst",
   "description": "SunBurst chart.",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "author": {
     "name": "Microsoft",
     "email": "pbicvsupport@microsoft.com"
   },
   "scripts": {
-    "postinstall": "pbiviz update 1.5.0",
+    "postinstall": "pbiviz update 1.6.0",
     "pbiviz": "pbiviz",
     "start": "pbiviz start",
     "package": "pbiviz package",
-    "lint": "node node_modules/tslint/bin/tslint -r \"node_modules/tslint-microsoft-contrib\" \"+(src|test)/**/*.ts\"",
+    "lint": "tslint \"+(src|test)/**/*.ts\"",
     "pretest": "pbiviz package --resources --no-minify --no-pbiviz --no-plugin",
     "test": "karma start"
   },
@@ -24,7 +24,6 @@
     "d3": "3.5.5",
     "lodash": "4.17.4",
     "powerbi-visuals-utils-dataviewutils": "1.0.1",
-    "powerbi-visuals-utils-formattingutils": "0.2.2",
     "powerbi-visuals-utils-svgutils": "0.2.1",
     "powerbi-visuals-utils-tooltiputils": "0.3.0"
   },
@@ -32,10 +31,11 @@
     "@types/d3": "3.5.36",
     "@types/jasmine": "2.5.43",
     "@types/jasmine-jquery": "1.5.29",
-    "@types/jquery": "2.0.40",
-    "@types/lodash": "4.14.54",
-    "coveralls": "2.11.15",
+    "@types/jquery": "2.0.41",
+    "@types/lodash": "4.14.55",
+    "coveralls": "2.12.0",
     "jasmine": "2.5.3",
+    "jquery": "3.2.0",
     "karma": "1.5.0",
     "karma-chrome-launcher": "2.0.0",
     "karma-coverage": "1.1.1",
@@ -43,7 +43,7 @@
     "karma-remap-istanbul": "0.6.0",
     "karma-sourcemap-loader": "0.3.7",
     "karma-typescript-preprocessor": "0.3.1",
-    "powerbi-visuals-tools": "1.5.0",
+    "powerbi-visuals-tools": "1.6.0",
     "powerbi-visuals-utils-testutils": "0.2.2",
     "tslint": "4.5.1",
     "tslint-microsoft-contrib": "^4.0.0",
