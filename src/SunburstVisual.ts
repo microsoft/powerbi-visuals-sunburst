@@ -44,6 +44,9 @@ module powerbi.extensibility.visual {
     import ClassAndSelector = powerbi.extensibility.utils.svg.CssConstants.ClassAndSelector;
     import createClassAndSelector = powerbi.extensibility.utils.svg.CssConstants.createClassAndSelector;
 
+    // powerbi.extensibility.utils.formatting
+    import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
+
     interface IAppCssConstants {
         main: ClassAndSelector;
         mainInteractive: ClassAndSelector;
@@ -172,11 +175,16 @@ module powerbi.extensibility.visual {
                 || !options.dataViews[0].matrix.rows
                 || !options.dataViews[0].matrix.rows.root
                 || !options.dataViews[0].matrix.rows.root.children
-                || !options.dataViews[0].matrix.rows.root.children.length) {
+                || !options.dataViews[0].matrix.rows.root.children.length
+                || !options.dataViews[0].matrix.columns
+                || !options.dataViews[0].matrix.columns.root
+                || !options.dataViews[0].matrix.columns.root.children
+                || !options.dataViews[0].matrix.columns.root.children.length) {
                 this.clear();
                 return;
             }
-            if (!_.isEqual(this.rawData, options.dataViews[0].matrix)) {
+
+            if (!this.rawData || !_.isEqual(this.rawData.rows.root, options.dataViews[0].matrix.rows.root)) {
                 this.rawData = options.dataViews[0].matrix;
                 this.data = this.convert(options.dataViews[0], this.colors, this.visualHost);
                 this.updateInternal();
@@ -242,10 +250,12 @@ module powerbi.extensibility.visual {
                 root: null
             };
 
+            const valueFormatString: string = valueFormatter.getFormatStringByColumn(dataView.matrix.columns.levels[0].sources[0], true);
+
             data.root = this.covertTreeNodeToSunBurstNode(
                 dataView.matrix.rows.root, null,
                 colors, [], data,
-                undefined, visualHost, 1);
+                undefined, visualHost, 1, valueFormatString);
             return data;
         }
 
@@ -257,7 +267,8 @@ module powerbi.extensibility.visual {
             data: SunburstData,
             color: string,
             visualHost: IVisualHost,
-            level: number): SunburstSlice {
+            level: number,
+            valueFormatString: string): SunburstSlice {
 
             if (originParentNode.identity) {
                 pathIdentity = pathIdentity.concat([originParentNode.identity]);
@@ -304,7 +315,7 @@ module powerbi.extensibility.visual {
             newSunNode.children = [];
 
             if (originParentNode.children && originParentNode.children.length > 0) {
-                newSunNode.tooltipInfo = this.getTooltipData(<string>originParentNode.value, -1);
+                newSunNode.tooltipInfo = this.getTooltipData(<string>originParentNode.value, -1, valueFormatString);
                 for (const child of originParentNode.children) {
                     const newChild: SunburstSlice = this.covertTreeNodeToSunBurstNode(
                         child,
@@ -314,7 +325,8 @@ module powerbi.extensibility.visual {
                         data,
                         newSunNode.color,
                         visualHost,
-                        level + 1);
+                        level + 1,
+                        valueFormatString);
 
                     newSunNode.children.push(newChild);
                     newSunNode.total += newChild.total;
@@ -323,7 +335,8 @@ module powerbi.extensibility.visual {
             else {
                 newSunNode.tooltipInfo = this.getTooltipData(
                     <string>originParentNode.value,
-                    valueToSet);
+                    valueToSet,
+                    valueFormatString);
             }
 
             if (sunburstParentNode) {
@@ -333,13 +346,19 @@ module powerbi.extensibility.visual {
             return newSunNode;
         }
 
-        private getTooltipData(displayName: string, value: number): VisualTooltipDataItem[] {
+        private getTooltipData(displayName: string, value: number, valueFormatString: string): VisualTooltipDataItem[] {
             return [{
                 displayName,
-                value: value < 0
-                    ? ""
-                    : value.toString()
+                value: this.getFormattedValue(value, valueFormatString)
             }];
+        }
+
+        public getFormattedValue(value: number, valueFormatString: string): string {
+            return value < 0
+                    ? ""
+                    : valueFormatString
+                        ? valueFormatter.format(value, valueFormatString)
+                        : value.toString();
         }
 
         private parseSettings(dataView: DataView): SunburstSettings {
@@ -435,8 +454,7 @@ module powerbi.extensibility.visual {
         }
 
         private clear(): void {
-            this.main
-                .select(this.appCssConstants.main.selector)
+            this.main.selectAll("*")
                 .remove();
         }
     }
