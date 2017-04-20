@@ -1,7 +1,7 @@
 {
   "name": "powerbi-visuals-sunburst",
   "description": "SunBurst chart.",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "author": {
     "name": "Microsoft",
     "email": "pbicvsupport@microsoft.com"
@@ -43,8 +43,9 @@
     "karma-remap-istanbul": "0.6.0",
     "karma-sourcemap-loader": "0.3.7",
     "karma-typescript-preprocessor": "0.3.1",
-    "powerbi-visuals-tools": "1.6.0",
+    "powerbi-visuals-tools": "1.6.2",
     "powerbi-visuals-utils-testutils": "0.2.2",
+    "powerbi-visuals-utils-formattingutils": "0.2.2",
     "tslint": "4.5.1",
     "tslint-microsoft-contrib": "^4.0.0",
     "typescript": "2.1.4"
