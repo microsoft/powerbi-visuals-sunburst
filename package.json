@@ -1,7 +1,7 @@
 {
   "name": "powerbi-visuals-sunburst",
   "description": "SunBurst chart.",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "author": {
     "name": "Microsoft",
     "email": "pbicvsupport@microsoft.com"
@@ -23,28 +23,28 @@
   "dependencies": {
     "d3": "3.5.5",
     "lodash": "4.17.4",
-    "powerbi-visuals-utils-dataviewutils": "1.0.1",
-    "powerbi-visuals-utils-svgutils": "0.2.1",
-    "powerbi-visuals-utils-tooltiputils": "0.3.0"
+    "powerbi-visuals-utils-dataviewutils": "1.1.1",
+    "powerbi-visuals-utils-svgutils": "1.0.0",
+    "powerbi-visuals-utils-tooltiputils": "0.3.2"
   },
   "devDependencies": {
     "@types/d3": "3.5.36",
-    "@types/jasmine": "2.5.43",
-    "@types/jasmine-jquery": "1.5.29",
-    "@types/jquery": "2.0.41",
+    "@types/jasmine": "2.5.47",
+    "@types/jasmine-jquery": "1.5.30",
+    "@types/jquery": "2.0.43",
     "@types/lodash": "4.14.55",
-    "coveralls": "2.12.0",
-    "jasmine": "2.5.3",
-    "jquery": "3.2.0",
-    "karma": "1.5.0",
-    "karma-chrome-launcher": "2.0.0",
+    "coveralls": "2.13.1",
+    "jasmine": "2.6.0",
+    "jquery": "3.2.1",
+    "karma": "1.7.0",
+    "karma-chrome-launcher": "2.1.1",
     "karma-coverage": "1.1.1",
     "karma-jasmine": "1.1.0",
     "karma-remap-istanbul": "0.6.0",
     "karma-sourcemap-loader": "0.3.7",
     "karma-typescript-preprocessor": "0.3.1",
-    "powerbi-visuals-tools": "1.6.0",
-    "powerbi-visuals-utils-testutils": "0.2.2",
+    "powerbi-visuals-tools": "1.6.4",
+    "powerbi-visuals-utils-testutils": "1.0.0",
     "tslint": "4.5.1",
     "tslint-microsoft-contrib": "^4.0.0",
     "typescript": "2.1.4"
