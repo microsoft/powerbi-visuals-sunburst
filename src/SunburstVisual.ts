@@ -183,8 +183,6 @@ module powerbi.extensibility.visual {
             }
 
             if (!this.rawData || !_.isEqual(this.rawData.rows.root, options.dataViews[0].matrix.rows.root)) {
-            this.data = this.convert(options.dataViews[0], this.colors, this.visualHost);
-            this.updateInternal();
                 this.rawData = options.dataViews[0].matrix;
                 this.data = this.convert(options.dataViews[0], this.colors, this.visualHost);
                 this.updateInternal();
@@ -356,10 +354,10 @@ module powerbi.extensibility.visual {
 
         public getFormattedValue(value: number, valueFormatString: string): string {
             return value < 0
-                    ? ""
-                    : valueFormatString
-                        ? valueFormatter.format(value, valueFormatString)
-                        : value.toString();
+                ? ""
+                : valueFormatString
+                    ? valueFormatter.format(value, valueFormatString)
+                    : value.toString();
         }
 
         private parseSettings(dataView: DataView): SunburstSettings {

@@ -26,7 +26,7 @@
     "powerbi-visuals-utils-dataviewutils": "1.1.1",
     "powerbi-visuals-utils-svgutils": "1.0.0",
     "powerbi-visuals-utils-tooltiputils": "0.3.2",
-    "powerbi-visuals-utils-formattingutils": "0.2.2"
+    "powerbi-visuals-utils-formattingutils": "1.0.0"
   },
   "devDependencies": {
     "@types/d3": "3.5.36",
