@@ -16,6 +16,7 @@
     "node_modules/powerbi-visuals-utils-tooltiputils/lib/index.d.ts",
     "node_modules/powerbi-visuals-utils-typeutils/lib/index.d.ts",
     "node_modules/powerbi-visuals-utils-svgutils/lib/index.d.ts",
+    "node_modules/powerbi-visuals-utils-formattingutils/lib/index.d.ts",
     "src/dataInterfaces.ts",
     "src/SunburstSettings.ts",
     "src/SunburstVisual.ts"
