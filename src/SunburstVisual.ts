@@ -52,6 +52,7 @@ module powerbi.extensibility.visual {
 
     // powerbi.extensibility.utils.formatting
     import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
+    import IValueFormatter = powerbi.extensibility.utils.formatting.IValueFormatter;
 
     // powerbi.extensibility.utils.chart.legend
     import createLegend = powerbi.extensibility.utils.chart.legend.createLegend;
@@ -120,6 +121,7 @@ module powerbi.extensibility.visual {
         private svg: d3.Selection<{}>;
         private main: d3.Selection<{}>;
         private percentageLabel: d3.Selection<string>;
+        private percentageFormatter: IValueFormatter;
         private selectedCategoryLabel: d3.Selection<string>;
 
         private appCssConstants: IAppCssConstants = {
@@ -143,6 +145,13 @@ module powerbi.extensibility.visual {
             this.tooltipService = createTooltipServiceWrapper(
                 options.host.tooltipService,
                 options.element);
+            this.percentageFormatter = valueFormatter.create(
+                {
+                    value: 0,
+                    precision: 2,
+                    cultureSelector: options.host.locale
+                }
+            );
 
             this.arc = d3.svg.arc<SunburstSlice>()
                 .startAngle((slice: SunburstSlice) => slice.x)
@@ -304,7 +313,7 @@ module powerbi.extensibility.visual {
                     }
 
                     this.highlightPath(d, this, true);
-                    const percentage: string = this.data.total === 0 ? "" : `${(100 * d.total / this.data.total).toPrecision(3)}%`;
+                    const percentage: string = `${this.getFormattedValue(100 * d.total / this.data.total, this.percentageFormatter)}%`;
                     this.percentageLabel.data([percentage]);
                     this.percentageLabel.style("fill", d.color);
 
@@ -330,10 +339,16 @@ module powerbi.extensibility.visual {
             };
 
             const valueFormatString: string = valueFormatter.getFormatStringByColumn(dataView.matrix.columns.levels[0].sources[0], true);
+            const formatter: IValueFormatter = valueFormatter.create(
+                {
+                    cultureSelector: this.visualHost.locale,
+                    format: valueFormatString,
+                    allowFormatBeautification: true
+                });
             data.root = this.covertTreeNodeToSunBurstNode(
                 dataView.matrix.rows.root, null,
                 colors, [], data,
-                undefined, visualHost, 1, valueFormatString);
+                undefined, visualHost, 1, formatter);
 
             return data;
         }
@@ -347,7 +362,7 @@ module powerbi.extensibility.visual {
             color: string,
             visualHost: IVisualHost,
             level: number,
-            valueFormatString: string): SunburstSlice {
+            formatter: IValueFormatter): SunburstSlice {
 
             if (originParentNode.identity) {
                 pathIdentity = pathIdentity.concat([originParentNode.identity]);
@@ -405,13 +420,13 @@ module powerbi.extensibility.visual {
                         newSunNode.color,
                         visualHost,
                         level + 1,
-                        valueFormatString);
+                        formatter);
 
                     newSunNode.children.push(newChild);
                     newSunNode.total += newChild.total;
                 }
             }
-            newSunNode.tooltipInfo = this.getTooltipData(<string>originParentNode.value, newSunNode.total, valueFormatString);
+            newSunNode.tooltipInfo = this.getTooltipData(<string>originParentNode.value, newSunNode.total, formatter);
 
             if (sunburstParentNode) {
                 newSunNode.parent = sunburstParentNode;
@@ -420,19 +435,17 @@ module powerbi.extensibility.visual {
             return newSunNode;
         }
 
-        private getTooltipData(displayName: string, value: number, valueFormatString: string): VisualTooltipDataItem[] {
+        private getTooltipData(displayName: string, value: number, formatter: IValueFormatter): VisualTooltipDataItem[] {
             return [{
                 displayName,
-                value: this.getFormattedValue(value, valueFormatString)
+                value: this.getFormattedValue(value, formatter)
             }];
         }
 
-        public getFormattedValue(value: number, valueFormatString: string): string {
+        public getFormattedValue(value: number, formatter: IValueFormatter): string {
             return value < 0
                 ? ""
-                : valueFormatString
-                    ? valueFormatter.format(value, valueFormatString)
-                    : value.toString();
+                : formatter.format(value);
         }
 
         private parseSettings(dataView: DataView): SunburstSettings {
