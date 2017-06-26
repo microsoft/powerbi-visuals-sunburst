@@ -27,7 +27,7 @@
 
 // Power BI API
 // tslint:disable-next-line:no-reference
-/// <reference path="../.api/v1.6.0/PowerBI-visuals.d.ts" />
+/// <reference path="../.api/v1.7.0/PowerBI-visuals.d.ts" />
 
 // Power BI Extensibility
 // tslint:disable-next-line:no-reference

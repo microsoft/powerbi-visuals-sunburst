@@ -32,6 +32,9 @@ module powerbi.extensibility.visual {
     // powerbi.visuals
     import ISelectionId = powerbi.visuals.ISelectionId;
 
+    // powerbi.extensibility.utils.type
+    import JsonComparer = powerbi.extensibility.utils.type.JsonComparer;
+
     // powerbi.extensibility.utils.tooltip
     import TooltipEventArgs = powerbi.extensibility.utils.tooltip.TooltipEventArgs;
     import ITooltipServiceWrapper = powerbi.extensibility.utils.tooltip.ITooltipServiceWrapper;
@@ -73,8 +76,8 @@ module powerbi.extensibility.visual {
         private _labelsHidden: boolean = true;
         private set labelsHidden(hidden: boolean) {
             this._labelsHidden = hidden;
-            this.percentageLabel.classed(this.appCssConstants.labelVisible.class, !hidden);
-            this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.class, !hidden && this.settings.group.showSelected);
+            this.percentageLabel.classed(this.appCssConstants.labelVisible.className, !hidden);
+            this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className, !hidden && this.settings.group.showSelected);
         }
         private _settings: SunburstSettings;
         private get settings(): SunburstSettings {
@@ -89,7 +92,7 @@ module powerbi.extensibility.visual {
                     return;
                 }
                 this.svg.style(CssConstants.fontSizeProperty, `${settings.group.fontSize}px`);
-                this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.class, this.settings.group.showSelected);
+                this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className, this.settings.group.showSelected);
                 this.calculateLabelPosition();
             }
         }
@@ -136,28 +139,28 @@ module powerbi.extensibility.visual {
                 .attr("width", "100%")
                 .attr("height", "100%")
                 .attr("preserveAspectRatio", "xMidYMid meet")
-                .classed(this.appCssConstants.main.class, true);
+                .classed(this.appCssConstants.main.className, true);
 
             this.main = this.svg.append("g");
             this.main.attr(CssConstants.transformProperty, translate(Sunburst.CentralPoint, Sunburst.CentralPoint));
 
             this.selectedCategoryLabel = <d3.Selection<string>>this.svg
                 .append("text")
-                .classed(this.appCssConstants.label.class, true)
-                .classed(this.appCssConstants.categoryLabel.class, true);
+                .classed(this.appCssConstants.label.className, true)
+                .classed(this.appCssConstants.categoryLabel.className, true);
             this.selectedCategoryLabel.attr("x", Sunburst.CentralPoint);
             this.selectedCategoryLabel.attr("y", Sunburst.CentralPoint);
 
             this.percentageLabel = <d3.Selection<string>>this.svg
                 .append("text")
-                .classed(this.appCssConstants.label.class, true)
-                .classed(this.appCssConstants.percentageLabel.class, true);
+                .classed(this.appCssConstants.label.className, true)
+                .classed(this.appCssConstants.percentageLabel.className, true);
             this.percentageLabel.attr("x", Sunburst.CentralPoint);
             this.percentageLabel.attr("y", Sunburst.CentralPoint);
 
             this.svg.on("click", () => {
                 this.svg
-                    .classed(this.appCssConstants.mainInteractive.class, false);
+                    .classed(this.appCssConstants.mainInteractive.className, false);
                 this.labelsHidden = true;
                 this.selectionManager.clear();
             });
@@ -181,10 +184,11 @@ module powerbi.extensibility.visual {
                 || !options.dataViews[0].matrix.columns.root.children
                 || !options.dataViews[0].matrix.columns.root.children.length) {
                 this.clear();
+
                 return;
             }
 
-            if (!this.rawData || !_.isEqual(this.rawData.rows.root, options.dataViews[0].matrix.rows.root)) {
+            if (!this.rawData || !JsonComparer.equals(this.rawData.rows.root, options.dataViews[0].matrix.rows.root)) {
                 this.rawData = options.dataViews[0].matrix;
                 this.data = this.convert(options.dataViews[0], this.colors, this.visualHost);
                 this.updateInternal();
@@ -211,7 +215,7 @@ module powerbi.extensibility.visual {
             pathSelection
                 .enter()
                 .append("path")
-                .classed(this.appCssConstants.slice.class, true);
+                .classed(this.appCssConstants.slice.className, true);
 
             pathSelection
                 .style("display", (slice: SunburstSlice) => {
@@ -256,6 +260,7 @@ module powerbi.extensibility.visual {
                 dataView.matrix.rows.root, null,
                 colors, [], data,
                 undefined, visualHost, 1, valueFormatString);
+
             return data;
         }
 
@@ -399,8 +404,10 @@ module powerbi.extensibility.visual {
                     }
                     if (maxSymbolHeight < this.settings.group.fontSize) {
                         this.settings.group.fontSize = maxSymbolHeight;
+
                         return "...";
                     }
+
                     return `${text.substr(0, Math.round(innerRadius / fontSize) - 3)}...`;
                 };
 
@@ -432,15 +439,15 @@ module powerbi.extensibility.visual {
             const parentsArray: SunburstSlice[] = d ? Sunburst.getTreePath(d) : [];
             // Set opacity for all the segments.
             sunBurst.svg
-                .selectAll(sunBurst.appCssConstants.sliceSelected.selector)
-                .classed(sunBurst.appCssConstants.sliceSelected.class, false);
-            sunBurst.svg.classed(sunBurst.appCssConstants.mainInteractive.class, true);
+                .selectAll(sunBurst.appCssConstants.sliceSelected.selectorName)
+                .classed(sunBurst.appCssConstants.sliceSelected.className, false);
+            sunBurst.svg.classed(sunBurst.appCssConstants.mainInteractive.className, true);
             // Highlight only ancestors of the current segment.
-            sunBurst.svg.selectAll(sunBurst.appCssConstants.slice.selector)
+            sunBurst.svg.selectAll(sunBurst.appCssConstants.slice.selectorName)
                 .filter((path: SunburstSlice) => {
                     return parentsArray.indexOf(path) >= 0;
                 })
-                .classed(sunBurst.appCssConstants.sliceSelected.class, true);
+                .classed(sunBurst.appCssConstants.sliceSelected.className, true);
         }
 
         private renderTooltip(selection: d3.selection.Update<TooltipEnabledDataPoint>): void {

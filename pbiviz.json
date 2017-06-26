@@ -9,7 +9,7 @@
     "supportUrl": "http://community.powerbi.com",
     "gitHubUrl": "https://github.com/Microsoft/powerbi-visuals-sunburst"
   },
-  "apiVersion": "1.6.0",
+  "apiVersion": "1.7.0",
   "author": {
     "name": "Microsoft",
     "email": "pbicvsupport@microsoft.com"
@@ -19,7 +19,6 @@
   },
   "externalJS": [
     "node_modules/d3/d3.min.js",
-    "node_modules/lodash/lodash.min.js",
     "node_modules/globalize/lib/globalize.js",
     "node_modules/globalize/lib/cultures/globalize.culture.en-US.js",
     "node_modules/powerbi-visuals-utils-dataviewutils/lib/index.js",

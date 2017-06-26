@@ -33,7 +33,7 @@ namespace powerbi.extensibility.visual.test {
     import SunburstBuilder = powerbi.extensibility.visual.test.SunburstBuilder;
     import DataView = powerbi.DataView;
 
-    // powerbi.extensibility.utils.
+    // powerbi.extensibility.utils.formatting
     import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
 
     import Sunburst = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
