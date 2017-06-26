@@ -35,6 +35,9 @@ module powerbi.extensibility.visual {
     // powerbi.extensibility.utils.type
     import JsonComparer = powerbi.extensibility.utils.type.JsonComparer;
 
+    // powerbi.extensibility.utils.color
+    import ColorHelper = powerbi.extensibility.utils.color.ColorHelper;
+
     // powerbi.extensibility.utils.tooltip
     import TooltipEventArgs = powerbi.extensibility.utils.tooltip.TooltipEventArgs;
     import ITooltipServiceWrapper = powerbi.extensibility.utils.tooltip.ITooltipServiceWrapper;
@@ -74,6 +77,11 @@ module powerbi.extensibility.visual {
         private static ChangeAllType: number = 62;
 
         private _labelsHidden: boolean = true;
+
+        private static LegendPropertyIdentifier: DataViewObjectPropertyIdentifier = {
+            objectName: "group",
+            propertyName: "fill"
+        };
         private set labelsHidden(hidden: boolean) {
             this._labelsHidden = hidden;
             this.percentageLabel.classed(this.appCssConstants.labelVisible.className, !hidden);
@@ -197,9 +205,47 @@ module powerbi.extensibility.visual {
         }
 
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
-            return SunburstSettings.enumerateObjectInstances(
+            const instanceEnumeration: VisualObjectInstanceEnumeration = SunburstSettings.enumerateObjectInstances(
                 this.settings || SunburstSettings.getDefault(),
                 options);
+            if (options.objectName === Sunburst.LegendPropertyIdentifier.objectName) {
+                this.enumerateColors(instanceEnumeration);
+            }
+            return instanceEnumeration || [];
+        }
+
+        private enumerateColors(instanceEnumeration: VisualObjectInstanceEnumeration): VisualObjectInstance[] {
+            const topCategories: SunburstSlice[] = this.data.root.children;
+            if (!topCategories || !(topCategories.length > 0)) {
+                return;
+            }
+
+            topCategories.forEach((category: SunburstSlice) => {
+                const displayName: string = category.name.toString();
+                const identity: ISelectionId = category.selector as ISelectionId;
+                this.addAnInstanceToEnumeration(instanceEnumeration, {
+                    displayName,
+                    objectName: Sunburst.LegendPropertyIdentifier.objectName,
+                    selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
+                    properties: {
+                        fill: { solid: { color: category.color } }
+                    }
+                });
+            });
+            return null;
+        }
+
+        private addAnInstanceToEnumeration(
+            instanceEnumeration: VisualObjectInstanceEnumeration,
+            instance: VisualObjectInstance): void {
+
+            if ((instanceEnumeration as VisualObjectInstanceEnumerationObject).instances) {
+                (instanceEnumeration as VisualObjectInstanceEnumerationObject)
+                    .instances
+                    .push(instance);
+            } else {
+                (instanceEnumeration as VisualObjectInstance[]).push(instance);
+            }
         }
 
         private updateInternal(): void {
@@ -255,7 +301,6 @@ module powerbi.extensibility.visual {
             };
 
             const valueFormatString: string = valueFormatter.getFormatStringByColumn(dataView.matrix.columns.levels[0].sources[0], true);
-
             data.root = this.covertTreeNodeToSunBurstNode(
                 dataView.matrix.rows.root, null,
                 colors, [], data,
@@ -280,7 +325,9 @@ module powerbi.extensibility.visual {
             }
 
             const selectionIdBuilder: visuals.ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
-
+            const colorHelper: ColorHelper = new ColorHelper(
+                colors,
+                Sunburst.LegendPropertyIdentifier);
             pathIdentity.forEach((identity: DataViewScopeIdentity) => {
                 const categoryColumn: DataViewCategoryColumn = {
                     source: {
@@ -298,9 +345,8 @@ module powerbi.extensibility.visual {
             const valueToSet: number = originParentNode.values
                 ? <number>originParentNode.values[0].value
                 : 0;
-
             const newSunNode: SunburstSlice = {
-                name: originParentNode.name,
+                name: originParentNode.value,
                 value: Math.max(valueToSet, 0),
                 selector: selectionId,
                 key: selectionId
@@ -309,11 +355,10 @@ module powerbi.extensibility.visual {
                 total: valueToSet,
                 children: []
             };
-
             if (originParentNode.value) {
                 newSunNode.color = color
                     ? color
-                    : colors.getColor(originParentNode.value.toString()).value;
+                    : color = colorHelper.getColorForMeasure(originParentNode.objects, originParentNode.name);
             }
 
             data.total += newSunNode.value;
@@ -360,10 +405,10 @@ module powerbi.extensibility.visual {
 
         public getFormattedValue(value: number, valueFormatString: string): string {
             return value < 0
-                    ? ""
-                    : valueFormatString
-                        ? valueFormatter.format(value, valueFormatString)
-                        : value.toString();
+                ? ""
+                : valueFormatString
+                    ? valueFormatter.format(value, valueFormatString)
+                    : value.toString();
         }
 
         private parseSettings(dataView: DataView): SunburstSettings {

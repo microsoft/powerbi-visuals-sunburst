@@ -54,6 +54,16 @@
                             "fontSize": true
                         }
                     }
+                },
+                "fill": {
+                    "displayName": "Top category color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
                 }
             }
         }

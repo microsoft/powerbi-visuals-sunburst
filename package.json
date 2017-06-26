@@ -7,7 +7,7 @@
     "email": "pbicvsupport@microsoft.com"
   },
   "scripts": {
-    "postinstall": "pbiviz update 1.6.0",
+    "postinstall": "pbiviz update 1.7.0",
     "pbiviz": "pbiviz",
     "start": "pbiviz start",
     "package": "pbiviz package",
@@ -27,7 +27,8 @@
     "powerbi-visuals-utils-svgutils": "^1.1.0",
     "powerbi-visuals-utils-tooltiputils": "1.0.0",
     "powerbi-visuals-utils-formattingutils": "^2.1.0",
-    "powerbi-visuals-utils-typeutils": "^1.1.0"
+    "powerbi-visuals-utils-typeutils": "^1.1.0",
+    "powerbi-visuals-utils-colorutils": "^1.0.0"
   },
   "devDependencies": {
     "@types/d3": "3.5.36",
