@@ -291,7 +291,8 @@ module powerbi.extensibility.visual {
                 .size([2 * Math.PI, Sunburst.OuterRadius * Sunburst.OuterRadius])
                 .value((d: d3.layout.partition.Node) => {
                     return d.value;
-                });
+                })
+                .sort(null);
             const pathSelection: d3.selection.Update<TooltipEnabledDataPoint> = this.main.datum<SunburstSlice>(this.data.root)
                 .selectAll("path")
                 // tslint:disable-next-line:no-any
@@ -299,12 +300,11 @@ module powerbi.extensibility.visual {
             pathSelection
                 .enter()
                 .append("path")
-                .classed(this.appCssConstants.slice.className, true);
-
-            pathSelection
+                .classed(this.appCssConstants.slice.className, true)
                 .style("display", (slice: SunburstSlice) => {
                     return slice.depth ? null : "none";
                 })
+                .attr("id", (d, i) => "sliceLabel_" + i)
                 .attr("d", this.arc)
                 .style("fill", (d: SunburstSlice) => { return d.color; })
                 .on("click", (d: SunburstSlice) => {
@@ -325,6 +325,16 @@ module powerbi.extensibility.visual {
 
                     (<MouseEvent>(d3.event)).stopPropagation();
                 });
+            this.main.selectAll(".sliceLabel")
+                .data<SunburstSlice>(<any>partition.nodes)
+                .enter()
+                .append("text")
+                .classed("sliceLabel", true)
+                .attr("x", 5)
+                .attr("dy", 18)
+                .append("textPath")
+                .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
+                .text((d) => d.name as string);
             this.renderTooltip(pathSelection);
 
             pathSelection
