@@ -26,27 +26,23 @@
  */
 
 // Power BI API
-// tslint:disable-next-line:no-reference
 /// <reference path="../.api/v1.7.0/PowerBI-visuals.d.ts" />
 
 // Power BI Extensibility
-// tslint:disable-next-line:no-reference
 /// <reference path="../node_modules/powerbi-visuals-utils-dataviewutils/lib/index.d.ts" />
 /// <reference path="../node_modules/powerbi-visuals-utils-typeutils/lib/index.d.ts" />
-// tslint:disable-next-line:no-reference
 /// <reference path="../node_modules/powerbi-visuals-utils-svgutils/lib/index.d.ts" />
 /// <reference path="../node_modules/powerbi-visuals-utils-tooltiputils/lib/index.d.ts" />
-// tslint:disable-next-line:no-reference
 /// <reference path="../node_modules/powerbi-visuals-utils-dataviewutils/lib/index.d.ts" />
-// tslint:disable-next-line:no-reference
 /// <reference path="../node_modules/powerbi-visuals-utils-testutils/lib/index.d.ts"/>
+/// <reference path="../node_modules/powerbi-visuals-utils-testutils/lib/index.d.ts"/>
+/// <reference path="../node_modules/powerbi-visuals-utils-colorutils/lib/index.d.ts"/>
+/// <reference path="../node_modules/powerbi-visuals-utils-chartutils/lib/index.d.ts"/>
+/// <reference path="../node_modules/powerbi-visuals-utils-interactivityutils/lib/index.d.ts"/>
 
 // The visual
-// tslint:disable-next-line:no-reference
 /// <reference path="../.tmp/drop/visual.d.ts" />
 
 // Test
-// tslint:disable-next-line:no-reference
 /// <reference path="SunburstBuilder.ts" />
-// tslint:disable-next-line:no-reference
 /// <reference path="SunburstData.ts" />

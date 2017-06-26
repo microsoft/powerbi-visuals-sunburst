@@ -25,6 +25,9 @@
  */
 .sunburst {
     transition-property: font-size;
+    width: 100%;
+    height: 100%;
+    position: absolute;
     transition-duration: 0.2s;
     &--interactive path {
         opacity: 0.2;
@@ -34,6 +37,7 @@
 .sunburst .sunburst__slice {
     stroke: #fff;
     fill-rule: evenodd;
+
     &--selected {
         opacity: 1;
     }

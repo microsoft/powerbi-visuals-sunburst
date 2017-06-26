@@ -53,6 +53,14 @@ module powerbi.extensibility.visual {
     // powerbi.extensibility.utils.formatting
     import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
 
+    // powerbi.extensibility.utils.chart.legend
+    import createLegend = powerbi.extensibility.utils.chart.legend.createLegend;
+    import ILegend = powerbi.extensibility.utils.chart.legend.ILegend;
+    import Legend = powerbi.extensibility.utils.chart.legend;
+    import LegendData = powerbi.extensibility.utils.chart.legend.LegendData;
+    import LegendIcon = powerbi.extensibility.utils.chart.legend.LegendIcon;
+    import LegendPosition = powerbi.extensibility.utils.chart.legend.LegendPosition;
+
     interface IAppCssConstants {
         main: ClassAndSelector;
         mainInteractive: ClassAndSelector;
@@ -92,10 +100,10 @@ module powerbi.extensibility.visual {
             return this._settings;
         }
         private set settings(settings: SunburstSettings) {
+            this._settings = settings;
             if (!this._settings
                 || this.settings.group.fontSize !== settings.group.fontSize
                 || this.settings.group.showSelected !== settings.group.showSelected) {
-                this._settings = settings;
                 if (this.labelsHidden) {
                     return;
                 }
@@ -108,6 +116,7 @@ module powerbi.extensibility.visual {
         private rawData: DataViewMatrix;
         private data: SunburstData;
         private arc: d3.svg.Arc<SunburstSlice>;
+        private chartWrapper: d3.Selection<{}>;
         private svg: d3.Selection<{}>;
         private main: d3.Selection<{}>;
         private percentageLabel: d3.Selection<string>;
@@ -126,6 +135,9 @@ module powerbi.extensibility.visual {
         private colors: IColorPalette;
         private selectionManager: ISelectionManager;
         private tooltipService: ITooltipServiceWrapper;
+        private viewport: IViewport;
+        private legend: ILegend;
+        private legendData: LegendData;
         constructor(options: VisualConstructorOptions) {
             this.visualHost = options.host;
             this.tooltipService = createTooltipServiceWrapper(
@@ -140,14 +152,16 @@ module powerbi.extensibility.visual {
 
             this.colors = options.host.colorPalette;
             this.selectionManager = options.host.createSelectionManager();
+            this.chartWrapper = d3.select(options.element)
+                .append("div")
+                .classed(this.appCssConstants.main.className, true);
 
-            this.svg = d3.select(options.element)
+            this.svg = this.chartWrapper
                 .append("svg")
-                .attr("viewBox", `0 0 ${Sunburst.ViewBoxSize}  ${Sunburst.ViewBoxSize}`)
+                .attr("viewBox", `0 0 ${Sunburst.ViewBoxSize} ${Sunburst.ViewBoxSize}`)
                 .attr("width", "100%")
                 .attr("height", "100%")
-                .attr("preserveAspectRatio", "xMidYMid meet")
-                .classed(this.appCssConstants.main.className, true);
+                .attr("preserveAspectRatio", "xMidYMid meet");
 
             this.main = this.svg.append("g");
             this.main.attr(CssConstants.transformProperty, translate(Sunburst.CentralPoint, Sunburst.CentralPoint));
@@ -172,13 +186,15 @@ module powerbi.extensibility.visual {
                 this.labelsHidden = true;
                 this.selectionManager.clear();
             });
+            // create legend container
+            this.legend = createLegend(options.element,
+                false,
+                null,
+                true,
+                LegendPosition.Right);
         }
 
         public update(options: VisualUpdateOptions): void {
-            if (options.type !== Sunburst.ChangeDataType && options.type !== Sunburst.ChangeAllType) {
-                return;
-            }
-
             if (!options
                 || !options.dataViews
                 || !options.dataViews[0]
@@ -195,13 +211,26 @@ module powerbi.extensibility.visual {
 
                 return;
             }
-
+            this.viewport = options.viewport;
+            this.settings = this.parseSettings(options.dataViews[0]);
             if (!this.rawData || !JsonComparer.equals(this.rawData.rows.root, options.dataViews[0].matrix.rows.root)) {
                 this.rawData = options.dataViews[0].matrix;
                 this.data = this.convert(options.dataViews[0], this.colors, this.visualHost);
                 this.updateInternal();
             }
-            this.settings = this.parseSettings(options.dataViews[0]);
+
+            if (this.data) {
+                this.legendData = Sunburst.createLegend(this.data, this.settings);
+                this.renderLegend();
+            }
+            if (this.settings.legend.show) {
+                this.chartWrapper.style({
+                    width: `${this.viewport.width}px`,
+                    height: `${this.viewport.height}px`
+                });
+            } else {
+                this.chartWrapper.attr("style", null);
+            }
         }
 
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
@@ -428,6 +457,26 @@ module powerbi.extensibility.visual {
             return path;
         }
 
+        private static createLegend(data: SunburstData, settings: SunburstSettings): LegendData {
+            const rootCategory: SunburstSlice[] = data.root.children;
+            const legendData: LegendData = {
+                fontSize: settings.legend.fontSize,
+                dataPoints: [],
+                title: settings.legend.showTitle ? (settings.legend.titleText) : null,
+                labelColor: settings.legend.labelColor
+            };
+            legendData.dataPoints = rootCategory.map((element: SunburstSlice) => {
+                return {
+                    label: element.name as string,
+                    color: element.color,
+                    icon: LegendIcon.Circle,
+                    selected: false,
+                    identity: element.selector
+                };
+            });
+            return legendData;
+        }
+
         private calculateLabelPosition(): void {
             const innerRadius: number = Math.min.apply(
                 null,
@@ -503,6 +552,34 @@ module powerbi.extensibility.visual {
             this.tooltipService.addTooltip(selection, (tooltipEvent: TooltipEventArgs<SunburstSlice>) => {
                 return tooltipEvent.data.tooltipInfo;
             });
+        }
+
+        private renderLegend(): void {
+            if (!this.data) {
+                return;
+            }
+            const position: LegendPosition = this.settings.legend.show
+                ? LegendPosition[this.settings.legend.position]
+                : LegendPosition.None;
+
+            this.legend.changeOrientation(position);
+            this.legend.drawLegend(this.legendData, JSON.parse(JSON.stringify(this.viewport)));
+            Legend.positionChartArea(this.chartWrapper, this.legend);
+
+            switch (this.legend.getOrientation()) {
+                case LegendPosition.Left:
+                case LegendPosition.LeftCenter:
+                case LegendPosition.Right:
+                case LegendPosition.RightCenter:
+                    this.viewport.width -= this.legend.getMargins().width;
+                    break;
+                case LegendPosition.Top:
+                case LegendPosition.TopCenter:
+                case LegendPosition.Bottom:
+                case LegendPosition.BottomCenter:
+                    this.viewport.height -= this.legend.getMargins().height;
+                    break;
+            }
         }
 
         private clear(): void {

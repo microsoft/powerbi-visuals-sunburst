@@ -112,6 +112,7 @@ namespace powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
+                        debugger;
                         const firstPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
                         const secondClickPoint: JQuery = visualBuilder.mainElement;
                         firstPoint.d3Click(5, 5);

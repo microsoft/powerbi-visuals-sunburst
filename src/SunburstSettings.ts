@@ -30,11 +30,21 @@ module powerbi.extensibility.visual {
 
     export class SunburstSettings extends DataViewObjectsParser {
         public group: SunburstGroupSettings = new SunburstGroupSettings();
+        public legend: LegendSettings = new LegendSettings();
     }
 
     export class SunburstGroupSettings {
 
         public fontSize: number = 14;
         public showSelected: boolean = true;
+    }
+
+    export class LegendSettings {
+        show: boolean = false;
+        position: string = "Right";
+        showTitle: boolean = true;
+        titleText: string = "Legend";
+        labelColor: string = "#000000";
+        fontSize: number = 8;
     }
 }
