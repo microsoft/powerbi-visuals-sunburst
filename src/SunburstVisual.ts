@@ -394,7 +394,7 @@ module powerbi.extensibility.visual {
             newSunNode.children = [];
 
             if (originParentNode.children && originParentNode.children.length > 0) {
-                newSunNode.tooltipInfo = this.getTooltipData(<string>originParentNode.value, -1, valueFormatString);
+
                 for (const child of originParentNode.children) {
                     const newChild: SunburstSlice = this.covertTreeNodeToSunBurstNode(
                         child,
@@ -411,12 +411,7 @@ module powerbi.extensibility.visual {
                     newSunNode.total += newChild.total;
                 }
             }
-            else {
-                newSunNode.tooltipInfo = this.getTooltipData(
-                    <string>originParentNode.value,
-                    valueToSet,
-                    valueFormatString);
-            }
+            newSunNode.tooltipInfo = this.getTooltipData(<string>originParentNode.value, newSunNode.total, valueFormatString);
 
             if (sunburstParentNode) {
                 newSunNode.parent = sunburstParentNode;
