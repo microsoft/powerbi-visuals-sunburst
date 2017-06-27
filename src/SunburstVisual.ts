@@ -32,9 +32,6 @@ module powerbi.extensibility.visual {
     // powerbi.visuals
     import ISelectionId = powerbi.visuals.ISelectionId;
 
-    // powerbi.extensibility.utils.type
-    import JsonComparer = powerbi.extensibility.utils.type.JsonComparer;
-
     // powerbi.extensibility.utils.color
     import ColorHelper = powerbi.extensibility.utils.color.ColorHelper;
 
@@ -224,11 +221,9 @@ module powerbi.extensibility.visual {
             }
             this.viewport = options.viewport;
             this.settings = this.parseSettings(options.dataViews[0]);
-            if (!this.rawData || !JsonComparer.equals(this.rawData.rows.root, options.dataViews[0].matrix.rows.root)) {
-                this.rawData = options.dataViews[0].matrix;
-                this.data = this.convert(options.dataViews[0], this.colors, this.visualHost);
-                this.updateInternal();
-            }
+            this.rawData = options.dataViews[0].matrix;
+            this.data = this.convert(options.dataViews[0], this.colors, this.visualHost);
+            this.updateInternal();
 
             if (this.data) {
                 this.legendData = Sunburst.createLegend(this.data, this.settings);
