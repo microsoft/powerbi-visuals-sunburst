@@ -306,24 +306,7 @@ module powerbi.extensibility.visual {
                 .style("display", (slice: SunburstSlice) => slice.depth ? null : "none")
                 .attr("d", this.arc)
                 .style("fill", (d: SunburstSlice) => d.color)
-                .on("click", (d: SunburstSlice) => {
-                    if (d.selector) {
-                        this.selectionManager.select(d.selector);
-                    }
-
-                    this.highlightPath(d, this, true);
-                    const percentage: string = `${this.getFormattedValue(100 * d.total / this.data.total, this.percentageFormatter)}%`;
-                    this.percentageLabel.data([percentage]);
-                    this.percentageLabel.style("fill", d.color);
-
-                    this.selectedCategoryLabel.data([d ? d.tooltipInfo[0].displayName : ""]);
-                    this.selectedCategoryLabel.style("fill", d.color);
-
-                    this.calculateLabelPosition();
-                    this.labelsHidden = false;
-
-                    (<MouseEvent>(d3.event)).stopPropagation();
-                });
+                .on("click", this.onSliceClick.bind(this));
             if (this.settings.group.showDataLabels) {
 
                 pathSelection.each(function (d: SunburstSlice, i: number) {
@@ -350,7 +333,8 @@ module powerbi.extensibility.visual {
                     .style("text-anchor", "middle")
                     .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
                     .text((d: SunburstSlice) => <string>d.name)
-                    .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding));
+                    .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding))
+                    .on("click", this.onSliceClick.bind(this));
             }
             this.renderTooltip(pathSelection);
 
@@ -359,12 +343,26 @@ module powerbi.extensibility.visual {
                 .remove();
         }
 
+        private onSliceClick(slice: SunburstSlice): void {
+            if (slice.selector) {
+                this.selectionManager.select(slice.selector);
+            }
+            this.highlightPath(slice, this, true);
+            const percentage: string = `${this.getFormattedValue(100 * slice.total / this.data.total, this.percentageFormatter)}%`;
+            this.percentageLabel.data([percentage]);
+            this.percentageLabel.style("fill", slice.color);
+            this.selectedCategoryLabel.data([slice ? slice.tooltipInfo[0].displayName : ""]);
+            this.selectedCategoryLabel.style("fill", slice.color);
+            this.calculateLabelPosition();
+            this.labelsHidden = false;
+            (<MouseEvent>(d3.event)).stopPropagation();
+        }
+
         private convert(dataView: DataView, colors: IColorPalette, visualHost: IVisualHost): SunburstData {
             const data: SunburstData = {
                 total: 0,
                 root: null
             };
-
             const valueFormatString: string = valueFormatter.getFormatStringByColumn(dataView.matrix.columns.levels[0].sources[0], true);
             const formatter: IValueFormatter = valueFormatter.create(
                 {
