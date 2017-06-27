@@ -517,51 +517,32 @@ module powerbi.extensibility.visual {
                 null,
                 this.data.root.children.map((x: SunburstSlice) => this.arc.innerRadius()(x, undefined))
             );
-            const commonLineHeight: number = 1 + Sunburst.PercentageFontSizeMultiplier +
-                Sunburst.CategoryLineInterval +
-                (this.settings.group.showSelected ? Sunburst.MultilinePercentageLineInterval : Sunburst.DefaultPercentageLineInterval);
-            const maxSymbolHeight: number = Math.round(innerRadius / commonLineHeight);
-
-            const ellipsedText: (text: string, fontSize: number) => string =
-                (text: string, fontSize: number): string => {
-                    if (!text) {
-                        return "";
-                    }
-                    const textWidth: number = text.length * fontSize / 2;
-                    if (textWidth < innerRadius) {
-                        return text;
-                    }
-                    if (maxSymbolHeight < this.settings.group.fontSize) {
-                        this.settings.group.fontSize = maxSymbolHeight;
-
-                        return "...";
-                    }
-
-                    return `${text.substr(0, Math.round(innerRadius / fontSize) - 3)}...`;
-                };
-
-            this.setPercentageLabelPosition(ellipsedText);
-            this.setCategoryLabelPosition(ellipsedText);
+            this.setPercentageLabelPosition(innerRadius);
+            this.setCategoryLabelPosition(innerRadius);
         }
 
-        private setCategoryLabelPosition(ellipsedText: (text: string, fontSize: number) => string): void {
+        private setCategoryLabelPosition(width: number): void {
+            const self = this;
             if (this.selectedCategoryLabel) {
-                this.selectedCategoryLabel.text((x: string) => ellipsedText(x, this.settings.group.fontSize));
-                this.selectedCategoryLabel.attr(
-                    CssConstants.transformProperty,
-                    translate(0, this.settings.group.fontSize * -Sunburst.CategoryLineInterval)
-                );
+                const labelSize: number = this.settings.group.fontSize;
+                this.selectedCategoryLabel
+                    .attr(CssConstants.transformProperty, translate(0, labelSize * -Sunburst.CategoryLineInterval))
+                    .style("font-size", `${labelSize}px`)
+                    .text((x: string) => x).each(function (d: string) { self.wrapText(d3.select(this), Sunburst.DefaultDataLabelPadding, width); });
             }
         }
 
-        private setPercentageLabelPosition(ellipsedText: (text: string, fontSize: number) => string): void {
+        private setPercentageLabelPosition(width: number): void {
+            const self = this;
             const labelSize: number = this.settings.group.fontSize * Sunburst.PercentageFontSizeMultiplier;
             const labelTransform: number = labelSize *
                 (this.settings.group.showSelected ?
                     Sunburst.MultilinePercentageLineInterval :
                     Sunburst.DefaultPercentageLineInterval);
-            this.percentageLabel.text((x: string) => ellipsedText(x, labelSize));
-            this.percentageLabel.attr(CssConstants.transformProperty, translate(0, labelTransform));
+            this.percentageLabel
+                .attr(CssConstants.transformProperty, translate(0, labelTransform))
+                .style("font-size", `${labelSize}px`)
+                .text((x: string) => x).each(function (d: string) { self.wrapText(d3.select(this), Sunburst.DefaultDataLabelPadding, width); });
         }
 
         private highlightPath(d: SunburstSlice, sunBurst: Sunburst, setUnhide: boolean): void {
@@ -618,25 +599,31 @@ module powerbi.extensibility.visual {
         }
 
         private wrapPathText(padding?: number): (slice: SunburstSlice, index: number) => void {
-            padding = padding || 0;
+            const self = this;
             return function (slice: SunburstSlice, index: number) {
                 if (!slice.depth) {
                     return;
                 }
-                let selection: d3.Selection<any> = d3.select(this),
-                    node: SVGTextElement = <SVGTextElement>selection.node(),
-                    textLength: number = node.getComputedTextLength(),
-                    text: string = selection.text(),
-                    width = (<SVGPathElement>d3.select(selection.attr("xlink:href")).node()).getTotalLength();
-                while (textLength > (width - 2 * padding) && text.length > 0) {
-                    text = text.slice(0, -1);
-                    selection.text(text + "\u2026");
-                    textLength = node.getComputedTextLength();
-                }
-                if (textLength > (width - 2 * padding)) {
-                    selection.text("");
-                }
+                const selection: d3.Selection<any> = d3.select(this);
+                const width = (<SVGPathElement>d3.select(selection.attr("xlink:href")).node()).getTotalLength();
+                self.wrapText(selection, padding, width);
             };
+        }
+
+        private wrapText(selection: d3.Selection<any>, padding?: number, width?: number): void {
+            let node: SVGTextElement = <SVGTextElement>selection.node(),
+                textLength: number = node.getComputedTextLength(),
+                text: string = selection.text();
+            width = width || (<SVGPathElement>selection.node()).getTotalLength();
+            padding = padding || 0;
+            while (textLength > (width - 2 * padding) && text.length > 0) {
+                text = text.slice(0, -1);
+                selection.text(text + "\u2026");
+                textLength = node.getComputedTextLength();
+            }
+            if (textLength > (width - 2 * padding)) {
+                selection.text("");
+            }
         }
 
         private clear(): void {
