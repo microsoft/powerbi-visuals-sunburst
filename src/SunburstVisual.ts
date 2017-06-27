@@ -85,6 +85,8 @@ module powerbi.extensibility.visual {
         private static ChangeDataType: number = 2;
         private static ChangeAllType: number = 62;
 
+        private static DefaultDataLabelPadding: number = 5;
+
         private _labelsHidden: boolean = true;
 
         private static LegendPropertyIdentifier: DataViewObjectPropertyIdentifier = {
@@ -287,6 +289,7 @@ module powerbi.extensibility.visual {
         }
 
         private updateInternal(): void {
+            const root = this.main;
             const partition: d3.layout.Partition<d3.layout.partition.Node> = d3.layout.partition()
                 .size([2 * Math.PI, Sunburst.OuterRadius * Sunburst.OuterRadius])
                 .value((d: d3.layout.partition.Node) => {
@@ -295,18 +298,14 @@ module powerbi.extensibility.visual {
                 .sort(null);
             const pathSelection: d3.selection.Update<TooltipEnabledDataPoint> = this.main.datum<SunburstSlice>(this.data.root)
                 .selectAll("path")
-                // tslint:disable-next-line:no-any
                 .data<SunburstSlice>(<any>partition.nodes);
             pathSelection
                 .enter()
                 .append("path")
                 .classed(this.appCssConstants.slice.className, true)
-                .style("display", (slice: SunburstSlice) => {
-                    return slice.depth ? null : "none";
-                })
-                .attr("id", (d, i) => "sliceLabel_" + i)
+                .style("display", (slice: SunburstSlice) => slice.depth ? null : "none")
                 .attr("d", this.arc)
-                .style("fill", (d: SunburstSlice) => { return d.color; })
+                .style("fill", (d: SunburstSlice) => d.color)
                 .on("click", (d: SunburstSlice) => {
                     if (d.selector) {
                         this.selectionManager.select(d.selector);
@@ -325,16 +324,34 @@ module powerbi.extensibility.visual {
 
                     (<MouseEvent>(d3.event)).stopPropagation();
                 });
-            this.main.selectAll(".sliceLabel")
-                .data<SunburstSlice>(<any>partition.nodes)
-                .enter()
-                .append("text")
-                .classed("sliceLabel", true)
-                .attr("x", 5)
-                .attr("dy", 18)
-                .append("textPath")
-                .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
-                .text((d) => d.name as string);
+            if (this.settings.group.showDataLabels) {
+
+                pathSelection.each(function (d: SunburstSlice, i: number) {
+                    if (!d.depth) {
+                        return;
+                    }
+                    const firstArcSection = /(^.+?)L/;
+                    let newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
+                    newArc = newArc.replace(/,/g, " ");
+                    root.append("path")
+                        .attr("id", "sliceLabel_" + i)
+                        .attr("d", newArc)
+                        .style("fill", "none");
+                });
+                root.selectAll(".sliceLabel")
+                    .data<SunburstSlice>(<any>partition.nodes)
+                    .enter()
+                    .append("text")
+                    .classed("sliceLabel", true)
+                    // font size + slice padding
+                    .attr("dy", 18)
+                    .append("textPath")
+                    .attr("startOffset", "50%")
+                    .style("text-anchor", "middle")
+                    .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
+                    .text((d: SunburstSlice) => <string>d.name)
+                    .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding));
+            }
             this.renderTooltip(pathSelection);
 
             pathSelection
@@ -598,6 +615,28 @@ module powerbi.extensibility.visual {
                     this.viewport.height -= this.legend.getMargins().height;
                     break;
             }
+        }
+
+        private wrapPathText(padding?: number): (slice: SunburstSlice, index: number) => void {
+            padding = padding || 0;
+            return function (slice: SunburstSlice, index: number) {
+                if (!slice.depth) {
+                    return;
+                }
+                let selection: d3.Selection<any> = d3.select(this),
+                    node: SVGTextElement = <SVGTextElement>selection.node(),
+                    textLength: number = node.getComputedTextLength(),
+                    text: string = selection.text(),
+                    width = (<SVGPathElement>d3.select(selection.attr("xlink:href")).node()).getTotalLength();
+                while (textLength > (width - 2 * padding) && text.length > 0) {
+                    text = text.slice(0, -1);
+                    selection.text(text + "\u2026");
+                    textLength = node.getComputedTextLength();
+                }
+                if (textLength > (width - 2 * padding)) {
+                    selection.text("");
+                }
+            };
         }
 
         private clear(): void {

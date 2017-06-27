@@ -37,6 +37,7 @@ module powerbi.extensibility.visual {
 
         public fontSize: number = 14;
         public showSelected: boolean = true;
+        public showDataLabels: boolean = false;
     }
 
     export class LegendSettings {
