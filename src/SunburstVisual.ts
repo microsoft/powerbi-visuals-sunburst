@@ -35,6 +35,9 @@ module powerbi.extensibility.visual {
     // powerbi.extensibility.utils.color
     import ColorHelper = powerbi.extensibility.utils.color.ColorHelper;
 
+    // powerbi.extensibility.utils.type
+    import PixelConverter = powerbi.extensibility.utils.type.PixelConverter;
+
     // powerbi.extensibility.utils.tooltip
     import TooltipEventArgs = powerbi.extensibility.utils.tooltip.TooltipEventArgs;
     import ITooltipServiceWrapper = powerbi.extensibility.utils.tooltip.ITooltipServiceWrapper;
@@ -64,10 +67,12 @@ module powerbi.extensibility.visual {
         mainInteractive: ClassAndSelector;
         slice: ClassAndSelector;
         sliceSelected: ClassAndSelector;
+        sliceHidden: ClassAndSelector;
         label: ClassAndSelector;
         labelVisible: ClassAndSelector;
         categoryLabel: ClassAndSelector;
         percentageLabel: ClassAndSelector;
+        sliceLabel: ClassAndSelector;
     }
 
     export class Sunburst implements IVisual {
@@ -107,7 +112,7 @@ module powerbi.extensibility.visual {
                 if (this.labelsHidden) {
                     return;
                 }
-                this.svg.style(CssConstants.fontSizeProperty, `${settings.group.fontSize}px`);
+                this.svg.style(CssConstants.fontSizeProperty, PixelConverter.toString(settings.group.fontSize));
                 this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className, this.settings.group.showSelected);
                 this.calculateLabelPosition();
             }
@@ -128,10 +133,12 @@ module powerbi.extensibility.visual {
             mainInteractive: createClassAndSelector("sunburst--interactive"),
             slice: createClassAndSelector("sunburst__slice"),
             sliceSelected: createClassAndSelector("sunburst__slice--selected"),
+            sliceHidden: createClassAndSelector("sunburst__slice--hidden"),
             label: createClassAndSelector("sunburst__label"),
             labelVisible: createClassAndSelector("sunburst__label--visible"),
             categoryLabel: createClassAndSelector("sunburst__category-label"),
-            percentageLabel: createClassAndSelector("sunburst__percentage-label")
+            percentageLabel: createClassAndSelector("sunburst__percentage-label"),
+            sliceLabel: createClassAndSelector("sunburst__slice-label")
         };
         private colors: IColorPalette;
         private selectionManager: ISelectionManager;
@@ -144,13 +151,7 @@ module powerbi.extensibility.visual {
             this.tooltipService = createTooltipServiceWrapper(
                 options.host.tooltipService,
                 options.element);
-            this.percentageFormatter = valueFormatter.create(
-                {
-                    value: 0,
-                    precision: 2,
-                    cultureSelector: options.host.locale
-                }
-            );
+            this.percentageFormatter = valueFormatter.create({ format: "0.00%;-0.00%;0.00%" });
 
             this.arc = d3.svg.arc<SunburstSlice>()
                 .startAngle((slice: SunburstSlice) => slice.x)
@@ -199,7 +200,7 @@ module powerbi.extensibility.visual {
                 false,
                 null,
                 true,
-                LegendPosition.Right);
+                LegendPosition.Top);
         }
 
         public update(options: VisualUpdateOptions): void {
@@ -231,8 +232,8 @@ module powerbi.extensibility.visual {
             }
             if (this.settings.legend.show) {
                 this.chartWrapper.style({
-                    width: `${this.viewport.width}px`,
-                    height: `${this.viewport.height}px`
+                    width: PixelConverter.toString(this.viewport.width),
+                    height: PixelConverter.toString(this.viewport.height)
                 });
             } else {
                 this.chartWrapper.attr("style", null);
@@ -249,25 +250,22 @@ module powerbi.extensibility.visual {
             return instanceEnumeration || [];
         }
 
-        private enumerateColors(instanceEnumeration: VisualObjectInstanceEnumeration): VisualObjectInstance[] {
+        private enumerateColors(instanceEnumeration: VisualObjectInstanceEnumeration): void {
             const topCategories: SunburstSlice[] = this.data.root.children;
-            if (!topCategories || !(topCategories.length > 0)) {
-                return;
-            }
-
-            topCategories.forEach((category: SunburstSlice) => {
-                const displayName: string = category.name.toString();
-                const identity: ISelectionId = category.selector as ISelectionId;
-                this.addAnInstanceToEnumeration(instanceEnumeration, {
-                    displayName,
-                    objectName: Sunburst.LegendPropertyIdentifier.objectName,
-                    selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
-                    properties: {
-                        fill: { solid: { color: category.color } }
-                    }
+            if (topCategories && topCategories.length > 0) {
+                topCategories.forEach((category: SunburstSlice) => {
+                    const displayName: string = category.name.toString();
+                    const identity: ISelectionId = category.selector as ISelectionId;
+                    this.addAnInstanceToEnumeration(instanceEnumeration, {
+                        displayName,
+                        objectName: Sunburst.LegendPropertyIdentifier.objectName,
+                        selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
+                        properties: {
+                            fill: { solid: { color: category.color } }
+                        }
+                    });
                 });
-            });
-            return null;
+            }
         }
 
         private addAnInstanceToEnumeration(
@@ -284,7 +282,7 @@ module powerbi.extensibility.visual {
         }
 
         private updateInternal(): void {
-            const root = this.main;
+            const self: Sunburst = this;
             const partition: d3.layout.Partition<d3.layout.partition.Node> = d3.layout.partition()
                 .size([2 * Math.PI, Sunburst.OuterRadius * Sunburst.OuterRadius])
                 .value((d: d3.layout.partition.Node) => {
@@ -308,24 +306,23 @@ module powerbi.extensibility.visual {
                     if (!d.depth) {
                         return;
                     }
-                    const firstArcSection = /(^.+?)L/;
-                    let newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
+                    const firstArcSection: RegExp = /(^.+?)L/;
+                    let newArc: string = firstArcSection.exec(d3.select(this).attr("d"))[1];
                     newArc = newArc.replace(/,/g, " ");
-                    root.append("path")
+                    self.main.append("path")
+                        .classed(self.appCssConstants.sliceHidden.className, true)
                         .attr("id", "sliceLabel_" + i)
-                        .attr("d", newArc)
-                        .style("fill", "none");
+                        .attr("d", newArc);
                 });
-                root.selectAll(".sliceLabel")
+                self.main.selectAll(this.appCssConstants.sliceLabel.selectorName)
                     .data<SunburstSlice>(<any>partition.nodes)
                     .enter()
                     .append("text")
-                    .classed("sliceLabel", true)
+                    .classed(this.appCssConstants.sliceLabel.className, true)
                     // font size + slice padding
                     .attr("dy", 18)
                     .append("textPath")
                     .attr("startOffset", "50%")
-                    .style("text-anchor", "middle")
                     .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
                     .text((d: SunburstSlice) => <string>d.name)
                     .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding))
@@ -343,7 +340,7 @@ module powerbi.extensibility.visual {
                 this.selectionManager.select(slice.selector);
             }
             this.highlightPath(slice, this, true);
-            const percentage: string = `${this.getFormattedValue(100 * slice.total / this.data.total, this.percentageFormatter)}%`;
+            const percentage: string = this.getFormattedValue(slice.total / this.data.total, this.percentageFormatter);
             this.percentageLabel.data([percentage]);
             this.percentageLabel.style("fill", slice.color);
             this.selectedCategoryLabel.data([slice ? slice.tooltipInfo[0].displayName : ""]);
@@ -520,7 +517,7 @@ module powerbi.extensibility.visual {
                 const labelSize: number = this.settings.group.fontSize;
                 this.selectedCategoryLabel
                     .attr(CssConstants.transformProperty, translate(0, labelSize * -Sunburst.CategoryLineInterval))
-                    .style("font-size", `${labelSize}px`)
+                    .style("font-size", PixelConverter.toString(labelSize))
                     .text((x: string) => x).each(function (d: string) { self.wrapText(d3.select(this), Sunburst.DefaultDataLabelPadding, width); });
             }
         }
@@ -534,7 +531,7 @@ module powerbi.extensibility.visual {
                     Sunburst.DefaultPercentageLineInterval);
             this.percentageLabel
                 .attr(CssConstants.transformProperty, translate(0, labelTransform))
-                .style("font-size", `${labelSize}px`)
+                .style("font-size", PixelConverter.toString(labelSize))
                 .text((x: string) => x).each(function (d: string) { self.wrapText(d3.select(this), Sunburst.DefaultDataLabelPadding, width); });
         }
 

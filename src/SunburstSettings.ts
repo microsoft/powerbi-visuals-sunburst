@@ -42,7 +42,7 @@ module powerbi.extensibility.visual {
 
     export class LegendSettings {
         show: boolean = false;
-        position: string = "Right";
+        position: string = "Top";
         showTitle: boolean = true;
         titleText: string = "Legend";
         labelColor: string = "#000000";
