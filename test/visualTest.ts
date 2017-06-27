@@ -112,7 +112,6 @@ namespace powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        debugger;
                         const firstPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
                         const secondClickPoint: JQuery = visualBuilder.mainElement;
                         firstPoint.d3Click(5, 5);
@@ -184,15 +183,6 @@ namespace powerbi.extensibility.visual.test {
                     },
                     2,
                     DefaultWaitForRender);
-            });
-        });
-
-        describe("Test tooltip data", () => {
-            it("Should be formatted using formatting string", () => {
-                const visualInstance: Sunburst = visualBuilder.instance;
-
-                const formattedDecimal: string = visualInstance.getFormattedValue(0.12345, "0.00");
-                expect(formattedDecimal).toBe("0.12");
             });
         });
     });
