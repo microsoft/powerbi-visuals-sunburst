@@ -66,7 +66,7 @@ module powerbi.extensibility.visual.test {
         }
 
         public get mainElement(): JQuery {
-            return this.element.children(".sunburst");
+            return this.element.find(".sunburst svg");
         }
     }
 }

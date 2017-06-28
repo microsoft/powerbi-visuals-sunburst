@@ -4,12 +4,12 @@
     "displayName": "Sunburst",
     "guid": "Sunburst1445472000808",
     "visualClassName": "Sunburst",
-    "version": "1.0.9",
+    "version": "1.1.0",
     "description": "Sunburst is a multilevel donut chart, used to visualize hierarchical data, depicted by concentric circles.",
     "supportUrl": "http://community.powerbi.com",
     "gitHubUrl": "https://github.com/Microsoft/powerbi-visuals-sunburst"
   },
-  "apiVersion": "1.6.0",
+  "apiVersion": "1.7.0",
   "author": {
     "name": "Microsoft",
     "email": "pbicvsupport@microsoft.com"
@@ -19,14 +19,16 @@
   },
   "externalJS": [
     "node_modules/d3/d3.min.js",
-    "node_modules/lodash/lodash.min.js",
     "node_modules/globalize/lib/globalize.js",
     "node_modules/globalize/lib/cultures/globalize.culture.en-US.js",
     "node_modules/powerbi-visuals-utils-dataviewutils/lib/index.js",
     "node_modules/powerbi-visuals-utils-tooltiputils/lib/index.js",
     "node_modules/powerbi-visuals-utils-typeutils/lib/index.js",
     "node_modules/powerbi-visuals-utils-svgutils/lib/index.js",
-    "node_modules/powerbi-visuals-utils-formattingutils/lib/index.js"
+    "node_modules/powerbi-visuals-utils-formattingutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-colorutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-interactivityutils/lib/index.js",
+    "node_modules/powerbi-visuals-utils-chartutils/lib/index.js"
   ],
   "style": "style/sunburst.less",
   "capabilities": "capabilities.json"

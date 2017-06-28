@@ -33,13 +33,15 @@ namespace powerbi.extensibility.visual.test {
     import SunburstBuilder = powerbi.extensibility.visual.test.SunburstBuilder;
     import DataView = powerbi.DataView;
 
-    // powerbi.extensibility.utils.
+    // powerbi.extensibility.utils.formatting
     import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
 
     import Sunburst = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
 
     const DefaultWaitForRender: number = 500;
+    const LegendSelector: string = "#legendGroup";
     const SliceSelector: string = ".sunburst__slice";
+    const SliceLabelSelector: string = ".sunburst__slice-label";
     const LabelVisibleSelector: string = ".sunburst__label--visible";
 
     describe("Sunburst", () => {
@@ -165,6 +167,38 @@ namespace powerbi.extensibility.visual.test {
                     2,
                     DefaultWaitForRender);
             });
+
+            it("data labels should be hidden by default", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(SliceLabelSelector).length).toBe(0);
+                        done();
+                    }, 2, DefaultWaitForRender);
+            });
+
+            it("count of data labels should be equal slice count", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                dataView.metadata.objects = {
+                    group: { showDataLabels: true }
+                };
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(SliceLabelSelector).length).toBe($(SliceSelector).length);
+                        done();
+                    }, 2, DefaultWaitForRender);
+            });
         });
 
         describe("Test invalid input data", () => {
@@ -186,13 +220,94 @@ namespace powerbi.extensibility.visual.test {
             });
         });
 
-        describe("Test tooltip data", () => {
-            it("Should be formatted using formatting string", () => {
-                const visualInstance: Sunburst = visualBuilder.instance;
-
-                const formattedDecimal: string = visualInstance.getFormattedValue(0.12345, "0.00");
-                expect(formattedDecimal).toBe("0.12");
+        describe("Legend", () => {
+            it("legend should be hidden by default", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(LegendSelector).children().length).toBe(0);
+                        done();
+                    }, 2, DefaultWaitForRender);
             });
+            it("legend should be shown", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                dataView.metadata.objects = {
+                    legend: { show: true }
+                };
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(LegendSelector).children().length).toBeTruthy();
+                        done();
+                    }, 2, DefaultWaitForRender);
+            });
+        });
+
+        describe("Colors", () => {
+            it("should be parsed correctly", (done: DoneFn) => {
+                const color: string = "#006400";
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                dataView.matrix.rows.root.children[0].objects = {
+                    group: {
+                        fill: {
+                            solid: {
+                                color: color
+                            }
+                        }
+                    }
+                };
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        const result: VisualObjectInstance[] = visualBuilder.enumerateObjectInstances({ objectName: "group" });
+                        const colorExist: boolean = result.some((instance: VisualObjectInstance) =>
+                            instance.properties &&
+                            instance.properties["fill"] &&
+                            instance.properties["fill"]["solid"] &&
+                            instance.properties["fill"]["solid"]["color"] &&
+                            instance.properties["fill"]["solid"]["color"] === color);
+                        expect(colorExist).toBeTruthy();
+                        done();
+                    }, 2, DefaultWaitForRender);
+            });
+            it("should be displayed correctly", (done: DoneFn) => {
+                const color: string = "#006400";
+                const colorAsRGB: string = "rgb(0, 100, 0)";
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                dataView.matrix.rows.root.children[0].objects = {
+                    group: {
+                        fill: {
+                            solid: {
+                                color: color
+                            }
+                        }
+                    }
+                };
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(`${SliceSelector}[style="fill: ${colorAsRGB};"]`).length).toBeTruthy();
+                        done();
+                    }, 2, DefaultWaitForRender);
+            });
+
         });
     });
 }
