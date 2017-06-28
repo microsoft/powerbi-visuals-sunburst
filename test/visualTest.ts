@@ -251,5 +251,63 @@ namespace powerbi.extensibility.visual.test {
                     }, 2, DefaultWaitForRender);
             });
         });
+
+        describe("Colors", () => {
+            it("should be dispaly correctly", (done: DoneFn) => {
+                const color: string = "#006400";
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                dataView.matrix.rows.root.children[0].objects = {
+                    group: {
+                        fill: {
+                            solid: {
+                                color: color
+                            }
+                        }
+                    }
+                };
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        const result: VisualObjectInstance[] = visualBuilder.enumerateObjectInstances({ objectName: "group" });
+                        const colorExist: boolean = result.some((instance: VisualObjectInstance) =>
+                            instance.properties &&
+                            instance.properties["fill"] &&
+                            instance.properties["fill"]["solid"] &&
+                            instance.properties["fill"]["solid"]["color"] &&
+                            instance.properties["fill"]["solid"]["color"] === color);
+                        expect(colorExist).toBeTruthy();
+                        done();
+                    }, 2, DefaultWaitForRender);
+            });
+            it("should be display correctly", (done: DoneFn) => {
+                const color: string = "#006400";
+                const colorAsRGB: string = "rgb(0, 100, 0)";
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                dataView.matrix.rows.root.children[0].objects = {
+                    group: {
+                        fill: {
+                            solid: {
+                                color: color
+                            }
+                        }
+                    }
+                };
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(`${SliceSelector}[style="fill: ${colorAsRGB};"]`).length).toBeTruthy();
+                        done();
+                    }, 2, DefaultWaitForRender);
+            });
+
+        });
     });
 }
