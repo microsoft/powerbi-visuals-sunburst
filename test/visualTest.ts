@@ -39,7 +39,9 @@ namespace powerbi.extensibility.visual.test {
     import Sunburst = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
 
     const DefaultWaitForRender: number = 500;
+    const LegendSelector: string = "#legendGroup";
     const SliceSelector: string = ".sunburst__slice";
+    const SliceLabelSelector: string = ".sunburst__slice-label";
     const LabelVisibleSelector: string = ".sunburst__label--visible";
 
     describe("Sunburst", () => {
@@ -165,6 +167,38 @@ namespace powerbi.extensibility.visual.test {
                     2,
                     DefaultWaitForRender);
             });
+
+            it("data labels should be hidden by default", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(SliceLabelSelector).length).toBe(0);
+                        done();
+                    }, 2, DefaultWaitForRender);
+            });
+
+            it("count data labels should be equels slice count", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                dataView.metadata.objects = {
+                    group: { showDataLabels: true }
+                };
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(SliceLabelSelector).length).toBe($(SliceSelector).length);
+                        done();
+                    }, 2, DefaultWaitForRender);
+            });
         });
 
         describe("Test invalid input data", () => {
@@ -183,6 +217,38 @@ namespace powerbi.extensibility.visual.test {
                     },
                     2,
                     DefaultWaitForRender);
+            });
+        });
+
+        describe("Legend", () => {
+            it("legend should be hidden by default", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(LegendSelector).children().length).toBe(0);
+                        done();
+                    }, 2, DefaultWaitForRender);
+            });
+            it("legend should be show", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                dataView.metadata.objects = {
+                    legend: { show: true }
+                };
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        expect($(LegendSelector).children().length).toBeTruthy();
+                        done();
+                    }, 2, DefaultWaitForRender);
             });
         });
     });
