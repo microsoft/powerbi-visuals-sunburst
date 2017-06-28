@@ -183,7 +183,7 @@ namespace powerbi.extensibility.visual.test {
                     }, 2, DefaultWaitForRender);
             });
 
-            it("count data labels should be equels slice count", (done: DoneFn) => {
+            it("count of data labels should be equal slice count", (done: DoneFn) => {
                 dataView = defaultDataViewBuilder.getDataView(
                     [
                         defaultDataViewBuilder.RegionsDataSet,
@@ -234,7 +234,7 @@ namespace powerbi.extensibility.visual.test {
                         done();
                     }, 2, DefaultWaitForRender);
             });
-            it("legend should be show", (done: DoneFn) => {
+            it("legend should be shown", (done: DoneFn) => {
                 dataView = defaultDataViewBuilder.getDataView(
                     [
                         defaultDataViewBuilder.RegionsDataSet,
@@ -253,7 +253,7 @@ namespace powerbi.extensibility.visual.test {
         });
 
         describe("Colors", () => {
-            it("should be dispaly correctly", (done: DoneFn) => {
+            it("should be parsed correctly", (done: DoneFn) => {
                 const color: string = "#006400";
                 dataView = defaultDataViewBuilder.getDataView(
                     [
@@ -283,7 +283,7 @@ namespace powerbi.extensibility.visual.test {
                         done();
                     }, 2, DefaultWaitForRender);
             });
-            it("should be display correctly", (done: DoneFn) => {
+            it("should be displayed correctly", (done: DoneFn) => {
                 const color: string = "#006400";
                 const colorAsRGB: string = "rgb(0, 100, 0)";
                 dataView = defaultDataViewBuilder.getDataView(
