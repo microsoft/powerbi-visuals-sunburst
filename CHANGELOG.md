@@ -1,3 +1,6 @@
+## 1.1.1
+* Added multi language resource files
+
 ## 1.1.0
 * Updated packages
 * Added legend support

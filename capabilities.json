@@ -1,162 +1,184 @@
 {
-    "dataRoles": [
-        {
-            "name": "Nodes",
-            "displayName": "Groups",
-            "kind": "Grouping"
-        },
-        {
-            "name": "Values",
-            "displayName": "Values",
-            "kind": "Measure"
-        }
-    ],
-    "dataViewMappings": [
-        {
-            "conditions": [
-                {
-                    "Groups": {
-                        "min": 0
-                    },
-                    "Values": {
-                        "max": 1
-                    }
-                }
-            ],
-            "matrix": {
-                "rows": {
-                    "for": {
-                        "in": "Nodes"
-                    }
-                },
-                "values": {
-                    "for": {
-                        "in": "Values"
-                    }
-                }
-            }
-        }
-    ],
-    "objects": {
-        "group": {
-            "displayName": "Group",
-            "properties": {
-                "showSelected": {
-                    "displayName": "Show category label",
-                    "type": {
-                        "bool": true
-                    }
-                },
-                "showDataLabels": {
-                    "displayName": "Show data labels",
-                    "type": {
-                        "bool": true
-                    }
-                },
-                "fontSize": {
-                    "displayName": "Font size",
-                    "type": {
-                        "formatting": {
-                            "fontSize": true
-                        }
-                    }
-                },
-                "fill": {
-                    "displayName": "Top category color",
-                    "type": {
-                        "fill": {
-                            "solid": {
-                                "color": true
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "legend": {
-            "displayName": "Legend",
-            "description": "Display legend options",
-            "properties": {
-                "show": {
-                    "displayName": "Show",
-                    "type": {
-                        "bool": true
-                    }
-                },
-                "position": {
-                    "displayName": "Position",
-                    "description": "Select the location for the legend",
-                    "type": {
-                        "enumeration": [
-                            {
-                                "value": "Top",
-                                "displayName": "Top"
-                            },
-                            {
-                                "value": "Bottom",
-                                "displayName": "Bottom"
-                            },
-                            {
-                                "value": "Left",
-                                "displayName": "Left"
-                            },
-                            {
-                                "value": "Right",
-                                "displayName": "Right"
-                            },
-                            {
-                                "value": "TopCenter",
-                                "displayName": "Top Center"
-                            },
-                            {
-                                "value": "BottomCenter",
-                                "displayName": "Bottom Center"
-                            },
-                            {
-                                "value": "LeftCenter",
-                                "displayName": "Left Center"
-                            },
-                            {
-                                "value": "RightCenter",
-                                "displayName": "Right Center"
-                            }
-                        ]
-                    }
-                },
-                "showTitle": {
-                    "displayName": "Title",
-                    "description": "Display a title for legend symbols",
-                    "type": {
-                        "bool": true
-                    }
-                },
-                "titleText": {
-                    "displayName": "Legend Name",
-                    "description": "Title text",
-                    "type": {
-                        "text": true
-                    },
-                    "suppressFormatPainterCopy": true
-                },
-                "labelColor": {
-                    "displayName": "Color",
-                    "type": {
-                        "fill": {
-                            "solid": {
-                                "color": true
-                            }
-                        }
-                    }
-                },
-                "fontSize": {
-                    "displayName": "Text Size",
-                    "type": {
-                        "formatting": {
-                            "fontSize": true
-                        }
-                    }
-                }
-            }
-        }
+  "dataRoles": [
+    {
+      "name": "Nodes",
+      "displayName": "Groups",
+      "displayNameKey": "Visual_Groups",
+      "kind": "Grouping"
+    },
+    {
+      "name": "Values",
+      "displayName": "Values",
+      "displayNameKey": "Visual_Values",
+      "kind": "Measure"
     }
+  ],
+  "dataViewMappings": [
+    {
+      "conditions": [
+        {
+          "Groups": {
+            "min": 0
+          },
+          "Values": {
+            "max": 1
+          }
+        }
+      ],
+      "matrix": {
+        "rows": {
+          "for": {
+            "in": "Nodes"
+          }
+        },
+        "values": {
+          "for": {
+            "in": "Values"
+          }
+        }
+      }
+    }
+  ],
+  "objects": {
+    "group": {
+      "displayName": "Group",
+      "displayNameKey": "Visual_Group",
+      "properties": {
+        "showSelected": {
+          "displayName": "Show category label",
+          "displayNameKey": "Visual_ShowCategoryLabel",
+          "type": {
+            "bool": true
+          }
+        },
+        "showDataLabels": {
+          "displayName": "Show data labels",
+          "displayNameKey": "Visual_ShowDataLabels",
+          "type": {
+            "bool": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Font size",
+          "displayNameKey": "Visual_FontSize",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "fill": {
+          "displayName": "Top category color",
+          "displayNameKey": "Visual_TopCategoryColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "legend": {
+      "displayName": "Legend",
+      "description": "Display legend options",
+      "displayNameKey": "Visual_DisplayLegendOptions",
+      "properties": {
+        "show": {
+          "displayName": "Show",
+          "displayNameKey": "Visual_Show",
+          "type": {
+            "bool": true
+          }
+        },
+        "position": {
+          "displayName": "Position",
+          "displayNameKey": "Visual_Position",
+          "description": "Select the location for the legend",
+          "type": {
+            "enumeration": [
+              {
+                "value": "Top",
+                "displayNameKey": "Visual_Top",
+                "displayName": "Top"
+              },
+              {
+                "value": "Bottom",
+                "displayNameKey": "Visual_Bottom",
+                "displayName": "Bottom"
+              },
+              {
+                "value": "Left",
+                "displayNameKey": "Visual_Left",
+                "displayName": "Left"
+              },
+              {
+                "value": "Right",
+                "displayNameKey": "Visual_Right",
+                "displayName": "Right"
+              },
+              {
+                "value": "TopCenter",
+                "displayNameKey": "Visual_TopCenter",
+                "displayName": "Top Center"
+              },
+              {
+                "value": "BottomCenter",
+                "displayNameKey": "Visual_BottomCenter",
+                "displayName": "Bottom Center"
+              },
+              {
+                "value": "LeftCenter",
+                "displayNameKey": "Visual_LeftCenter",
+                "displayName": "Left Center"
+              },
+              {
+                "value": "RightCenter",
+                "displayNameKey": "Visual_RightCenter",
+                "displayName": "Right Center"
+              }
+            ]
+          }
+        },
+        "showTitle": {
+          "displayName": "Title",
+          "displayNameKey": "Visual_Title",
+          "description": "Display a title for legend symbols",
+          "type": {
+            "bool": true
+          }
+        },
+        "titleText": {
+          "displayName": "Legend Name",
+          "displayNameKey": "Visual_LegendName",
+          "description": "Title text",
+          "type": {
+            "text": true
+          },
+          "suppressFormatPainterCopy": true
+        },
+        "labelColor": {
+          "displayName": "Color",
+          "displayNameKey": "Visual_Color",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "fontSize": {
+          "displayName": "Text Size",
+          "displayNameKey": "Visual_TextSize",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        }
+      }
+    }
+  }
 }
