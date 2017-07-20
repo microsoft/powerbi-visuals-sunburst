@@ -168,6 +168,40 @@ namespace powerbi.extensibility.visual.test {
                     DefaultWaitForRender);
             });
 
+            it("category labels should be visible", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+
+                dataView.metadata.objects = {
+                    group: { showSelected: true }
+                };
+
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        const firstClickPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
+                        const secondClickPoint: JQuery = visualBuilder.mainElement;
+                        firstClickPoint.d3Click(5, 5);
+                        setTimeout(
+                            () => {
+                                expect($(LabelVisibleSelector).length).toBe(2);
+                                secondClickPoint.d3Click(1, 1);
+                                setTimeout(
+                                    () => {
+                                        expect($(LabelVisibleSelector).length).toBe(0);
+                                        done();
+                                    },
+                                    DefaultWaitForRender);
+                            },
+                            DefaultWaitForRender);
+                    },
+                    2,
+                    DefaultWaitForRender);
+            });
+
             it("data labels should be hidden by default", (done: DoneFn) => {
                 dataView = defaultDataViewBuilder.getDataView(
                     [
