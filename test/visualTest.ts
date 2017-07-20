@@ -168,7 +168,7 @@ namespace powerbi.extensibility.visual.test {
                     DefaultWaitForRender);
             });
 
-            it("category labels should be visible", (done: DoneFn) => {
+            it("category labels should be visible always", (done: DoneFn) => {
                 dataView = defaultDataViewBuilder.getDataView(
                     [
                         defaultDataViewBuilder.RegionsDataSet,
