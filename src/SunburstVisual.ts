@@ -37,6 +37,7 @@ module powerbi.extensibility.visual {
 
     // powerbi.extensibility.utils.type
     import PixelConverter = powerbi.extensibility.utils.type.PixelConverter;
+    import JsonComparer = powerbi.extensibility.utils.type.JsonComparer;
 
     // powerbi.extensibility.utils.tooltip
     import TooltipEventArgs = powerbi.extensibility.utils.tooltip.TooltipEventArgs;
@@ -204,6 +205,7 @@ module powerbi.extensibility.visual {
         }
 
         public update(options: VisualUpdateOptions): void {
+            this.clear();
             if (!options
                 || !options.dataViews
                 || !options.dataViews[0]
@@ -216,14 +218,14 @@ module powerbi.extensibility.visual {
                 || !options.dataViews[0].matrix.columns.root
                 || !options.dataViews[0].matrix.columns.root.children
                 || !options.dataViews[0].matrix.columns.root.children.length) {
-                this.clear();
-
                 return;
             }
             this.viewport = options.viewport;
             this.settings = this.parseSettings(options.dataViews[0]);
-            this.rawData = options.dataViews[0].matrix;
-            this.data = this.convert(options.dataViews[0], this.colors, this.visualHost);
+            if (!JsonComparer.equals(this.rawData, options.dataViews[0].matrix)) {
+                this.rawData = options.dataViews[0].matrix;
+                this.data = this.convert(options.dataViews[0], this.colors, this.visualHost);
+            }
             this.updateInternal();
 
             if (this.data) {
@@ -301,18 +303,25 @@ module powerbi.extensibility.visual {
                 .style("fill", (d: SunburstSlice) => d.color)
                 .on("click", this.onSliceClick.bind(this));
             if (this.settings.group.showDataLabels) {
-
                 pathSelection.each(function (d: SunburstSlice, i: number) {
                     if (!d.depth) {
                         return;
                     }
                     const firstArcSection: RegExp = /(^.+?)L/;
-                    let newArc: string = firstArcSection.exec(d3.select(this).attr("d"))[1];
-                    newArc = newArc.replace(/,/g, " ");
-                    self.main.append("path")
-                        .classed(self.appCssConstants.sliceHidden.className, true)
-                        .attr("id", "sliceLabel_" + i)
-                        .attr("d", newArc);
+                    const currentSelection: d3.Selection<any> = d3.select(this);
+                    const arcRegExpArray: RegExpExecArray = firstArcSection.exec(currentSelection.attr("d"));
+                    // if slice is section
+                    if (arcRegExpArray) {
+                        let newArc: string = arcRegExpArray[1];
+                        newArc = newArc.replace(/,/g, " ");
+                        self.main.append("path")
+                            .classed(self.appCssConstants.sliceHidden.className, true)
+                            .attr("id", "sliceLabel_" + i)
+                            .attr("d", newArc);
+                    } else {
+                        currentSelection
+                            .attr("id", "sliceLabel_" + i);
+                    }
                 });
                 self.main.selectAll(this.appCssConstants.sliceLabel.selectorName)
                     .data<SunburstSlice>(<any>partition.nodes)
