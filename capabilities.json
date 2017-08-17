@@ -80,6 +80,28 @@
         }
       }
     },
+    "tooltip": {
+      "displayName": "Tooltip",
+      "displayNameKey": "Visual_Tooltip",
+      "properties": {
+        "displayUnits": {
+          "displayName": "Display Units",
+          "displayNameKey": "Visual_DisplayUnits",
+          "type": {
+            "formatting": {
+              "labelDisplayUnits": true
+            }
+          }
+        },
+        "precision": {
+          "displayName": "Decimal Places",
+          "displayNameKey": "Visual_Precision",
+          "type": {
+            "numeric": true
+          }
+        }
+      }
+    },
     "legend": {
       "displayName": "Legend",
       "description": "Display legend options",
