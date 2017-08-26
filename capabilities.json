@@ -202,5 +202,15 @@
         }
       }
     }
-  }
+  },
+   "sorting": {
+        "implicit": {
+            "clauses": [
+                {
+                    "role": "Values",
+                    "direction": 1
+                }
+            ]
+        }
+    }
 }
