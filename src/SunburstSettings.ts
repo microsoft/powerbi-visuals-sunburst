@@ -31,13 +31,20 @@ module powerbi.extensibility.visual {
     export class SunburstSettings extends DataViewObjectsParser {
         public group: SunburstGroupSettings = new SunburstGroupSettings();
         public legend: LegendSettings = new LegendSettings();
+        public tooltip: SunburstTooltipSettings = new SunburstTooltipSettings();
     }
 
     export class SunburstGroupSettings {
 
         public fontSize: number = 14;
         public showSelected: boolean = true;
-        public showDataLabels: boolean = false;
+        public showDataLabels: boolean = true;
+    }
+
+    export class SunburstTooltipSettings {
+
+        public displayUnits: number = 0;
+        public precision: number = 2;
     }
 
     export class LegendSettings {

@@ -43,6 +43,7 @@ namespace powerbi.extensibility.visual.test {
     const SliceSelector: string = ".sunburst__slice";
     const SliceLabelSelector: string = ".sunburst__slice-label";
     const LabelVisibleSelector: string = ".sunburst__label--visible";
+    const PercentageSelector: string = ".sunburst__percentage-label";
 
     describe("Sunburst", () => {
         let visualBuilder: SunburstBuilder;
@@ -202,17 +203,16 @@ namespace powerbi.extensibility.visual.test {
                     DefaultWaitForRender);
             });
 
-            it("data labels should be hidden by default", (done: DoneFn) => {
+            it("data labels should not be hidden by default", (done: DoneFn) => {
                 dataView = defaultDataViewBuilder.getDataView(
                     [
                         defaultDataViewBuilder.RegionsDataSet,
                         defaultDataViewBuilder.CountriesDataSet
                     ]);
-
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        expect($(SliceLabelSelector).length).toBe(0);
+                        expect($(SliceLabelSelector).length).toBe(13);
                         done();
                     }, 2, DefaultWaitForRender);
             });
@@ -283,6 +283,75 @@ namespace powerbi.extensibility.visual.test {
                         expect($(LegendSelector).children().length).toBeTruthy();
                         done();
                     }, 2, DefaultWaitForRender);
+            });
+        });
+
+        describe("Central caption", () => {
+            it("percentage font size should be correct", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+
+                dataView.metadata.objects = {
+                    group: { showSelected: false }
+                };
+
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        const firstClickPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
+                        const secondClickPoint: JQuery = visualBuilder.mainElement;
+                        firstClickPoint.d3Click(5, 5);
+                        setTimeout(
+                            () => {
+                                expect($(LabelVisibleSelector).length).toBe(1);
+                                secondClickPoint.d3Click(1, 1);
+                                setTimeout(
+                                    () => {
+                                        expect($(PercentageSelector).css("font-size")).toBe("28px");
+                                        done();
+                                    },
+                                    DefaultWaitForRender);
+                            },
+                            DefaultWaitForRender);
+                    },
+                    2,
+                    DefaultWaitForRender);
+            });
+            it("label font size should be correct", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+                const fontSize: number = 22;
+                const expectedFontSize: string = "44px";
+                dataView.metadata.objects = {
+                    group: { fontSize: fontSize }
+                };
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        const firstClickPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
+                        const secondClickPoint: JQuery = visualBuilder.mainElement;
+                        firstClickPoint.d3Click(5, 5);
+                        setTimeout(
+                            () => {
+                                secondClickPoint.d3Click(1, 1);
+                                setTimeout(
+                                    () => {
+                                        debugger;
+                                        expect($(PercentageSelector).css("font-size")).toBe(expectedFontSize);
+                                        done();
+                                    },
+                                    DefaultWaitForRender);
+                            },
+                            DefaultWaitForRender);
+                    },
+                    2,
+                    DefaultWaitForRender);
             });
         });
 
