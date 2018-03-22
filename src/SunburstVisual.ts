@@ -151,6 +151,7 @@ module powerbi.extensibility.visual {
         private viewport: IViewport;
         private legend: ILegend;
         private legendData: LegendData;
+        private recentSelections: ISelectionId[];
         constructor(options: VisualConstructorOptions) {
             this.visualHost = options.host;
             this.tooltipService = createTooltipServiceWrapper(
@@ -216,11 +217,38 @@ module powerbi.extensibility.visual {
                 null,
                 true,
                 LegendPosition.Top);
+
+
+            this.selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
+                this.recentSelections = ids;
+                let treeWalker = (data: SunburstSlice[]) => {
+                    if (!data) {
+                        return;
+                    }
+
+                    data.forEach((d: SunburstSlice) => {
+                        ids.forEach( (bookmarksSelection: ISelectionId) => {
+                            if (bookmarksSelection.includes(<ISelectionId>d.selector)) {
+                                this.onVisualSelection(d);
+                            }
+                        });
+
+                        treeWalker(d.children);
+                    });
+                };
+
+                treeWalker(this.data.root.children);
+            });
         }
 
         public update(options: VisualUpdateOptions): void {
-
+            // supress update if selections was passed
+            if (this.recentSelections && this.recentSelections.length > 0) {
+                this.recentSelections = [];
+                return;
+            }
             this.clear();
+
             if (!options
                 || !options.dataViews
                 || !options.dataViews[0]
@@ -325,7 +353,6 @@ module powerbi.extensibility.visual {
                 .attr("d", this.arc)
                 .style("fill", (d: SunburstSlice) => d.color)
                 .on("click", this.onSliceClick.bind(this));
-
             if (this.settings.group.showDataLabels) {
                 pathSelection.each(function (d: SunburstSlice, i: number) {
                     if (!d.depth) {
@@ -373,6 +400,11 @@ module powerbi.extensibility.visual {
             if (slice.selector) {
                 this.selectionManager.select(slice.selector);
             }
+            this.onVisualSelection(slice);
+            (<MouseEvent>(d3.event)).stopPropagation();
+        }
+
+        private onVisualSelection(slice: SunburstSlice): void {
             this.highlightPath(slice, this, true);
             const percentage: string = this.getFormattedValue(slice.total / this.data.total, this.percentageFormatter);
             this.percentageLabel.data([percentage]);
@@ -381,7 +413,6 @@ module powerbi.extensibility.visual {
             this.selectedCategoryLabel.style("fill", slice.color);
             this.calculateLabelPosition();
             this.labelsHidden = false;
-            (<MouseEvent>(d3.event)).stopPropagation();
         }
 
         private convert(dataView: DataView, colors: IColorPalette, settings: SunburstSettings, visualHost: IVisualHost): SunburstData {

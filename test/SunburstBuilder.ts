@@ -36,6 +36,7 @@ module powerbi.extensibility.visual.test {
     import Sunburst = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
 
     export class SunburstBuilder extends VisualBuilderBase<Sunburst> {
+        bookmarksCallback: (ids: ISelectionId[]) => void;
         constructor(width: number, height: number) {
             super(width, height);
         }
@@ -58,6 +59,9 @@ module powerbi.extensibility.visual.test {
         }
 
         protected build(options: VisualConstructorOptions): Sunburst {
+            options.host.selectionManager.registerOnSelectCallback = (callback: (ids: ISelectionId[]) => void) => {
+                this.bookmarksCallback = callback;
+            };
             return new Sunburst(options);
         }
 
@@ -67,6 +71,12 @@ module powerbi.extensibility.visual.test {
 
         public get mainElement(): JQuery {
             return this.element.find(".sunburst svg");
+        }
+
+        public selectBookmarks(ids: ISelectionId[]) {
+            if (this.bookmarksCallback) {
+                this.bookmarksCallback(ids);
+            }
         }
     }
 }

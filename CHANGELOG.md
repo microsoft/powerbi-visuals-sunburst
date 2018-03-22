@@ -1,3 +1,6 @@
+## 1.3.0
+* Added bookmarks support
+
 ## 1.2.0
 * Updated readme instructions 
 * "Group->Show category" and "Group->Font size" were not working
