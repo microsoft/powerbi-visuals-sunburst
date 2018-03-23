@@ -41,6 +41,7 @@ namespace powerbi.extensibility.visual.test {
     const DefaultWaitForRender: number = 500;
     const LegendSelector: string = "#legendGroup";
     const SliceSelector: string = ".sunburst__slice";
+    const SliceSelectedSelector: string = ".sunburst__slice--selected";
     const SliceLabelSelector: string = ".sunburst__slice-label";
     const LabelVisibleSelector: string = ".sunburst__label--visible";
     const PercentageSelector: string = ".sunburst__percentage-label";
@@ -342,7 +343,6 @@ namespace powerbi.extensibility.visual.test {
                                 secondClickPoint.d3Click(1, 1);
                                 setTimeout(
                                     () => {
-                                        debugger;
                                         expect($(PercentageSelector).css("font-size")).toBe(expectedFontSize);
                                         done();
                                     },
@@ -434,6 +434,41 @@ namespace powerbi.extensibility.visual.test {
                 };
 
                 objectsChecker(jsonData);
+            });
+        });
+
+        describe("Bookmarks", () => {
+            it("select and reset", (done: DoneFn) => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        visualBuilder.bookmarksCallback([{
+                            includes: (ids: ISelectionId[]) => true,
+                            key: ""
+                        }]);
+                        let selectedElements = visualBuilder.mainElement.find(SliceSelectedSelector);
+                        expect(selectedElements.length).toBeGreaterThan(0);
+                        done();
+                    },
+                    2,
+                    DefaultWaitForRender);
+
+                visualBuilder.bookmarksCallback([]);
+                visualBuilder.updateRenderTimeout(
+                    dataView,
+                    () => {
+                        let selectedElements = visualBuilder.mainElement.find(SliceSelectedSelector);
+                        expect(selectedElements.length).toBe(0);
+                        done();
+                    },
+                    2,
+                    DefaultWaitForRender);
             });
         });
     });
