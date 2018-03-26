@@ -222,7 +222,7 @@ module powerbi.extensibility.visual {
 
                 this.svg.classed(this.appCssConstants.mainInteractive.className, false);
                 this.labelsHidden = true;
-                
+
                 this.recentSelections = ids;
                 let treeWalker = (data: SunburstSlice[]) => {
                     if (!data) {
