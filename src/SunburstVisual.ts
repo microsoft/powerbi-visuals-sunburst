@@ -218,8 +218,11 @@ module powerbi.extensibility.visual {
                 true,
                 LegendPosition.Top);
 
-
             this.selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
+
+                this.svg.classed(this.appCssConstants.mainInteractive.className, false);
+                this.labelsHidden = true;
+
                 this.recentSelections = ids;
                 let treeWalker = (data: SunburstSlice[]) => {
                     if (!data) {
@@ -228,7 +231,8 @@ module powerbi.extensibility.visual {
 
                     data.forEach((d: SunburstSlice) => {
                         ids.forEach( (bookmarksSelection: ISelectionId) => {
-                            if (bookmarksSelection.includes(<ISelectionId>d.selector)) {
+                            // Includes here works incorrectly, but getKey works Ok
+                            if (bookmarksSelection.getKey() === (<ISelectionId>d.selector).getKey()) {
                                 this.onVisualSelection(d);
                             }
                         });
