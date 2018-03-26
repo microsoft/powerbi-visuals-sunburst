@@ -450,6 +450,7 @@ namespace powerbi.extensibility.visual.test {
                     () => {
                         visualBuilder.bookmarksCallback([{
                             includes: (ids: ISelectionId[]) => true,
+                            getKey: () => "",
                             key: ""
                         }]);
                         let selectedElements = visualBuilder.mainElement.find(SliceSelectedSelector);
