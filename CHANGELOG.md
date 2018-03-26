@@ -1,6 +1,3 @@
-## 1.3.1
-* Bookmarks applying was corrected
-
 ## 1.3.0
 * Added bookmarks support
 
