@@ -20,5 +20,13 @@
 	"Visual_Title": "Title",
 	"Visual_LegendName": "Legend Name",
 	"Visual_Color": "Color",
-	"Visual_TextSize": "Text Size"
+	"Visual_TextSize": "Text Size",
+	"Visual_Tooltip": "Tooltip",
+	"Visual_DisplayUnits": "Display Units",
+	"Visual_Precision": "Decimal Places" ,
+	"Visual_Description_Legend": "Display legend options",
+	"Visual_Description_Position": "Select the location for the legend",
+	"Visual_Description_Title": "Display a title for legend symbols",
+	"Visual_Description_LegendName": "Title text"
+
 }
