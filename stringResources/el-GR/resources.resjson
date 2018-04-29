@@ -20,5 +20,12 @@
 	"Visual_Title": "Τίτλος",
 	"Visual_LegendName": "Όνομα υπομνήματος",
 	"Visual_Color": "Χρώμα",
-	"Visual_TextSize": "Μέγεθος κειμένου"
+	"Visual_TextSize": "Μέγεθος κειμένου",
+	"Visual_Tooltip": "Συμβουλή εργαλείου",
+	"Visual_DisplayUnits": "Εμφάνιση μονάδων",
+	"Visual_Precision": "Δεκαδικά ψηφία",
+	"Visual_Description_Legend": "Εμφάνιση επιλογών υπομνήματος",
+	"Visual_Description_Position": "Επιλογή θέσης υπομνήματος",
+	"Visual_Description_Title": "Εμφάνιση τίτλου για σύμβολα υπομνήματος",
+	"Visual_Description_LegendName": "Κείμενο τίτλου"
 }

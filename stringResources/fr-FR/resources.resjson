@@ -20,5 +20,12 @@
 	"Visual_Title": "Titre",
 	"Visual_LegendName": "Nom de la légende",
 	"Visual_Color": "Couleur",
-	"Visual_TextSize": "Taille du texte"
+	"Visual_TextSize": "Taille du texte",
+	"Visual_Tooltip": "Info-bulle",
+	"Visual_DisplayUnits": "Unités d'affichage",
+	"Visual_Precision": "Nombre de décimales",
+	"Visual_Description_Legend": "Afficher les options de légende",
+	"Visual_Description_Position": "Sélectionner l'emplacement de la légende",
+	"Visual_Description_Title": "Afficher un titre pour les symboles de légende",
+	"Visual_Description_LegendName": "Texte du titre "
 }

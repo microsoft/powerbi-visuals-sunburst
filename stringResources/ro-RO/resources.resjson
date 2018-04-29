@@ -20,5 +20,12 @@
 	"Visual_Title": "Titlu",
 	"Visual_LegendName": "Nume legendă",
 	"Visual_Color": "Culoare",
-	"Visual_TextSize": "Dimensiune text"
+	"Visual_TextSize": "Dimensiune text",
+	"Visual_Tooltip": "Sfat ecran",
+	"Visual_DisplayUnits": "Afișare unități",
+	"Visual_Precision": "Zecimale",
+	"Visual_Description_Legend": "Afișați opțiunile pentru legendă",
+	"Visual_Description_Position": "Selectați locația pentru legendă",
+	"Visual_Description_Title": "Afișați un titlu pentru simbolurile legendei",
+	"Visual_Description_LegendName": "Text titlu"
 }

@@ -20,5 +20,12 @@
 	"Visual_Title": "כותרת",
 	"Visual_LegendName": "שם מקרא",
 	"Visual_Color": "צבע",
-	"Visual_TextSize": "גודל טקסט"
+	"Visual_TextSize": "גודל טקסט",
+	"Visual_Tooltip": "תיאור כלי",
+	"Visual_DisplayUnits": "יחידות תצוגה",
+	"Visual_Precision": "‏‏מקומות עשרוניים",
+	"Visual_Description_Legend": "הצג אפשרויות מקרא",
+	"Visual_Description_Position": "בחר את המיקום עבור המקרא",
+	"Visual_Description_Title": "הצג כותרת לסימני המקרא",
+	"Visual_Description_LegendName": "טקסט כותרת"
 }

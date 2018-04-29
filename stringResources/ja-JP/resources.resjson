@@ -20,5 +20,12 @@
 	"Visual_Title": "タイトル",
 	"Visual_LegendName": "凡例の名前",
 	"Visual_Color": "色",
-	"Visual_TextSize": "テキスト サイズ"
+	"Visual_TextSize": "テキスト サイズ",
+	"Visual_Tooltip": "ツールヒント",
+	"Visual_DisplayUnits": "表示単位",
+	"Visual_Precision": "小数点以下桁数",
+	"Visual_Description_Legend": "凡例オプションの表示",
+	"Visual_Description_Position": "凡例の場所を選ぶ",
+	"Visual_Description_Title": "凡例シンボルのタイトルを表示する",
+	"Visual_Description_LegendName": "タイトルのテキスト"
 }

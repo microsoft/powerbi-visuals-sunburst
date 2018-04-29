@@ -20,5 +20,12 @@
 	"Visual_Title": "Naslov",
 	"Visual_LegendName": "Ime legende",
 	"Visual_Color": "Boja",
-	"Visual_TextSize": "Veličina teksta"
+	"Visual_TextSize": "Veličina teksta",
+	"Visual_Tooltip": "Opis alatke",
+	"Visual_DisplayUnits": "Jedinice za prikaz",
+	"Visual_Precision": "Decimalna mesta",
+	"Visual_Description_Legend": "Prikaži opcije legende",
+	"Visual_Description_Position": "Izaberite lokaciju legende",
+	"Visual_Description_Title": "Prikaži naslov za simbole legende",
+	"Visual_Description_LegendName": "Tekst naslova"
 }

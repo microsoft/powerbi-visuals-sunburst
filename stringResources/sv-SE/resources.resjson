@@ -20,5 +20,12 @@
 	"Visual_Title": "Rubrik",
 	"Visual_LegendName": "Förklaringsnamn",
 	"Visual_Color": "Färg",
-	"Visual_TextSize": "Textstorlek"
+	"Visual_TextSize": "Textstorlek",
+	"Visual_Tooltip": "Knappbeskrivning",
+	"Visual_DisplayUnits": "Visningsenheter",
+	"Visual_Precision": "Decimaler",
+	"Visual_Description_Legend": "Visa förklaringsalternativ",
+	"Visual_Description_Position": "Välj plats för förklaringen",
+	"Visual_Description_Title": "Visa en rubrik för förklaringssymboler",
+	"Visual_Description_LegendName": "Rubriktext"
 }

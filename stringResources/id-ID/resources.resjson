@@ -20,5 +20,12 @@
 	"Visual_Title": "Judul",
 	"Visual_LegendName": "Nama Legenda",
 	"Visual_Color": "Warna",
-	"Visual_TextSize": "Ukuran Teks"
+	"Visual_TextSize": "Ukuran Teks",
+	"Visual_Tooltip": "Tip alat",
+	"Visual_DisplayUnits": "Unit Tampilan",
+	"Visual_Precision": "Tempat Desimal",
+	"Visual_Description_Legend": "Tampilkan opsi legenda",
+	"Visual_Description_Position": "Pilih lokasi untuk legenda",
+	"Visual_Description_Title": "Tampilkan judul untuk simbol legenda",
+	"Visual_Description_LegendName": "Teks judul"
 }

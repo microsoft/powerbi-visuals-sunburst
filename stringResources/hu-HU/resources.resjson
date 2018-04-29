@@ -20,5 +20,12 @@
 	"Visual_Title": "Cím",
 	"Visual_LegendName": "Jelmagyarázat neve",
 	"Visual_Color": "Szín",
-	"Visual_TextSize": "Szöveg mérete"
+	"Visual_TextSize": "Szöveg mérete",
+	"Visual_Tooltip": "Elemleírás",
+	"Visual_DisplayUnits": "Megjelenítési egységek",
+	"Visual_Precision": "Tizedesjegyek",
+	"Visual_Description_Legend": "Jelmagyarázati beállítások megjelenítése",
+	"Visual_Description_Position": "A jelmagyarázat helyének kiválasztása",
+	"Visual_Description_Title": "Cím megjelenítése a jelmagyarázat szimbólumaihoz",
+	"Visual_Description_LegendName": "Cím szövege"
 }

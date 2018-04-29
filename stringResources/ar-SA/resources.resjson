@@ -20,5 +20,12 @@
 	"Visual_Title": "العنوان",
 	"Visual_LegendName": "اسم وسيلة الإيضاح",
 	"Visual_Color": "اللون",
-	"Visual_TextSize": "حجم النص"
+	"Visual_TextSize": "حجم النص",
+	"Visual_Tooltip": "تلميح",
+	"Visual_DisplayUnits": "وحدات العرض",
+	"Visual_Precision": "المنازل العشرية",
+	"Visual_Description_Legend": "عرض خيارات وسيلة الإيضاح",
+	"Visual_Description_Position": "تحديد موقع وسيلة الإيضاح",
+	"Visual_Description_Title": "عرض عنوان لرموز وسيلة الإيضاح",
+	"Visual_Description_LegendName": "نص العنوان"
 }

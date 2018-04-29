@@ -20,5 +20,12 @@
 	"Visual_Title": "Název",
 	"Visual_LegendName": "Název legendy",
 	"Visual_Color": "Barva",
-	"Visual_TextSize": "Velikost textu"
+	"Visual_TextSize": "Velikost textu",
+	"Visual_Tooltip": "Popis",
+	"Visual_DisplayUnits": "Zobrazit jednotky",
+	"Visual_Precision": "Desetinná místa",
+	"Visual_Description_Legend": "Zobrazí možnosti pro legendu.",
+	"Visual_Description_Position": "Vyberte umístění pro legendu.",
+	"Visual_Description_Title": "Zobrazí nadpis pro symboly legendy.",
+	"Visual_Description_LegendName": "Text nadpisu"
 }

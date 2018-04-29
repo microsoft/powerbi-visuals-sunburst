@@ -20,5 +20,12 @@
 	"Visual_Title": "Názov",
 	"Visual_LegendName": "Názov legendy",
 	"Visual_Color": "Farba",
-	"Visual_TextSize": "Veľkosť textu"
+	"Visual_TextSize": "Veľkosť textu",
+	"Visual_Tooltip": "Názov tlačidla",
+	"Visual_DisplayUnits": "Zobrazené jednotky",
+	"Visual_Precision": "Desatinné miesta",
+	"Visual_Description_Legend": "Možnosti zobrazenia legendy",
+	"Visual_Description_Position": "Vyberte umiestnenie legendy",
+	"Visual_Description_Title": "Zobraziť názov pre symboly legendy",
+	"Visual_Description_LegendName": "Text názvu"
 }

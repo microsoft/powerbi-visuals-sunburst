@@ -20,5 +20,12 @@
 	"Visual_Title": "Pealkiri",
 	"Visual_LegendName": "Legendi nimi",
 	"Visual_Color": "Värv",
-	"Visual_TextSize": "Teksti suurus"
+	"Visual_TextSize": "Teksti suurus",
+	"Visual_Tooltip": "Kohtspikker",
+	"Visual_DisplayUnits": "Kuva ühikud",
+	"Visual_Precision": "Komakohad",
+	"Visual_Description_Legend": "Kuva legendi valikud",
+	"Visual_Description_Position": "Valige legendi asukoht",
+	"Visual_Description_Title": "Kuva legendi sümbolite pealkiri",
+	"Visual_Description_LegendName": "Pealkirja tekst"
 }

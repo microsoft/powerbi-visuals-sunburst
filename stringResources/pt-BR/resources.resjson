@@ -20,5 +20,12 @@
 	"Visual_Title": "Título",
 	"Visual_LegendName": "Nome da Legenda",
 	"Visual_Color": "Cor",
-	"Visual_TextSize": "Tamanho do texto"
+	"Visual_TextSize": "Tamanho do texto",
+	"Visual_Tooltip": "Dica de Ferramenta",
+	"Visual_DisplayUnits": "Exibir Unidades",
+	"Visual_Precision": "Casas Decimais",
+	"Visual_Description_Legend": "Exibir opções de legenda",
+	"Visual_Description_Position": "Selecionar o local da legenda",
+	"Visual_Description_Title": "Exibir um título para os símbolos da legenda",
+	"Visual_Description_LegendName": "Texto do título"
 }

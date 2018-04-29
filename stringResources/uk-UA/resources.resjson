@@ -20,5 +20,12 @@
 	"Visual_Title": "Назва",
 	"Visual_LegendName": "Ім’я легенди",
 	"Visual_Color": "Колір",
-	"Visual_TextSize": "Розмір тексту"
+	"Visual_TextSize": "Розмір тексту",
+	"Visual_Tooltip": "Підказка",
+	"Visual_DisplayUnits": "Одиниці для відображення",
+	"Visual_Precision": "Кількість знаків після десяткової коми",
+	"Visual_Description_Legend": "Показати варіанти легенди",
+	"Visual_Description_Position": "Виберіть розташування для легенди",
+	"Visual_Description_Title": "Показати назву для символів легенди",
+	"Visual_Description_LegendName": "Текст назви"
 }

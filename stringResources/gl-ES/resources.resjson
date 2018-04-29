@@ -20,5 +20,12 @@
 	"Visual_Title": "Título",
 	"Visual_LegendName": "Nome de lenda",
 	"Visual_Color": "Cor",
-	"Visual_TextSize": "Tamaño do texto"
+	"Visual_TextSize": "Tamaño do texto",
+	"Visual_Tooltip": "Información sobre ferramentas",
+	"Visual_DisplayUnits": "Mostrar unidades",
+	"Visual_Precision": "Posicións decimais",
+	"Visual_Description_Legend": "Mostrar opcións de lendas",
+	"Visual_Description_Position": "Seleccionar a localización para a lenda",
+	"Visual_Description_Title": "Mostrar un título para símbolos da lenda",
+	"Visual_Description_LegendName": "Texto do título"
 }

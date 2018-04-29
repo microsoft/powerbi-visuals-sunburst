@@ -20,5 +20,12 @@
 	"Visual_Title": "Otsikko",
 	"Visual_LegendName": "Selitteen nimi",
 	"Visual_Color": "Väri",
-	"Visual_TextSize": "Tekstin koko"
+	"Visual_TextSize": "Tekstin koko",
+	"Visual_Tooltip": "Työkaluvihje",
+	"Visual_DisplayUnits": "Näytön yksiköt",
+	"Visual_Precision": "Desimaalit",
+	"Visual_Description_Legend": "Näytä selitevaihtoehdot",
+	"Visual_Description_Position": "Valitse selitteen sijainti",
+	"Visual_Description_Title": "Näytä otsikko selitesymboleille",
+	"Visual_Description_LegendName": "Otsikon teksti"
 }

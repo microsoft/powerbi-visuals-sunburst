@@ -20,5 +20,12 @@
 	"Visual_Title": "Nosaukums",
 	"Visual_LegendName": "Apzīmējumu nosaukums",
 	"Visual_Color": "Krāsa",
-	"Visual_TextSize": "Teksta lielums"
+	"Visual_TextSize": "Teksta lielums",
+	"Visual_Tooltip": "Rīka padoms",
+	"Visual_DisplayUnits": "Rādāmās vienības",
+	"Visual_Precision": "Decimāldaļas",
+	"Visual_Description_Legend": "Rādīt apzīmējumu opcijas",
+	"Visual_Description_Position": "Atlasīt apzīmējumu atrašanās vietu",
+	"Visual_Description_Title": "Rādīt apzīmējumu simbolu nosaukumu",
+	"Visual_Description_LegendName": "Virsraksta teksts"
 }

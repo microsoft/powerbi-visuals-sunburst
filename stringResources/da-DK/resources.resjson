@@ -20,5 +20,12 @@
 	"Visual_Title": "Titel",
 	"Visual_LegendName": "Navn på forklaring",
 	"Visual_Color": "Farve",
-	"Visual_TextSize": "Tekststørrelse"
+	"Visual_TextSize": "Tekststørrelse",
+	"Visual_Tooltip": "Værktøjstip",
+	"Visual_DisplayUnits": "Vis enheder",
+	"Visual_Precision": "Decimaler",
+	"Visual_Description_Legend": "Vis indstillinger for forklaring",
+	"Visual_Description_Position": "Vælg placering af forklaring",
+	"Visual_Description_Title": "Vis en titel på forklaringssymbolerne",
+	"Visual_Description_LegendName": "Titeltekst"
 }

@@ -20,5 +20,12 @@
 	"Visual_Title": "标题",
 	"Visual_LegendName": "图例名称",
 	"Visual_Color": "颜色",
-	"Visual_TextSize": "文本大小"
+	"Visual_TextSize": "文本大小",
+	"Visual_Tooltip": "工具提示",
+	"Visual_DisplayUnits": "显示单位",
+	"Visual_Precision": "小数位数",
+	"Visual_Description_Legend": "显示图例选项",
+	"Visual_Description_Position": "选择图例的位置",
+	"Visual_Description_Title": "显示图例符号的标题",
+	"Visual_Description_LegendName": "标题文本"
 }

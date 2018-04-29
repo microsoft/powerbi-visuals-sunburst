@@ -20,5 +20,12 @@
 	"Visual_Title": "Naslov",
 	"Visual_LegendName": "Ime legende",
 	"Visual_Color": "Barva",
-	"Visual_TextSize": "Velikost besedila"
+	"Visual_TextSize": "Velikost besedila",
+	"Visual_Tooltip": "Opis orodja",
+	"Visual_DisplayUnits": "Enote prikaza",
+	"Visual_Precision": "Decimalna mesta",
+	"Visual_Description_Legend": "Možnosti legende prikaza",
+	"Visual_Description_Position": "Izberite mesto legende",
+	"Visual_Description_Title": "Prikaz naslova za simbole legende",
+	"Visual_Description_LegendName": "Besedilo naslova"
 }

@@ -20,5 +20,12 @@
 	"Visual_Title": "標題",
 	"Visual_LegendName": "圖例名稱",
 	"Visual_Color": "色彩",
-	"Visual_TextSize": "文字大小"
+	"Visual_TextSize": "文字大小",
+	"Visual_Tooltip": "工具提示",
+	"Visual_DisplayUnits": "顯示單位",
+	"Visual_Precision": "小數位數",
+	"Visual_Description_Legend": "顯示圖例選項",
+	"Visual_Description_Position": "選取圖例的位置",
+	"Visual_Description_Title": "顯示圖例符號的標題",
+	"Visual_Description_LegendName": "標題文字"
 }

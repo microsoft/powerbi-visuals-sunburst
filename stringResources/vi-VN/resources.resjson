@@ -20,5 +20,12 @@
 	"Visual_Title": "Tiêu đề",
 	"Visual_LegendName": "Tên Chú giải",
 	"Visual_Color": "Màu",
-	"Visual_TextSize": "Kích thước Văn bản"
+	"Visual_TextSize": "Kích thước Văn bản",
+	"Visual_Tooltip": "Mách nước",
+	"Visual_DisplayUnits": "Đơn vị hiển thị",
+	"Visual_Precision": "Dấu Thập phân",
+	"Visual_Description_Legend": "Hiển thị tùy chọn chú giải",
+	"Visual_Description_Position": "Chọn vị trí cho chú giải",
+	"Visual_Description_Title": "Hiển thị tiêu đề cho biểu tượng chú giải",
+	"Visual_Description_LegendName": "Văn bản tiêu đề"
 }

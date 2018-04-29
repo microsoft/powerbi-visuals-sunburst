@@ -20,5 +20,12 @@
 	"Visual_Title": "Titel",
 	"Visual_LegendName": "Legendanaam",
 	"Visual_Color": "Kleur",
-	"Visual_TextSize": "Tekengrootte"
+	"Visual_TextSize": "Tekengrootte",
+	"Visual_Tooltip": "Knopinfo",
+	"Visual_DisplayUnits": "Weergave-eenheden",
+	"Visual_Precision": "Decimaalposities",
+	"Visual_Description_Legend": "Legendaopties weergeven",
+	"Visual_Description_Position": "De locatie voor de legenda selecteren",
+	"Visual_Description_Title": "Een titel voor legendasymbolen weergeven",
+	"Visual_Description_LegendName": "Titeltekst"
 }

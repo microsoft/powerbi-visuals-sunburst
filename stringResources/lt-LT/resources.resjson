@@ -20,5 +20,12 @@
 	"Visual_Title": "Pavadinimas",
 	"Visual_LegendName": "Legendos pavadinimas",
 	"Visual_Color": "Spalva",
-	"Visual_TextSize": "Teksto dydis"
+	"Visual_TextSize": "Teksto dydis",
+	"Visual_Tooltip": "Patarimas",
+	"Visual_DisplayUnits": "Rodomi vienetai",
+	"Visual_Precision": "Skaitmenys po kablelio",
+	"Visual_Description_Legend": "Rodyti legendos parinktis",
+	"Visual_Description_Position": "Pasirinkite legendos vietą",
+	"Visual_Description_Title": "Rodyti legendos simbolių pavadinimą",
+	"Visual_Description_LegendName": "Pavadinimo tekstas"
 }
