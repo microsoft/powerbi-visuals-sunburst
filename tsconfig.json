@@ -22,6 +22,7 @@
     "node_modules/powerbi-visuals-utils-interactivityutils/lib/index.d.ts",
     "src/dataInterfaces.ts",
     "src/settings.ts",
+    "src/behavior.ts",
     "src/sunburst.ts"
   ]
 }

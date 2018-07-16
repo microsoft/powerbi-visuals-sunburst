@@ -28,22 +28,27 @@ module powerbi.extensibility.visual {
     // powerbi.extensibility.utils.tooltip
     import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
 
+    // powerbi.extensibility.utils.interactivity
+    import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
+
     export interface SunburstData {
-        root: SunburstSlice;
+        root: SunburstDataPoint;
+        dataPoints: SunburstDataPoint[];
         total: number;
     }
 
-    export interface SunburstSlice extends
+    export interface SunburstDataPoint extends
         d3.layout.treemap.Node,
-        TooltipEnabledDataPoint {
+        TooltipEnabledDataPoint,
+        SelectableDataPoint {
 
-        children?: SunburstSlice[];
+        children?: SunburstDataPoint[];
         value?: number;
         color?: string;
-        name?: PrimitiveValue;
-        parent?: SunburstSlice;
-        selector: ISelectionId;
+        name?: string;
+        parent?: SunburstDataPoint;
         total: number;
         key: string;
+        highlight?: boolean;
     }
 }
