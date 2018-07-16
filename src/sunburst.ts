@@ -110,24 +110,7 @@ module powerbi.extensibility.visual {
             );
         }
 
-        private _settings: SunburstSettings;
-        private get settings(): SunburstSettings {
-            return this._settings;
-        }
-
-        private set settings(settings: SunburstSettings) {
-            this._settings = settings;
-            if (!this._settings
-                || this.settings.group.fontSize !== settings.group.fontSize
-                || this.settings.group.showSelected !== settings.group.showSelected) {
-                if (this.toggleLabels) {
-                    return;
-                }
-                this.svg.style(CssConstants.fontSizeProperty, PixelConverter.toString(settings.group.fontSize));
-                this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className, this.settings.group.showSelected);
-                this.calculateLabelPosition();
-            }
-        }
+        private settings: SunburstSettings;
 
         private visualHost: IVisualHost;
         private data: SunburstData;
@@ -163,7 +146,6 @@ module powerbi.extensibility.visual {
         private viewport: IViewport;
         private legend: ILegend;
         private legendData: LegendData;
-        private recentSelections: ISelectionId[];
 
         constructor(options: VisualConstructorOptions) {
             this.visualHost = options.host;
@@ -242,12 +224,6 @@ module powerbi.extensibility.visual {
         }
 
         public update(options: VisualUpdateOptions): void {
-            // supress update if selections was passed
-            if (this.recentSelections && this.recentSelections.length > 0) {
-                this.recentSelections = [];
-                return;
-            }
-
             this.clear();
 
             if (!options
@@ -395,6 +371,9 @@ module powerbi.extensibility.visual {
                         : slice.color,
                     "stroke": (slice: SunburstDataPoint) => colorHelper.isHighContrast
                         ? slice.color
+                        : null,
+                    "stroke-width": colorHelper.isHighContrast
+                        ? PixelConverter.toString(2)
                         : null,
                 });
 

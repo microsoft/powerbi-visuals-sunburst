@@ -30,7 +30,7 @@ module powerbi.extensibility.visual.behavior {
     import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
     import InteractivityServiceBase = powerbi.extensibility.utils.interactivity.InteractivityService;
 
-    export const DimmedOpacity: number = 0.4;
+    export const DimmedOpacity: number = 0.2;
     export const DefaultOpacity: number = 1.0;
 
     export function getFillOpacity(
@@ -39,7 +39,6 @@ module powerbi.extensibility.visual.behavior {
         hasSelection: boolean,
         hasPartialHighlights: boolean
     ): number {
-
         if ((hasPartialHighlights && !highlight) || (hasSelection && !selected)) {
             return DimmedOpacity;
         }
