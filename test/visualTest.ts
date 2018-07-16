@@ -29,31 +29,24 @@
 
 namespace powerbi.extensibility.visual.test {
     // powerbi.extensibility.visual.test
-    import SunburstData = powerbi.extensibility.visual.test.SunburstData;
-    import SunburstBuilder = powerbi.extensibility.visual.test.SunburstBuilder;
-    import DataView = powerbi.DataView;
-
-    // powerbi.extensibility.utils.formatting
-    import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
-
-    import Sunburst = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
+    import VisualData = powerbi.extensibility.visual.test.VisualData;
+    import VisualBuilder = powerbi.extensibility.visual.test.VisualBuilder;
+    import areColorsEqual = powerbi.extensibility.visual.test.helpers.areColorsEqual;
 
     const DefaultWaitForRender: number = 500;
     const LegendSelector: string = "#legendGroup";
-    const SliceSelector: string = ".sunburst__slice";
-    const SliceSelectedSelector: string = ".sunburst__slice--selected";
     const SliceLabelSelector: string = ".sunburst__slice-label";
     const LabelVisibleSelector: string = ".sunburst__label--visible";
     const PercentageSelector: string = ".sunburst__percentage-label";
 
     describe("Sunburst", () => {
-        let visualBuilder: SunburstBuilder;
-        let defaultDataViewBuilder: SunburstData;
+        let visualBuilder: VisualBuilder;
+        let defaultDataViewBuilder: VisualData;
         let dataView: DataView;
 
         beforeEach(() => {
-            visualBuilder = new SunburstBuilder(500, 500);
-            defaultDataViewBuilder = new SunburstData();
+            visualBuilder = new VisualBuilder(500, 500);
+            defaultDataViewBuilder = new VisualData();
         });
 
         it("sunburst slices dom validation", (done: DoneFn) => {
@@ -66,7 +59,7 @@ namespace powerbi.extensibility.visual.test {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    expect($(SliceSelector).length).toBe(13);
+                    expect(visualBuilder.slices.length).toBe(13);
                     done();
                 },
                 2,
@@ -90,11 +83,11 @@ namespace powerbi.extensibility.visual.test {
             visualBuilder.updateRenderTimeout(
                 initialDataView,
                 () => {
-                    expect($(SliceSelector).length).toBe(13);
+                    expect(visualBuilder.slices.length).toBe(13);
                     visualBuilder.updateRenderTimeout(
                         updatedDataView,
                         () => {
-                            expect($(SliceSelector).length).toBe(40);
+                            expect(visualBuilder.slices.length).toBe(40);
                             done();
                         },
                         2,
@@ -116,7 +109,7 @@ namespace powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        const firstPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
+                        const firstPoint: JQuery = visualBuilder.slices.last();
                         const secondClickPoint: JQuery = visualBuilder.mainElement;
                         firstPoint.d3Click(5, 5);
                         setTimeout(
@@ -150,7 +143,7 @@ namespace powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        const firstClickPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
+                        const firstClickPoint: JQuery = visualBuilder.slices.last();
                         const secondClickPoint: JQuery = visualBuilder.mainElement;
                         firstClickPoint.d3Click(5, 5);
                         setTimeout(
@@ -184,7 +177,7 @@ namespace powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        const firstClickPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
+                        const firstClickPoint: JQuery = visualBuilder.slices.last();
                         const secondClickPoint: JQuery = visualBuilder.mainElement;
                         firstClickPoint.d3Click(5, 5);
                         setTimeout(
@@ -230,7 +223,7 @@ namespace powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        expect($(SliceLabelSelector).length).toBe($(SliceSelector).length);
+                        expect($(SliceLabelSelector).length).toBe(visualBuilder.slices.length);
                         done();
                     }, 2, DefaultWaitForRender);
             });
@@ -247,7 +240,7 @@ namespace powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        expect($(SliceSelector).length).toBe(0);
+                        expect(visualBuilder.slices.length).toBe(0);
                         done();
                     },
                     2,
@@ -302,7 +295,7 @@ namespace powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        const firstClickPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
+                        const firstClickPoint: JQuery = visualBuilder.slices.last();
                         const secondClickPoint: JQuery = visualBuilder.mainElement;
                         firstClickPoint.d3Click(5, 5);
                         setTimeout(
@@ -335,7 +328,7 @@ namespace powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        const firstClickPoint: JQuery = visualBuilder.mainElement.find(SliceSelector).last();
+                        const firstClickPoint: JQuery = visualBuilder.slices.last();
                         const secondClickPoint: JQuery = visualBuilder.mainElement;
                         firstClickPoint.d3Click(5, 5);
                         setTimeout(
@@ -386,14 +379,17 @@ namespace powerbi.extensibility.visual.test {
                         done();
                     }, 2, DefaultWaitForRender);
             });
+
             it("should be displayed correctly", (done: DoneFn) => {
                 const color: string = "#006400";
                 const colorAsRGB: string = "rgb(0, 100, 0)";
+
                 dataView = defaultDataViewBuilder.getDataView(
                     [
                         defaultDataViewBuilder.RegionsDataSet,
                         defaultDataViewBuilder.CountriesDataSet
                     ]);
+
                 dataView.matrix.rows.root.children[0].objects = {
                     group: {
                         fill: {
@@ -403,14 +399,21 @@ namespace powerbi.extensibility.visual.test {
                         }
                     }
                 };
+
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        expect($(`${SliceSelector}[style="fill: ${colorAsRGB};"]`).length).toBeTruthy();
+                        const elements: JQuery<Element> = visualBuilder.slices.filter(function () {
+                            const appliedColor: string = $(this).css("fill");
+
+                            return appliedColor === colorAsRGB;
+                        });
+
+                        expect(elements.length).toBeTruthy();
+
                         done();
                     }, 2, DefaultWaitForRender);
             });
-
         });
 
         describe("Capabilities tests", () => {
@@ -443,33 +446,75 @@ namespace powerbi.extensibility.visual.test {
                     [
                         defaultDataViewBuilder.RegionsDataSet,
                         defaultDataViewBuilder.CountriesDataSet
-                    ]);
+                    ]
+                );
 
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        visualBuilder.bookmarksCallback([{
-                            includes: (ids: ISelectionId[]) => true,
-                            getKey: () => "",
-                            key: ""
-                        }]);
-                        let selectedElements = visualBuilder.mainElement.find(SliceSelectedSelector);
-                        expect(selectedElements.length).toBeGreaterThan(0);
-                        done();
-                    },
-                    2,
-                    DefaultWaitForRender);
+                        visualBuilder.bookmarksCallback([visualBuilder.data.dataPoints[2].identity]);
 
-                visualBuilder.bookmarksCallback([]);
-                visualBuilder.updateRenderTimeout(
-                    dataView,
-                    () => {
-                        let selectedElements = visualBuilder.mainElement.find(SliceSelectedSelector);
-                        expect(selectedElements.length).toBe(0);
+                        expect(visualBuilder.selectedSlices.length).toBeGreaterThan(0);
+
+                        visualBuilder.bookmarksCallback([]);
+
+                        expect(visualBuilder.selectedSlices.length).toBe(visualBuilder.data.dataPoints.length);
+
                         done();
                     },
                     2,
-                    DefaultWaitForRender);
+                    DefaultWaitForRender
+                );
+            });
+        });
+
+        describe("Accessibility", () => {
+            describe("High contrast mode", () => {
+                const backgroundColor: string = "#000000";
+                const foregroundColor: string = "#ffff00";
+
+                beforeEach(() => {
+                    visualBuilder.visualHost.colorPalette.isHighContrast = true;
+
+                    visualBuilder.visualHost.colorPalette.background = { value: backgroundColor };
+                    visualBuilder.visualHost.colorPalette.foreground = { value: foregroundColor };
+                });
+
+                it("should not use fill style", (done) => {
+                    visualBuilder.updateRenderTimeout(dataView, () => {
+                        const layers: JQuery[] = visualBuilder.slices.toArray().map($);
+
+                        expect(isColorAppliedToElements(layers, null, "fill"));
+
+                        done();
+                    });
+                });
+
+                it("should use stroke style", (done) => {
+                    visualBuilder.updateRenderTimeout(dataView, () => {
+                        const layers: JQuery[] = visualBuilder.slices.toArray().map($);
+
+                        expect(isColorAppliedToElements(layers, foregroundColor, "stroke"));
+
+                        done();
+                    });
+                });
+
+                function isColorAppliedToElements(
+                    elements: JQuery[],
+                    color?: string,
+                    colorStyleName: string = "fill"
+                ): boolean {
+                    return elements.some((element: JQuery) => {
+                        const currentColor: string = element.css(colorStyleName);
+
+                        if (!currentColor || !color) {
+                            return currentColor === color;
+                        }
+
+                        return areColorsEqual(currentColor, color);
+                    });
+                }
             });
         });
     });

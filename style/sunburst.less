@@ -23,12 +23,14 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
+
 .sunburst {
     transition-property: font-size;
     width: 100%;
     height: 100%;
     position: absolute;
     transition-duration: 0.2s;
+
     &--interactive path {
         opacity: 0.2;
     }
@@ -36,6 +38,7 @@
 
 .sunburst .sunburst__slice {
     stroke: #fff;
+    fill: transparent;
     fill-rule: evenodd;
 
     &--selected {
@@ -50,6 +53,7 @@
 
 .sunburst__slice-label {
     text-anchor: middle;
+    pointer-events: none;
 }
 
 .sunburst__label {
@@ -57,6 +61,7 @@
     transition-property: opacity;
     transition-duration: 0.2s;
     text-anchor: middle;
+
     &--visible {
         opacity: 1;
     }

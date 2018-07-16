@@ -27,7 +27,6 @@ module powerbi.extensibility.visual {
     // powerbi.extensibility
     import IVisual = powerbi.extensibility.IVisual;
     import IColorPalette = powerbi.extensibility.IColorPalette;
-    import ISelectionManager = powerbi.extensibility.ISelectionManager;
 
     // powerbi.visuals
     import ISelectionId = powerbi.visuals.ISelectionId;
@@ -37,7 +36,6 @@ module powerbi.extensibility.visual {
 
     // powerbi.extensibility.utils.type
     import PixelConverter = powerbi.extensibility.utils.type.PixelConverter;
-    import JsonComparer = powerbi.extensibility.utils.type.JsonComparer;
 
     // powerbi.extensibility.utils.tooltip
     import TooltipEventArgs = powerbi.extensibility.utils.tooltip.TooltipEventArgs;
@@ -63,8 +61,13 @@ module powerbi.extensibility.visual {
     import LegendIcon = powerbi.extensibility.utils.chart.legend.LegendIcon;
     import LegendPosition = powerbi.extensibility.utils.chart.legend.LegendPosition;
 
-    import DataViewObjects = powerbi.DataViewObjects;
-    import DataViewObjectPropertyIdentifier = powerbi.DataViewObjectPropertyIdentifier;
+    // powerbi.extensibility.utils.interactivity
+    import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
+    import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
+
+    import Behavior = behavior.Behavior;
+    import BehaviorOptions = behavior.BehaviorOptions;
+    import InteractivityService = behavior.InteractivityService;
 
     interface IAppCssConstants {
         main: ClassAndSelector;
@@ -87,44 +90,31 @@ module powerbi.extensibility.visual {
         private static CategoryLineInterval: number = 0.6;
         private static DefaultPercentageLineInterval: number = 0.25;
         private static MultilinePercentageLineInterval: number = 0.6;
-        private colorPalette: IColorPalette;
-        private static ChangeDataType: number = 2;
-        private static ChangeAllType: number = 62;
 
         private static DefaultDataLabelPadding: number = 15;
-
-        private _labelsHidden: boolean = true;
 
         private static LegendPropertyIdentifier: DataViewObjectPropertyIdentifier = {
             objectName: "group",
             propertyName: "fill"
         };
-        private set labelsHidden(hidden: boolean) {
-            this._labelsHidden = hidden;
-            this.percentageLabel.classed(this.appCssConstants.labelVisible.className, !hidden);
-            this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className, !hidden && this.settings.group.showSelected);
+
+        private toggleLabels(isShown: boolean = true) {
+            this.percentageLabel.classed(
+                this.appCssConstants.labelVisible.className,
+                isShown
+            );
+
+            this.selectedCategoryLabel.classed(
+                this.appCssConstants.labelVisible.className,
+                isShown && this.settings.group.showSelected
+            );
         }
-        private _settings: SunburstSettings;
-        private get settings(): SunburstSettings {
-            return this._settings;
-        }
-        private set settings(settings: SunburstSettings) {
-            this._settings = settings;
-            if (!this._settings
-                || this.settings.group.fontSize !== settings.group.fontSize
-                || this.settings.group.showSelected !== settings.group.showSelected) {
-                if (this.labelsHidden) {
-                    return;
-                }
-                this.svg.style(CssConstants.fontSizeProperty, PixelConverter.toString(settings.group.fontSize));
-                this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className, this.settings.group.showSelected);
-                this.calculateLabelPosition();
-            }
-        }
+
+        private settings: SunburstSettings;
+
         private visualHost: IVisualHost;
-        private rawData: DataViewMatrix;
         private data: SunburstData;
-        private arc: d3.svg.Arc<SunburstSlice>;
+        private arc: d3.svg.Arc<SunburstDataPoint>;
         private chartWrapper: d3.Selection<{}>;
         private svg: d3.Selection<{}>;
         private main: d3.Selection<{}>;
@@ -145,38 +135,56 @@ module powerbi.extensibility.visual {
             percentageLabel: createClassAndSelector("sunburst__percentage-label"),
             sliceLabel: createClassAndSelector("sunburst__slice-label")
         };
-        private colors: IColorPalette;
-        private selectionManager: ISelectionManager;
+
+        private colorPalette: IColorPalette;
+        private colorHelper: ColorHelper;
+
+        private interactivityService: IInteractivityService;
+        private behavior: IInteractiveBehavior = new Behavior();
+
         private tooltipService: ITooltipServiceWrapper;
         private viewport: IViewport;
         private legend: ILegend;
         private legendData: LegendData;
-        private recentSelections: ISelectionId[];
+
         constructor(options: VisualConstructorOptions) {
             this.visualHost = options.host;
+
             this.tooltipService = createTooltipServiceWrapper(
                 options.host.tooltipService,
-                options.element);
+                options.element
+            );
+
             this.percentageFormatter = valueFormatter.create({ format: "0.00%;-0.00%;0.00%" });
+
             this.colorPalette = this.visualHost.colorPalette;
+            this.colorHelper = new ColorHelper(this.colorPalette);
+
             let arcSizeFactor: number = 3;
-            this.arc = d3.svg.arc<SunburstSlice>()
-                .startAngle((slice: SunburstSlice) => slice.x)
-                .endAngle((slice: SunburstSlice) => slice.x + slice.dx)
-                .innerRadius((slice: SunburstSlice) => {
+
+            this.arc = d3.svg.arc<SunburstDataPoint>()
+                .startAngle((slice: SunburstDataPoint) => slice.x)
+                .endAngle((slice: SunburstDataPoint) => slice.x + slice.dx)
+                .innerRadius((slice: SunburstDataPoint) => {
                     let y: number = (slice.y) / (Sunburst.OuterRadius);
                     let dy: number = slice.dy / Sunburst.OuterRadius / arcSizeFactor;
-                    let toAdd: number = Sunburst.maxLevels > slice.depth ? (Sunburst.maxLevels - slice.depth) * dy : 0;
+                    let toAdd: number = this.maxLevels > slice.depth ? (this.maxLevels - slice.depth) * dy : 0;
                     return y + toAdd;
                 })
-                .outerRadius((slice: SunburstSlice) => {
+                .outerRadius((slice: SunburstDataPoint) => {
                     let y2: number = (slice.y + slice.dy) / (Sunburst.OuterRadius);
                     let dy: number = slice.dy / Sunburst.OuterRadius / arcSizeFactor;
-                    let toAdd: number = Sunburst.maxLevels > slice.depth ? (Sunburst.maxLevels - slice.depth) * dy : 0;
+                    let toAdd: number = this.maxLevels > slice.depth ? (this.maxLevels - slice.depth) * dy : 0;
                     return y2 + toAdd - dy;
                 });
-            this.colors = options.host.colorPalette;
-            this.selectionManager = options.host.createSelectionManager();
+
+            this.colorPalette = options.host.colorPalette;
+
+            this.interactivityService = new InteractivityService(
+                options.host,
+                this.onVisualSelection.bind(this),
+            );
+
             this.chartWrapper = d3.select(options.element)
                 .append("div")
                 .classed(this.appCssConstants.main.className, true);
@@ -195,6 +203,7 @@ module powerbi.extensibility.visual {
                 .append("text")
                 .classed(this.appCssConstants.label.className, true)
                 .classed(this.appCssConstants.categoryLabel.className, true);
+
             this.selectedCategoryLabel.attr("x", Sunburst.CentralPoint);
             this.selectedCategoryLabel.attr("y", Sunburst.CentralPoint);
 
@@ -205,52 +214,16 @@ module powerbi.extensibility.visual {
             this.percentageLabel.attr("x", Sunburst.CentralPoint);
             this.percentageLabel.attr("y", Sunburst.CentralPoint);
 
-            this.svg.on("click", () => {
-                this.svg
-                    .classed(this.appCssConstants.mainInteractive.className, false);
-                this.labelsHidden = true;
-                this.selectionManager.clear();
-            });
             // create legend container
             this.legend = createLegend(options.element,
                 false,
                 null,
                 true,
-                LegendPosition.Top);
-
-            this.selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
-
-                this.svg.classed(this.appCssConstants.mainInteractive.className, false);
-                this.labelsHidden = true;
-
-                this.recentSelections = ids;
-                let treeWalker = (data: SunburstSlice[]) => {
-                    if (!data) {
-                        return;
-                    }
-
-                    data.forEach((d: SunburstSlice) => {
-                        ids.forEach( (bookmarksSelection: ISelectionId) => {
-                            // Includes here works incorrectly, but getKey works Ok
-                            if (bookmarksSelection.getKey() === (<ISelectionId>d.selector).getKey()) {
-                                this.onVisualSelection(d);
-                            }
-                        });
-
-                        treeWalker(d.children);
-                    });
-                };
-
-                treeWalker(this.data.root.children);
-            });
+                LegendPosition.Top
+            );
         }
 
         public update(options: VisualUpdateOptions): void {
-            // supress update if selections was passed
-            if (this.recentSelections && this.recentSelections.length > 0) {
-                this.recentSelections = [];
-                return;
-            }
             this.clear();
 
             if (!options
@@ -264,25 +237,36 @@ module powerbi.extensibility.visual {
                 || !options.dataViews[0].matrix.columns
                 || !options.dataViews[0].matrix.columns.root
                 || !options.dataViews[0].matrix.columns.root.children
-                || !options.dataViews[0].matrix.columns.root.children.length) {
+                || !options.dataViews[0].matrix.columns.root.children.length
+            ) {
                 return;
             }
+
             this.viewport = options.viewport;
-            let settings: SunburstSettings = this.parseSettings(options.dataViews[0]);
+
+            this.settings = this.parseSettings(options.dataViews[0], this.colorHelper);
+
             this.formatter = valueFormatter.create({
-                value: settings.tooltip.displayUnits,
-                precision: settings.tooltip.precision,
+                value: this.settings.tooltip.displayUnits,
+                precision: this.settings.tooltip.precision,
                 cultureSelector: this.visualHost.locale
             });
-            this.rawData = options.dataViews[0].matrix;
-            this.data = this.convert(options.dataViews[0], this.colors, settings, this.visualHost);
-            this.settings = settings;
-            this.updateInternal();
+
+            this.data = this.convert(
+                options.dataViews[0],
+                this.colorPalette,
+                this.colorHelper,
+                this.visualHost
+            );
+
+            const selection: d3.Selection<SunburstDataPoint> = this.render(this.colorHelper);
 
             if (this.data) {
                 this.legendData = Sunburst.createLegend(this.data, this.settings);
+
                 this.renderLegend();
             }
+
             if (this.settings.legend.show) {
                 this.chartWrapper.style({
                     width: PixelConverter.toString(this.viewport.width),
@@ -291,24 +275,46 @@ module powerbi.extensibility.visual {
             } else {
                 this.chartWrapper.attr("style", null);
             }
+
+            if (this.interactivityService) {
+                const behaviorOptions: BehaviorOptions = {
+                    selection,
+                    clearCatcher: this.svg,
+                    interactivityService: this.interactivityService,
+                    onSelect: this.onVisualSelection.bind(this),
+                    dataPoints: this.data.dataPoints,
+                };
+
+                this.interactivityService.bind(
+                    this.data.dataPoints,
+                    this.behavior,
+                    behaviorOptions,
+                );
+
+                this.behavior.renderSelection(false);
+            }
         }
 
         public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
-           const instanceEnumeration: VisualObjectInstanceEnumeration = SunburstSettings.enumerateObjectInstances(
+            const instanceEnumeration: VisualObjectInstanceEnumeration = SunburstSettings.enumerateObjectInstances(
                 this.settings || SunburstSettings.getDefault(),
-                options);
+                options
+            );
+
             if (options.objectName === Sunburst.LegendPropertyIdentifier.objectName) {
-                const topCategories: SunburstSlice[] = this.data.root.children;
+                const topCategories: SunburstDataPoint[] = this.data.root.children;
                 this.enumerateColors(topCategories, instanceEnumeration);
             }
+
             return instanceEnumeration || [];
         }
 
-        private enumerateColors(topCategories: SunburstSlice[], instanceEnumeration: VisualObjectInstanceEnumeration): void {
+        private enumerateColors(topCategories: SunburstDataPoint[], instanceEnumeration: VisualObjectInstanceEnumeration): void {
             if (topCategories && topCategories.length > 0) {
-                topCategories.forEach((category: SunburstSlice) => {
+                topCategories.forEach((category: SunburstDataPoint) => {
                     const displayName: string = category.name.toString();
-                    const identity: ISelectionId = category.selector as ISelectionId;
+                    const identity: ISelectionId = category.identity as ISelectionId;
+
                     this.addAnInstanceToEnumeration(instanceEnumeration, {
                         displayName,
                         objectName: Sunburst.LegendPropertyIdentifier.objectName,
@@ -318,16 +324,15 @@ module powerbi.extensibility.visual {
                         }
                     });
 
-                    const subCategories: SunburstSlice[] = category.children;
-                    this.enumerateColors(subCategories, instanceEnumeration);
-
+                    this.enumerateColors(category.children, instanceEnumeration);
                 });
             }
         }
 
         private addAnInstanceToEnumeration(
             instanceEnumeration: VisualObjectInstanceEnumeration,
-            instance: VisualObjectInstance): void {
+            instance: VisualObjectInstance
+        ): void {
 
             if ((instanceEnumeration as VisualObjectInstanceEnumerationObject).instances) {
                 (instanceEnumeration as VisualObjectInstanceEnumerationObject)
@@ -337,34 +342,51 @@ module powerbi.extensibility.visual {
                 (instanceEnumeration as VisualObjectInstance[]).push(instance);
             }
         }
+
         private static labelShift: number = 26;
-        private updateInternal(): void {
+
+        private render(colorHelper: ColorHelper): d3.Selection<SunburstDataPoint> {
             const self: Sunburst = this;
+
             const partition: d3.layout.Partition<d3.layout.partition.Node> = d3.layout.partition()
                 .size([2 * Math.PI, Sunburst.OuterRadius * Sunburst.OuterRadius])
                 .value((d: d3.layout.partition.Node) => {
                     return d.value;
                 })
                 .sort(null);
-            const pathSelection: d3.selection.Update<TooltipEnabledDataPoint> = this.main.datum<SunburstSlice>(this.data.root)
+
+            const pathSelection: d3.selection.Update<SunburstDataPoint> = this.main.datum<SunburstDataPoint>(this.data.root)
                 .selectAll("path")
-                .data<SunburstSlice>(<any>partition.nodes);
+                .data<SunburstDataPoint>(<any>partition.nodes);
+
             pathSelection
                 .enter()
                 .append("path")
                 .classed(this.appCssConstants.slice.className, true)
-                .style("display", (slice: SunburstSlice) => slice.depth ? null : "none")
+                .style("display", (slice: SunburstDataPoint) => slice.depth ? null : "none")
                 .attr("d", this.arc)
-                .style("fill", (d: SunburstSlice) => d.color)
-                .on("click", this.onSliceClick.bind(this));
+                .style({
+                    "fill": (slice: SunburstDataPoint) => colorHelper.isHighContrast
+                        ? null
+                        : slice.color,
+                    "stroke": (slice: SunburstDataPoint) => colorHelper.isHighContrast
+                        ? slice.color
+                        : null,
+                    "stroke-width": colorHelper.isHighContrast
+                        ? PixelConverter.toString(2)
+                        : null,
+                });
+
             if (this.settings.group.showDataLabels) {
-                pathSelection.each(function (d: SunburstSlice, i: number) {
+                pathSelection.each(function (d: SunburstDataPoint, i: number) {
                     if (!d.depth) {
                         return;
                     }
+
                     const firstArcSection: RegExp = /(^.+?)L/;
                     const currentSelection: d3.Selection<any> = d3.select(this);
                     const arcRegExpArray: RegExpExecArray = firstArcSection.exec(currentSelection.attr("d"));
+
                     // if slice is section
                     if (arcRegExpArray) {
                         let newArc: string = arcRegExpArray[1];
@@ -378,85 +400,102 @@ module powerbi.extensibility.visual {
                             .attr("id", "sliceLabel_" + i);
                     }
                 });
-                self.main.selectAll(this.appCssConstants.sliceLabel.selectorName)
-                    .data<SunburstSlice>(<any>partition.nodes)
+
+                this.main.selectAll(this.appCssConstants.sliceLabel.selectorName)
+                    .data<SunburstDataPoint>(<any>partition.nodes)
                     .enter()
                     .append("text")
+                    .style("fill", colorHelper.getHighContrastColor("foreground", null))
                     .classed(this.appCssConstants.sliceLabel.className, true)
                     // font size + slice padding
                     .attr("dy", Sunburst.labelShift)
                     .append("textPath")
                     .attr("startOffset", "50%")
                     .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
-                    .text((d: SunburstSlice) => <string>d.name)
-                    .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding))
-                    .on("click", this.onSliceClick.bind(this));
+                    .text((dataPoint: SunburstDataPoint) => dataPoint.name)
+                    .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding));
             }
+
             this.renderTooltip(pathSelection);
             this.setCategoryLabelPosition(self.viewport.width);
             this.setPercentageLabelPosition(self.viewport.width);
+
             pathSelection
                 .exit()
                 .remove();
+
+            return pathSelection;
         }
 
-        private onSliceClick(slice: SunburstSlice): void {
-            if (slice.selector) {
-                this.selectionManager.select(slice.selector);
+        private onVisualSelection(dataPoint: SunburstDataPoint): void {
+            const isSelected: boolean = !!(dataPoint && dataPoint.selected);
+
+            this.toggleLabels(isSelected);
+
+            if (!isSelected) {
+                return;
             }
-            this.onVisualSelection(slice);
-            (<MouseEvent>(d3.event)).stopPropagation();
-        }
 
-        private onVisualSelection(slice: SunburstSlice): void {
-            this.highlightPath(slice, this, true);
-            const percentage: string = this.getFormattedValue(slice.total / this.data.total, this.percentageFormatter);
+            const percentage: string = this.getFormattedValue(dataPoint.total / this.data.total, this.percentageFormatter);
             this.percentageLabel.data([percentage]);
-            this.percentageLabel.style("fill", slice.color);
-            this.selectedCategoryLabel.data([slice ? slice.tooltipInfo[0].displayName : ""]);
-            this.selectedCategoryLabel.style("fill", slice.color);
+            this.percentageLabel.style("fill", dataPoint.color);
+            this.selectedCategoryLabel.data([dataPoint ? dataPoint.tooltipInfo[0].displayName : ""]);
+            this.selectedCategoryLabel.style("fill", dataPoint.color);
             this.calculateLabelPosition();
-            this.labelsHidden = false;
         }
 
-        private convert(dataView: DataView, colors: IColorPalette, settings: SunburstSettings, visualHost: IVisualHost): SunburstData {
+        private convert(
+            dataView: DataView,
+            colorPalette: IColorPalette,
+            colorHelper: ColorHelper,
+            visualHost: IVisualHost
+        ): SunburstData {
             const data: SunburstData = {
                 total: 0,
-                root: null
+                root: null,
+                dataPoints: [],
             };
-            Sunburst.maxLevels = 0;
-            data.root = this.covertTreeNodeToSunBurstNode(
-                dataView.matrix.rows.root, null,
-                colors, [], data,
-                undefined, visualHost, 1);
+
+            this.maxLevels = 0;
+
+            data.root = this.covertTreeNodeToSunBurstDataPoint(
+                dataView.matrix.rows.root,
+                null,
+                colorPalette,
+                colorHelper,
+                [],
+                data,
+                undefined,
+                visualHost,
+                1
+            );
 
             return data;
         }
-        private static ColorsPropertyIdentifier: DataViewObjectPropertyIdentifier = {
-            objectName: "group",
-            propertyName: "fill"
-        };
-        private static maxLevels: number = 0;
-        private covertTreeNodeToSunBurstNode(
+
+        private maxLevels: number = 0;
+
+        private covertTreeNodeToSunBurstDataPoint(
             originParentNode: DataViewTreeNode,
-            sunburstParentNode: SunburstSlice,
-            colors: IColorPalette,
+            sunburstParentNode: SunburstDataPoint,
+            colorPalette: IColorPalette,
+            colorHelper: ColorHelper,
             pathIdentity: DataViewScopeIdentity[],
             data: SunburstData,
             color: string,
             visualHost: IVisualHost,
-            level: number): SunburstSlice {
+            level: number
+        ): SunburstDataPoint {
 
             if (originParentNode.identity) {
                 pathIdentity = pathIdentity.concat([originParentNode.identity]);
             }
-            if (Sunburst.maxLevels < level) {
-                Sunburst.maxLevels = level;
+            if (this.maxLevels < level) {
+                this.maxLevels = level;
             }
+
             const selectionIdBuilder: visuals.ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
-            const colorHelper: ColorHelper = new ColorHelper(
-                colors,
-                Sunburst.LegendPropertyIdentifier);
+
             pathIdentity.forEach((identity: DataViewScopeIdentity) => {
                 const categoryColumn: DataViewCategoryColumn = {
                     source: {
@@ -470,57 +509,86 @@ module powerbi.extensibility.visual {
                 selectionIdBuilder.withCategory(categoryColumn, 0);
             });
 
-            const selectionId: ISelectionId = selectionIdBuilder.createSelectionId();
+            const identity: ISelectionId = selectionIdBuilder.createSelectionId();
+
             const valueToSet: number = originParentNode.values
                 ? <number>originParentNode.values[0].value
                 : 0;
-            const newSunNode: SunburstSlice = {
-                name: originParentNode.value,
+
+            const newDataPointNode: SunburstDataPoint = {
+                identity,
+                selected: false,
+                name: `${originParentNode.value}`,
                 value: Math.max(valueToSet, 0),
-                selector: selectionId,
-                key: selectionId
-                    ? selectionId.getKey()
+                key: identity
+                    ? identity.getKey()
                     : null,
                 total: valueToSet,
                 children: []
             };
 
-            data.total += newSunNode.value;
-            newSunNode.children = [];
-            if (originParentNode.value && level === 2 && !originParentNode.objects) {
-                let colorForCatParent: IColorInfo = colors.getColor(originParentNode.value.toString());
-                newSunNode.color = colorForCatParent.value;
-            } else {
-                newSunNode.color = color;
-            }
-            if (originParentNode.children && originParentNode.children.length > 0) {
+            data.dataPoints.push(newDataPointNode);
 
+            data.total += newDataPointNode.value;
+            newDataPointNode.children = [];
+
+            if (originParentNode.value && level === 2 && !originParentNode.objects) {
+                const color: string = colorHelper.getHighContrastColor(
+                    "foreground",
+                    colorPalette.getColor(originParentNode.value.toString()).value,
+                );
+
+                newDataPointNode.color = color;
+            } else {
+                newDataPointNode.color = color;
+            }
+
+            if (originParentNode.children && originParentNode.children.length > 0) {
                 for (const child of originParentNode.children) {
-                    let color_node: string = this.getColor(
-                        Sunburst.ColorsPropertyIdentifier,
-                        newSunNode.color,
-                        child.objects);
-                    const newChild: SunburstSlice = this.covertTreeNodeToSunBurstNode(
+                    const color_node: string = this.getColor(
+                        Sunburst.LegendPropertyIdentifier,
+                        newDataPointNode.color,
+                        child.objects
+                    );
+
+                    const newChild: SunburstDataPoint = this.covertTreeNodeToSunBurstDataPoint(
                         child,
-                        newSunNode,
-                        colors,
+                        newDataPointNode,
+                        colorPalette,
+                        colorHelper,
                         pathIdentity,
                         data,
                         color_node,
                         visualHost,
-                        level + 1);
+                        level + 1
+                    );
 
-                    newSunNode.children.push(newChild);
-                    newSunNode.total += newChild.total;
+                    newDataPointNode.children.push(newChild);
+                    newDataPointNode.total += newChild.total;
                 }
             }
-            newSunNode.tooltipInfo = this.getTooltipData(<string>originParentNode.value, newSunNode.total);
+
+            newDataPointNode.tooltipInfo = this.getTooltipData(<string>originParentNode.value, newDataPointNode.total);
 
             if (sunburstParentNode) {
-                newSunNode.parent = sunburstParentNode;
+                newDataPointNode.parent = sunburstParentNode;
             }
 
-            return newSunNode;
+            return newDataPointNode;
+        }
+
+        private getColor(
+            properties: DataViewObjectPropertyIdentifier,
+            defaultColor: string,
+            objects: DataViewObjects): string {
+
+            const colorHelper: ColorHelper = new ColorHelper(
+                this.colorPalette,
+                properties,
+                defaultColor
+            );
+
+            return colorHelper.getColorForMeasure(objects, "", "foreground");
         }
 
         private getTooltipData(displayName: string, value: number): VisualTooltipDataItem[] {
@@ -536,51 +604,31 @@ module powerbi.extensibility.visual {
                 : formatter.format(value);
         }
 
-        private getColor(
-            properties: DataViewObjectPropertyIdentifier,
-            defaultColor: string,
-            objects: DataViewObjects): string {
+        private parseSettings(dataView: DataView, coloHelper: ColorHelper): SunburstSettings {
+            const settings: SunburstSettings = SunburstSettings.parse<SunburstSettings>(dataView);
 
-            const colorHelper: ColorHelper = new ColorHelper(
-                this.colorPalette,
-                properties,
-                defaultColor);
+            settings.legend.labelColor = this.colorHelper.getHighContrastColor("foreground", settings.legend.labelColor);
 
-            return colorHelper.getColorForMeasure(objects, "");
-        }
-
-        private parseSettings(dataView: DataView): SunburstSettings {
-            return SunburstSettings.parse<SunburstSettings>(dataView);
-        }
-
-        // Get all parents of the node
-        private static getTreePath(node: SunburstSlice): SunburstSlice[] {
-            const path: SunburstSlice[] = [];
-            let current: SunburstSlice = node;
-
-            while (current.parent) {
-                path.unshift(current);
-                current = current.parent;
-            }
-
-            return path;
+            return settings;
         }
 
         private static createLegend(data: SunburstData, settings: SunburstSettings): LegendData {
-            const rootCategory: SunburstSlice[] = data.root.children;
+            const rootCategory: SunburstDataPoint[] = data.root.children;
+
             const legendData: LegendData = {
                 fontSize: settings.legend.fontSize,
                 dataPoints: [],
                 title: settings.legend.showTitle ? (settings.legend.titleText) : null,
                 labelColor: settings.legend.labelColor
             };
-            legendData.dataPoints = rootCategory.map((element: SunburstSlice) => {
+
+            legendData.dataPoints = rootCategory.map((dataPoint: SunburstDataPoint) => {
                 return {
-                    label: element.name as string,
-                    color: element.color,
+                    label: dataPoint.name as string,
+                    color: dataPoint.color,
                     icon: LegendIcon.Circle,
                     selected: false,
-                    identity: element.selector
+                    identity: dataPoint.identity
                 };
             });
             return legendData;
@@ -589,8 +637,9 @@ module powerbi.extensibility.visual {
         private calculateLabelPosition(): void {
             const innerRadius: number = Math.min.apply(
                 null,
-                this.data.root.children.map((x: SunburstSlice) => this.arc.innerRadius()(x, undefined))
+                this.data.root.children.map((x: SunburstDataPoint) => this.arc.innerRadius()(x, undefined))
             );
+
             this.setPercentageLabelPosition(innerRadius);
             this.setCategoryLabelPosition(innerRadius);
         }
@@ -624,27 +673,12 @@ module powerbi.extensibility.visual {
                 .text((x: string) => x).each(function (d: string) { self.wrapText(d3.select(this), Sunburst.DefaultDataLabelPadding, width); });
         }
 
-        private highlightPath(d: SunburstSlice, sunBurst: Sunburst, setUnhide: boolean): void {
-            const parentsArray: SunburstSlice[] = d ? Sunburst.getTreePath(d) : [];
-            // Set opacity for all the segments.
-            sunBurst.svg
-                .selectAll(sunBurst.appCssConstants.sliceSelected.selectorName)
-                .classed(sunBurst.appCssConstants.sliceSelected.className, false);
-            sunBurst.svg.classed(sunBurst.appCssConstants.mainInteractive.className, true);
-            // Highlight only ancestors of the current segment.
-            sunBurst.svg.selectAll(sunBurst.appCssConstants.slice.selectorName)
-                .filter((path: SunburstSlice) => {
-                    return parentsArray.indexOf(path) >= 0;
-                })
-                .classed(sunBurst.appCssConstants.sliceSelected.className, true);
-        }
-
         private renderTooltip(selection: d3.selection.Update<TooltipEnabledDataPoint>): void {
             if (!this.tooltipService) {
                 return;
             }
 
-            this.tooltipService.addTooltip(selection, (tooltipEvent: TooltipEventArgs<SunburstSlice>) => {
+            this.tooltipService.addTooltip(selection, (tooltipEvent: TooltipEventArgs<SunburstDataPoint>) => {
                 return tooltipEvent.data.tooltipInfo;
             });
         }
@@ -653,12 +687,14 @@ module powerbi.extensibility.visual {
             if (!this.data) {
                 return;
             }
+
             const position: LegendPosition = this.settings.legend.show
                 ? LegendPosition[this.settings.legend.position]
                 : LegendPosition.None;
 
             this.legend.changeOrientation(position);
             this.legend.drawLegend(this.legendData, JSON.parse(JSON.stringify(this.viewport)));
+
             Legend.positionChartArea(this.chartWrapper, this.legend);
 
             switch (this.legend.getOrientation()) {
@@ -677,9 +713,9 @@ module powerbi.extensibility.visual {
             }
         }
 
-        private wrapPathText(padding?: number): (slice: SunburstSlice, index: number) => void {
+        private wrapPathText(padding?: number): (slice: SunburstDataPoint, index: number) => void {
             const self = this;
-            return function (slice: SunburstSlice, index: number) {
+            return function (slice: SunburstDataPoint, index: number) {
                 if (!slice.depth) {
                     return;
                 }
@@ -706,7 +742,8 @@ module powerbi.extensibility.visual {
         }
 
         private clear(): void {
-            this.main.selectAll("*")
+            this.main
+                .selectAll("*")
                 .remove();
         }
     }

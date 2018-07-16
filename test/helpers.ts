@@ -24,31 +24,19 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual {
-    // powerbi.extensibility.utils.tooltip
-    import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
+/// <reference path="./_references.ts"/>
 
-    // powerbi.extensibility.utils.interactivity
-    import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
+module powerbi.extensibility.visual.test.helpers {
+    // powerbi.extensibility.utils.test
+    import RgbColor = powerbi.extensibility.utils.test.helpers.color.RgbColor;
+    import parseColorString = powerbi.extensibility.utils.test.helpers.color.parseColorString;
 
-    export interface SunburstData {
-        root: SunburstDataPoint; // Tree data points
-        dataPoints: SunburstDataPoint[]; // Flat data points
-        total: number;
-    }
+    export function areColorsEqual(firstColor: string, secondColor: string): boolean {
+        const firstConvertedColor: RgbColor = parseColorString(firstColor),
+            secondConvertedColor: RgbColor = parseColorString(secondColor);
 
-    export interface SunburstDataPoint extends
-        d3.layout.treemap.Node,
-        TooltipEnabledDataPoint,
-        SelectableDataPoint {
-
-        children?: SunburstDataPoint[];
-        value?: number;
-        color?: string;
-        name?: string;
-        parent?: SunburstDataPoint;
-        total: number;
-        key: string;
-        highlight?: boolean;
+        return firstConvertedColor.R === secondConvertedColor.R
+            && firstConvertedColor.G === secondConvertedColor.G
+            && firstConvertedColor.B === secondConvertedColor.B;
     }
 }

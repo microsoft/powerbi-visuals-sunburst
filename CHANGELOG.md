@@ -1,3 +1,9 @@
+## 1.5.0
+* High contrast mode
+* API 1.13.0
+* Keeps selection state if user resizes viewport
+* Highlights all of children if a root element is selected
+
 ## 1.4.0
 * Added localization for all supported languages
 
@@ -5,7 +11,7 @@
 * Added bookmarks support
 
 ## 1.2.0
-* Updated readme instructions 
+* Updated readme instructions
 * "Group->Show category" and "Group->Font size" were not working
 * Add colors selection in settings panel
 * Add an ability to show values of the inner ring

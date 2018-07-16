@@ -34,11 +34,12 @@ module powerbi.extensibility.visual.test {
 
     // Sunburst1445472000808
     import Sunburst = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
+    import SunburstData = powerbi.extensibility.visual.Sunburst1445472000808.SunburstData;
 
-    export class SunburstBuilder extends VisualBuilderBase<Sunburst> {
+    export class VisualBuilder extends VisualBuilderBase<Sunburst> {
         bookmarksCallback: (ids: ISelectionId[]) => void;
         constructor(width: number, height: number) {
-            super(width, height);
+            super(width, height, "Sunburst1445472000808");
         }
 
         public update(dataView: DataView[] | DataView, updateType?: VisualUpdateType): void {
@@ -59,9 +60,14 @@ module powerbi.extensibility.visual.test {
         }
 
         protected build(options: VisualConstructorOptions): Sunburst {
-            options.host.selectionManager.registerOnSelectCallback = (callback: (ids: ISelectionId[]) => void) => {
-                this.bookmarksCallback = callback;
+            options.host["selectionManager"].registerOnSelectCallback = (callback: (ids: ISelectionId[]) => void) => {
+                this.bookmarksCallback = (selectionIds: ISelectionId[]) => {
+                    options.host["selectionManager"].selectionIds = selectionIds;
+
+                    callback(selectionIds);
+                };
             };
+
             return new Sunburst(options);
         }
 
@@ -74,9 +80,23 @@ module powerbi.extensibility.visual.test {
         }
 
         public selectBookmarks(ids: ISelectionId[]) {
-            if (this.bookmarksCallback) {
-                this.bookmarksCallback(ids);
-            }
+            this.bookmarksCallback(ids);
+        }
+
+        public get data(): SunburstData {
+            return this.instance["data"];
+        }
+
+        public get slices(): JQuery {
+            return this.element.find(".sunburst__slice");
+        }
+
+        public get selectedSlices(): JQuery {
+            return this.slices.filter(function () {
+                const appliedOpacity: number = parseFloat($(this).css("opacity"));
+
+                return appliedOpacity === 1;
+            });
         }
     }
 }

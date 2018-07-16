@@ -35,14 +35,12 @@ module powerbi.extensibility.visual {
     }
 
     export class SunburstGroupSettings {
-
         public fontSize: number = 14;
         public showSelected: boolean = true;
         public showDataLabels: boolean = true;
     }
 
     export class SunburstTooltipSettings {
-
         public displayUnits: number = 0;
         public precision: number = 2;
     }
