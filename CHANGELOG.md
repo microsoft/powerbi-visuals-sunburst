@@ -1,6 +1,8 @@
 ## 1.5.0
 * High contrast mode
 * API 1.13.0
+* Keeps selection state if user resizes viewport
+* Highlights all of children if a root element is selected
 
 ## 1.4.0
 * Added localization for all supported languages

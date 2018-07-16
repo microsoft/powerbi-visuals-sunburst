@@ -28,6 +28,7 @@ module powerbi.extensibility.visual.behavior {
     import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
     import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
     import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
+    import InteractivityServiceBase = powerbi.extensibility.utils.interactivity.InteractivityService;
 
     export const DimmedOpacity: number = 0.4;
     export const DefaultOpacity: number = 1.0;
@@ -120,6 +121,32 @@ module powerbi.extensibility.visual.behavior {
             root.parent.selected = true;
 
             this.markDataPointsAsSelected(root.parent);
+        }
+    }
+
+    export class InteractivityService extends InteractivityServiceBase {
+        constructor(host: IVisualHost, private onSelect?: (dataPoint: SunburstDataPoint) => void) {
+            super(host);
+        }
+
+        /**
+         * Sunburst does not support multi selection because it's hard to render a center tooltip for more than a single data point
+         */
+        public restoreSelection(selectionIds: visuals.ISelectionId[]): void {
+            super.restoreSelection(selectionIds);
+
+            const selectedDataPoint: SunburstDataPoint = (this.selectableDataPoints as SunburstDataPoint[])
+                .filter((dataPoint: SunburstDataPoint) => {
+                    return dataPoint
+                        && dataPoint.identity
+                        && selectionIds
+                        && selectionIds[0]
+                        && selectionIds[0].equals(dataPoint.identity as visuals.ISelectionId);
+                })[0];
+
+            if (this.onSelect) {
+                this.onSelect(selectedDataPoint);
+            }
         }
     }
 }

@@ -32,8 +32,8 @@ module powerbi.extensibility.visual {
     import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
 
     export interface SunburstData {
-        root: SunburstDataPoint;
-        dataPoints: SunburstDataPoint[];
+        root: SunburstDataPoint; // Tree data points
+        dataPoints: SunburstDataPoint[]; // Flat data points
         total: number;
     }
 

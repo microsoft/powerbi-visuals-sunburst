@@ -33,11 +33,6 @@ namespace powerbi.extensibility.visual.test {
     import SunburstBuilder = powerbi.extensibility.visual.test.SunburstBuilder;
     import DataView = powerbi.DataView;
 
-    // powerbi.extensibility.utils.formatting
-    import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
-
-    import Sunburst = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
-
     const DefaultWaitForRender: number = 500;
     const LegendSelector: string = "#legendGroup";
     const SliceSelector: string = ".sunburst__slice";
@@ -386,14 +381,17 @@ namespace powerbi.extensibility.visual.test {
                         done();
                     }, 2, DefaultWaitForRender);
             });
+
             it("should be displayed correctly", (done: DoneFn) => {
                 const color: string = "#006400";
                 const colorAsRGB: string = "rgb(0, 100, 0)";
+
                 dataView = defaultDataViewBuilder.getDataView(
                     [
                         defaultDataViewBuilder.RegionsDataSet,
                         defaultDataViewBuilder.CountriesDataSet
                     ]);
+
                 dataView.matrix.rows.root.children[0].objects = {
                     group: {
                         fill: {
@@ -403,14 +401,21 @@ namespace powerbi.extensibility.visual.test {
                         }
                     }
                 };
+
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        expect($(`${SliceSelector}[style="fill: ${colorAsRGB};"]`).length).toBeTruthy();
+                        const elements: JQuery<Element> = $(SliceSelector).filter(function () {
+                            const appliedColor: string = $(this).css("fill");
+
+                            return appliedColor === colorAsRGB;
+                        });
+
+                        expect(elements.length).toBeTruthy();
+
                         done();
                     }, 2, DefaultWaitForRender);
             });
-
         });
 
         describe("Capabilities tests", () => {

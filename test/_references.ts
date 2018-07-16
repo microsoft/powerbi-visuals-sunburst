@@ -26,7 +26,7 @@
  */
 
 // Power BI API
-/// <reference path="../.api/v1.11.0/PowerBI-visuals.d.ts" />
+/// <reference path="../.api/v1.13.0/PowerBI-visuals.d.ts" />
 
 // Power BI Extensibility
 /// <reference path="../node_modules/powerbi-visuals-utils-dataviewutils/lib/index.d.ts" />
@@ -44,5 +44,5 @@
 /// <reference path="../.tmp/drop/visual.d.ts" />
 
 // Test
-/// <reference path="SunburstBuilder.ts" />
-/// <reference path="SunburstData.ts" />
+/// <reference path="builder.ts" />
+/// <reference path="data.ts" />

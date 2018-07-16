@@ -64,10 +64,10 @@ module powerbi.extensibility.visual {
     // powerbi.extensibility.utils.interactivity
     import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
     import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
-    import createInteractivityService = powerbi.extensibility.utils.interactivity.createInteractivityService;
 
     import Behavior = behavior.Behavior;
     import BehaviorOptions = behavior.BehaviorOptions;
+    import InteractivityService = behavior.InteractivityService;
 
     interface IAppCssConstants {
         main: ClassAndSelector;
@@ -198,7 +198,10 @@ module powerbi.extensibility.visual {
 
             this.colorPalette = options.host.colorPalette;
 
-            this.interactivityService = createInteractivityService(options.host);
+            this.interactivityService = new InteractivityService(
+                options.host,
+                this.onVisualSelection.bind(this),
+            );
 
             this.chartWrapper = d3.select(options.element)
                 .append("div")
@@ -447,7 +450,7 @@ module powerbi.extensibility.visual {
 
 
         private onVisualSelection(dataPoint: SunburstDataPoint): void {
-            const isSelected: boolean = dataPoint && dataPoint.selected;
+            const isSelected: boolean = !!(dataPoint && dataPoint.selected);
 
             this.toggleLabels(isSelected);
 
@@ -455,7 +458,6 @@ module powerbi.extensibility.visual {
                 return;
             }
 
-            // this.highlightPath(slice, this, true);
             const percentage: string = this.getFormattedValue(dataPoint.total / this.data.total, this.percentageFormatter);
             this.percentageLabel.data([percentage]);
             this.percentageLabel.style("fill", dataPoint.color);
@@ -762,7 +764,8 @@ module powerbi.extensibility.visual {
         }
 
         private clear(): void {
-            this.main.selectAll("*")
+            this.main
+                .selectAll("*")
                 .remove();
         }
     }
