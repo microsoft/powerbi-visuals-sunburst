@@ -312,7 +312,7 @@ module powerbi.extensibility.visual.test {
         { name: "South America" }
     ];
 
-    export class SunburstData extends TestDataViewBuilder {
+    export class VisualData extends TestDataViewBuilder {
         public readonly RegionsDataSet: string = "Regions";
         public readonly CountriesDataSet: string = "Countries";
         public readonly StatesDataSet: string = "States";

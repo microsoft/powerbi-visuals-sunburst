@@ -448,7 +448,6 @@ module powerbi.extensibility.visual {
             return pathSelection;
         }
 
-
         private onVisualSelection(dataPoint: SunburstDataPoint): void {
             const isSelected: boolean = !!(dataPoint && dataPoint.selected);
 
