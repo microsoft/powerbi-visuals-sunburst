@@ -515,10 +515,16 @@ module powerbi.extensibility.visual {
                 ? <number>originParentNode.values[0].value
                 : 0;
 
+            const originParentNodeValue: PrimitiveValue = originParentNode.value;
+
+            const name: string = originParentNodeValue !== null && originParentNodeValue !== undefined
+             ? `${originParentNodeValue}`
+             : "";
+
             const newDataPointNode: SunburstDataPoint = {
+                name,
                 identity,
                 selected: false,
-                name: `${originParentNode.value}`,
                 value: Math.max(valueToSet, 0),
                 key: identity
                     ? identity.getKey()
@@ -532,10 +538,10 @@ module powerbi.extensibility.visual {
             data.total += newDataPointNode.value;
             newDataPointNode.children = [];
 
-            if (originParentNode.value && level === 2 && !originParentNode.objects) {
+            if (originParentNodeValue && level === 2 && !originParentNode.objects) {
                 const color: string = colorHelper.getHighContrastColor(
                     "foreground",
-                    colorPalette.getColor(originParentNode.value.toString()).value,
+                    colorPalette.getColor(name).value,
                 );
 
                 newDataPointNode.color = color;
@@ -568,7 +574,7 @@ module powerbi.extensibility.visual {
                 }
             }
 
-            newDataPointNode.tooltipInfo = this.getTooltipData(<string>originParentNode.value, newDataPointNode.total);
+            newDataPointNode.tooltipInfo = this.getTooltipData(name, newDataPointNode.total);
 
             if (sunburstParentNode) {
                 newDataPointNode.parent = sunburstParentNode;
