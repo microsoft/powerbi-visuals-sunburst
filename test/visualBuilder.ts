@@ -33,10 +33,10 @@ module powerbi.extensibility.visual.test {
     import renderTimeout = powerbi.extensibility.utils.test.helpers.renderTimeout;
 
     // Sunburst1445472000808
-    import Sunburst = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
-    import SunburstData = powerbi.extensibility.visual.Sunburst1445472000808.SunburstData;
+    import VisualClass = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
+    import VisualData = powerbi.extensibility.visual.Sunburst1445472000808.SunburstData;
 
-    export class VisualBuilder extends VisualBuilderBase<Sunburst> {
+    export class VisualBuilder extends VisualBuilderBase<VisualClass> {
         bookmarksCallback: (ids: ISelectionId[]) => void;
         constructor(width: number, height: number) {
             super(width, height, "Sunburst1445472000808");
@@ -59,7 +59,7 @@ module powerbi.extensibility.visual.test {
             return renderTimeout(fn, timeout);
         }
 
-        protected build(options: VisualConstructorOptions): Sunburst {
+        protected build(options: VisualConstructorOptions): VisualClass {
             options.host["selectionManager"].registerOnSelectCallback = (callback: (ids: ISelectionId[]) => void) => {
                 this.bookmarksCallback = (selectionIds: ISelectionId[]) => {
                     options.host["selectionManager"].selectionIds = selectionIds;
@@ -68,10 +68,10 @@ module powerbi.extensibility.visual.test {
                 };
             };
 
-            return new Sunburst(options);
+            return new VisualClass(options);
         }
 
-        public get instance(): Sunburst {
+        public get instance(): VisualClass {
             return this.visual;
         }
 
@@ -83,7 +83,7 @@ module powerbi.extensibility.visual.test {
             this.bookmarksCallback(ids);
         }
 
-        public get data(): SunburstData {
+        public get data(): VisualData {
             return this.instance["data"];
         }
 
