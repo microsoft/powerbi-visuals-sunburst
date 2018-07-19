@@ -121,7 +121,6 @@ module powerbi.extensibility.visual {
         private percentageLabel: d3.Selection<string>;
         private percentageFormatter: IValueFormatter;
         private selectedCategoryLabel: d3.Selection<string>;
-        private formatter: IValueFormatter;
 
         private appCssConstants: IAppCssConstants = {
             main: createClassAndSelector("sunburst"),
@@ -246,7 +245,7 @@ module powerbi.extensibility.visual {
 
             this.settings = this.parseSettings(options.dataViews[0], this.colorHelper);
 
-            this.formatter = valueFormatter.create({
+            const formatter: IValueFormatter = valueFormatter.create({
                 value: this.settings.tooltip.displayUnits,
                 precision: this.settings.tooltip.precision,
                 cultureSelector: this.visualHost.locale
@@ -256,7 +255,8 @@ module powerbi.extensibility.visual {
                 options.dataViews[0],
                 this.colorPalette,
                 this.colorHelper,
-                this.visualHost
+                this.visualHost,
+                formatter,
             );
 
             const selection: d3.Selection<SunburstDataPoint> = this.render(this.colorHelper);
@@ -448,7 +448,8 @@ module powerbi.extensibility.visual {
             dataView: DataView,
             colorPalette: IColorPalette,
             colorHelper: ColorHelper,
-            visualHost: IVisualHost
+            visualHost: IVisualHost,
+            formatter: IValueFormatter
         ): SunburstData {
             const data: SunburstData = {
                 total: 0,
@@ -467,7 +468,8 @@ module powerbi.extensibility.visual {
                 data,
                 undefined,
                 visualHost,
-                1
+                1,
+                formatter,
             );
 
             return data;
@@ -475,7 +477,7 @@ module powerbi.extensibility.visual {
 
         private maxLevels: number = 0;
 
-        private covertTreeNodeToSunBurstDataPoint(
+        public covertTreeNodeToSunBurstDataPoint(
             originParentNode: DataViewTreeNode,
             sunburstParentNode: SunburstDataPoint,
             colorPalette: IColorPalette,
@@ -484,7 +486,8 @@ module powerbi.extensibility.visual {
             data: SunburstData,
             color: string,
             visualHost: IVisualHost,
-            level: number
+            level: number,
+            formatter: IValueFormatter,
         ): SunburstDataPoint {
 
             if (originParentNode.identity) {
@@ -517,7 +520,7 @@ module powerbi.extensibility.visual {
 
             const originParentNodeValue: PrimitiveValue = originParentNode.value;
 
-            const name: string = originParentNodeValue !== null && originParentNodeValue !== undefined
+            const name: string = originParentNodeValue != null
              ? `${originParentNodeValue}`
              : "";
 
@@ -538,7 +541,7 @@ module powerbi.extensibility.visual {
             data.total += newDataPointNode.value;
             newDataPointNode.children = [];
 
-            if (originParentNodeValue && level === 2 && !originParentNode.objects) {
+            if (name && level === 2 && !originParentNode.objects) {
                 const color: string = colorHelper.getHighContrastColor(
                     "foreground",
                     colorPalette.getColor(name).value,
@@ -566,7 +569,8 @@ module powerbi.extensibility.visual {
                         data,
                         color_node,
                         visualHost,
-                        level + 1
+                        level + 1,
+                        formatter,
                     );
 
                     newDataPointNode.children.push(newChild);
@@ -574,7 +578,11 @@ module powerbi.extensibility.visual {
                 }
             }
 
-            newDataPointNode.tooltipInfo = this.getTooltipData(name, newDataPointNode.total);
+            newDataPointNode.tooltipInfo = this.getTooltipData(
+                formatter,
+                name,
+                newDataPointNode.total
+            );
 
             if (sunburstParentNode) {
                 newDataPointNode.parent = sunburstParentNode;
@@ -597,10 +605,14 @@ module powerbi.extensibility.visual {
             return colorHelper.getColorForMeasure(objects, "", "foreground");
         }
 
-        private getTooltipData(displayName: string, value: number): VisualTooltipDataItem[] {
+        private getTooltipData(
+            formatter: IValueFormatter,
+            displayName: string,
+            value: number
+        ): VisualTooltipDataItem[] {
             return [{
                 displayName,
-                value: this.getFormattedValue(value, this.formatter)
+                value: this.getFormattedValue(value, formatter)
             }];
         }
 

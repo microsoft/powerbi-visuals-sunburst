@@ -28,10 +28,16 @@
 /// <reference path="_references.ts"/>
 
 namespace powerbi.extensibility.visual.test {
+    // powerbi.extensibility.utils.formatting
+    import valueFormatter = powerbi.extensibility.utils.formatting.valueFormatter;
+
     // powerbi.extensibility.visual.test
     import VisualData = powerbi.extensibility.visual.test.VisualData;
     import VisualBuilder = powerbi.extensibility.visual.test.VisualBuilder;
     import areColorsEqual = powerbi.extensibility.visual.test.helpers.areColorsEqual;
+
+    // visual
+    import SunburstDataPoint = powerbi.extensibility.visual.Sunburst1445472000808.SunburstDataPoint;
 
     const DefaultWaitForRender: number = 500;
     const LegendSelector: string = "#legendGroup";
@@ -403,7 +409,7 @@ namespace powerbi.extensibility.visual.test {
                 visualBuilder.updateRenderTimeout(
                     dataView,
                     () => {
-                        const elements: JQuery<Element> = visualBuilder.slices.filter(function () {
+                        const elements: JQuery = visualBuilder.slices.filter(function () {
                             const appliedColor: string = $(this).css("fill");
 
                             return appliedColor === colorAsRGB;
@@ -515,6 +521,31 @@ namespace powerbi.extensibility.visual.test {
                         return areColorsEqual(currentColor, color);
                     });
                 }
+            });
+        });
+
+        describe("covertTreeNodeToSunBurstDataPoint", () => {
+            it("SunburstDataPoint name should not contain `undefined` value", () => {
+                const dataPoint: SunburstDataPoint = visualBuilder.instance.covertTreeNodeToSunBurstDataPoint(
+                    {
+                        name: undefined
+                    },
+                    undefined,
+                    undefined,
+                    undefined,
+                    [],
+                    {
+                        dataPoints: [],
+                        total: 0,
+                        root: undefined,
+                    },
+                    "#00ff00",
+                    visualBuilder.visualHost,
+                    0,
+                    valueFormatter.create({})
+                );
+
+                expect(dataPoint.name).not.toBe("undefined");
             });
         });
     });
