@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Apresentar opções de legenda",
 	"Visual_Description_Position": "Selecionar a localização da legenda",
 	"Visual_Description_Title": "Apresentar um título para os símbolos da legenda",
-	"Visual_Description_LegendName": "Texto do título"
+	"Visual_Description_LegendName": "Texto do título",
+	"Sunburst_Short_Description": "Gráfico de anel em vários níveis para visualizar dados hierárquicos eficazmente",
+	"Sunburst_Long_Description": "O gráfico circular de vários níveis é utilizado para visualizar dados hierárquicos, descritos por círculos concêntricos. O círculo no centro representa o nó de raiz, com a hierarquia a mover-se para fora a partir do centro. Um segmento do círculo interior tem uma relação hierárquica com os segmentos no círculo externo, que situam-se na abertura angular do segmento principal.\nEste é um visual de código aberto. Obtenha o código do GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

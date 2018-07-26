@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Exibir opções de legenda",
 	"Visual_Description_Position": "Selecionar o local da legenda",
 	"Visual_Description_Title": "Exibir um título para os símbolos da legenda",
-	"Visual_Description_LegendName": "Texto do título"
+	"Visual_Description_LegendName": "Texto do título",
+	"Sunburst_Short_Description": "Gráfico de rosca de vários níveis para visualizar efetivamente dados hierárquicos",
+	"Sunburst_Long_Description": "O gráfico de explosão solar é usado para visualizar dados hierárquicos, descritos em círculos concêntricos. O círculo no centro representa o nó raiz, com a hierarquia movendo-se do centro para fora. Um segmento do círculo interno tem uma relação hierárquica com aqueles segmentos do círculo externo que se encontram dentro da flecha angular do segmento pai.\nEsse é um visual de software livre. Obtenha o código do GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

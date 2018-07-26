@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Afișați opțiunile pentru legendă",
 	"Visual_Description_Position": "Selectați locația pentru legendă",
 	"Visual_Description_Title": "Afișați un titlu pentru simbolurile legendei",
-	"Visual_Description_LegendName": "Text titlu"
+	"Visual_Description_LegendName": "Text titlu",
+	"Sunburst_Short_Description": "Diagramă tor cu mai multe niveluri, pentru vizualizarea eficientă a datelor ierarhice",
+	"Sunburst_Long_Description": "Diagrama raze de soare este utilizată pentru a vizualiza date ierarhice, ilustrate prin cercuri concentrice. Cercul din centru reprezintă nodul rădăcină, cu ierarhia deplasându-se spre exterior de la centru. Un segment al cercului interior deține o relație ierarhică cu segmentele cercului exterior, care se află în raza unghiulară a segmentului părinte.\nAcesta este un element vizual open source. Obțineți codul de la GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

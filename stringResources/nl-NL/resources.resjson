@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Legendaopties weergeven",
 	"Visual_Description_Position": "De locatie voor de legenda selecteren",
 	"Visual_Description_Title": "Een titel voor legendasymbolen weergeven",
-	"Visual_Description_LegendName": "Titeltekst"
+	"Visual_Description_LegendName": "Titeltekst",
+	"Sunburst_Short_Description": "Ringdiagram met meerdere niveaus om hiërarchische gegevens effectief weer te geven",
+	"Sunburst_Long_Description": "Het Sunburst-diagram wordt gebruikt om hiërarchische gegevens in beeld te brengen, waarbij deze gegevens worden weergegeven in concentrische cirkels. De cirkel in het midden staat voor het hoofdknooppunt en de hiërarchie verplaatst zich vanuit het midden naar de buitenkant. Een segment van de binnenste cirkel heeft een hiërarchische relatie met de segmenten van de buitenste cirkel die binnen de zwaaihoek liggen van het bovenliggende segment.\nDit is een open source visual. U kunt de code op GitHub ophalen: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

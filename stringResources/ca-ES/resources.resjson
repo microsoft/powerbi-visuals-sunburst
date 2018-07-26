@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Mostra les opcions per a la llegenda",
 	"Visual_Description_Position": "Seleccioneu la ubicació de la llegenda",
 	"Visual_Description_Title": "Mostra un títol per als símbols de la llegenda",
-	"Visual_Description_LegendName": "Text del títol"
+	"Visual_Description_LegendName": "Text del títol",
+	"Sunburst_Short_Description": "Gràfic d'anelles de diversos nivells per visualitzar les dades jeràrquiques de manera eficaç.",
+	"Sunburst_Long_Description": "El gràfic de projecció solar es fa servir per visualitzar dades jeràrquiques representades amb cercles concèntrics. El cercle del centre representa el node arrel, alhora que la jerarquia es mou cap a l'exterior del centre. Un segment del cercle interior presenta una relació jeràrquica amb els segments del cercle exterior, que es troben a l'angle de rastreig del segment principal.\nAquest element visual és de codi obert. Podeu obtenir el codi al GitHub, a https://github.com/Microsoft/powerbi-visuals-sunburst."
 }

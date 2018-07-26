@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Prikaži mogućnosti legende",
 	"Visual_Description_Position": "Odaberite mjesto legende",
 	"Visual_Description_Title": "Prikaži naslov za simbole legende",
-	"Visual_Description_LegendName": "Tekst naslova"
+	"Visual_Description_LegendName": "Tekst naslova",
+	"Sunburst_Short_Description": "Prstenasti grafikon s više razina za učinkovitu vizualizaciju hijerarhijskih podataka",
+	"Sunburst_Long_Description": "Koncentrični grafikon služi za vizualizaciju hijerarhijskih podataka predstavljenih koncentričnim kružnicama. Kružnica u središtu predstavlja korijenski čvor s hijerarhijom koja se pomiče iz središta prema van. Segment unutrašnje kružnice ima hijerarhijski odnos sa segmentima vanjske kružnice koja se nalazi unutar kutnog pomaka nadređenog segmenta.\nTo je vizual otvorenog koda. Kod preuzmite sa servisa GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

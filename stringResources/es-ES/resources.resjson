@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Mostrar opciones de leyenda",
 	"Visual_Description_Position": "Seleccionar ubicación para la leyenda",
 	"Visual_Description_Title": "Mostrar un título para los símbolos de leyenda",
-	"Visual_Description_LegendName": "Texto del título"
+	"Visual_Description_LegendName": "Texto del título",
+	"Sunburst_Short_Description": "Gráfico de anillos de varios niveles para visualizar de forma efectiva datos jerárquicos.",
+	"Sunburst_Long_Description": "El gráfico de proyección solar se usa para visualizar datos jerárquicos, mostrados mediante círculos concéntricos. El círculo del centro representa el nodo raíz y la jerarquía se mueve hacia fuera desde el centro. Un segmento del círculo interior establece una relación jerárquica con esos segmentos del círculo exterior con el barrido angular del segmento principal.\nEste es un objeto visual de código abierto. Descargue el código desde GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

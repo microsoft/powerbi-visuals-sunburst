@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Mostrar opcións de lendas",
 	"Visual_Description_Position": "Seleccionar a localización para a lenda",
 	"Visual_Description_Title": "Mostrar un título para símbolos da lenda",
-	"Visual_Description_LegendName": "Texto do título"
+	"Visual_Description_LegendName": "Texto do título",
+	"Sunburst_Short_Description": "Gráfica de aneis de varios niveis para visualizar de xeito eficaz os datos xerárquicos.",
+	"Sunburst_Long_Description": "A gráfica de círculos concéntricos úsase para visualizar datos xerárquicos, representados mediante círculos concéntricos. O círculo do centro representa o nó raíz, e a xerarquía móvese cara a fóra desde o centro. Un segmento do círculo interno establece unha relación xerárquica con eses segmentos do círculo externo que están no varrido angular do segmento primario.\nEste é un elemento visual de código aberto. Obteña o código en GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

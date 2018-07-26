@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Wyświetl opcje legendy",
 	"Visual_Description_Position": "Wybierz lokalizację legendy",
 	"Visual_Description_Title": "Wyświetl tytuł symboli legendy",
-	"Visual_Description_LegendName": "Tekst tytułu"
+	"Visual_Description_LegendName": "Tekst tytułu",
+	"Sunburst_Short_Description": "Wielopoziomowy wykres pierścieniowy umożliwiający skuteczne wizualizowanie danych hierarchicznych",
+	"Sunburst_Long_Description": "Wykres pierścieniowy jest używany do wizualizowania danych hierarchicznych przedstawianych za pomocą okręgów koncentrycznych. Okrąg w środku reprezentuje węzeł główny, a hierarchia jest budowana ze środka do zewnątrz. Segment okręgu wewnętrznego ma hierarchiczną relację z segmentami okręgu zewnętrznego, które znajdują się wewnątrz kąta odchylenia segmentu nadrzędnego.\nJest to wizualizacja typu open source. Pobierz kod z usługi GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

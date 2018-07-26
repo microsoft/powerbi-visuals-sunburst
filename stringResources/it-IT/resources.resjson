@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Visualizza opzioni legenda",
 	"Visual_Description_Position": "Selezionare la posizione per la legenda",
 	"Visual_Description_Title": "Visualizza un titolo per i simboli della legenda",
-	"Visual_Description_LegendName": "Testo titolo"
+	"Visual_Description_LegendName": "Testo titolo",
+	"Sunburst_Short_Description": "Grafico ad anello multilivello per visualizzare in modo efficace i dati gerarchici",
+	"Sunburst_Long_Description": "Il grafico radiale viene usato per visualizzare dati gerarchici, rappresentati da cerchi concentrici. Il cerchio al centro rappresenta il nodo radice, con la gerarchia che si sposta dal centro verso l'esterno. Un segmento del cerchio interno presenta una relazione gerarchica con i segmenti del cerchio esterno che si trovano all'interno dell'apertura angolare del segmento padre.\nOggetto visivo open source. Il codice sorgente è disponibile su GitHub all'indirizzo https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

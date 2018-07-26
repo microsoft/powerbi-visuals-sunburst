@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Afficher les options de légende",
 	"Visual_Description_Position": "Sélectionner l'emplacement de la légende",
 	"Visual_Description_Title": "Afficher un titre pour les symboles de légende",
-	"Visual_Description_LegendName": "Texte du titre "
+	"Visual_Description_LegendName": "Texte du titre ",
+	"Sunburst_Short_Description": "Graphique en anneau à plusieurs niveaux permettant de visualiser efficacement les données hiérarchiques",
+	"Sunburst_Long_Description": "Un graphique en rayons de soleil permet de visualiser des données hiérarchiques au moyen de cercles concentriques. Le cercle au centre représente le nœud racine, et la hiérarchie se déplace du centre vers l'extérieur. Un segment du cercle interne présente une relation hiérarchique aux segments du cercle extérieur qui se situent dans le champ angulaire du segment parent.\nCe visuel est open source. Obtenez le code sur GitHub ici : https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "显示图例选项",
 	"Visual_Description_Position": "选择图例的位置",
 	"Visual_Description_Title": "显示图例符号的标题",
-	"Visual_Description_LegendName": "标题文本"
+	"Visual_Description_LegendName": "标题文本",
+	"Sunburst_Short_Description": "多级环形图，用于有效地可视化分层数据",
+	"Sunburst_Long_Description": "旭日图用于使分层数据可视化，用同心圆来描绘。中心圆表示层次结构从中心向外移动的根节点。内圆的分段与位于父分段的角度扫描范围的外圆的那些分段之间具有层次关系。\n这是一个开放源代码视觉对象。从 GitHub 获取代码: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

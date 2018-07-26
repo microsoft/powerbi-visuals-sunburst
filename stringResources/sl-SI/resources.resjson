@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Možnosti legende prikaza",
 	"Visual_Description_Position": "Izberite mesto legende",
 	"Visual_Description_Title": "Prikaz naslova za simbole legende",
-	"Visual_Description_LegendName": "Besedilo naslova"
+	"Visual_Description_LegendName": "Besedilo naslova",
+	"Sunburst_Short_Description": "Večstopenjski tortni grafikon za učinkovito upodobitev hierarhičnih podatkov",
+	"Sunburst_Long_Description": "Z večstopenjskim tortnim grafikonom upodabljate hierarhične podatke, ki so prikazani s koncentričnimi krogi. Krog na sredini predstavlja korensko vozlišče, kjer se hierarhija pomika navzven, stran od središča. Segment notranjega kroga prikazuje hierarhični odnos s segmenti zunanjega kroga, ki so postavljeni znotraj kotnega kazalca nadrejenega segmenta.\nTo je odprtokodna ponazoritev. Kodo lahko pridobite na spletnem mestu storitve GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

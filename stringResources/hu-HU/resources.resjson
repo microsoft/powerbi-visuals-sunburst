@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Jelmagyarázati beállítások megjelenítése",
 	"Visual_Description_Position": "A jelmagyarázat helyének kiválasztása",
 	"Visual_Description_Title": "Cím megjelenítése a jelmagyarázat szimbólumaihoz",
-	"Visual_Description_LegendName": "Cím szövege"
+	"Visual_Description_LegendName": "Cím szövege",
+	"Sunburst_Short_Description": "Többszintű gyűrűdiagram a hierarchikus adatok hatékony megjelenítéséhez",
+	"Sunburst_Long_Description": "A többszintű gyűrűdiagram segítségével a hierarchikus adatok koncentrikus körökként jeleníthetők meg. A középső kör a gyökércsomópontot jelöli, és a hierarchia középről kifelé halad. A belső kör szegmensei hierarchikus viszonyban állnak a külső kör azon szegmenseivel, amelyek a szülőszegmens által söpört szögtartományba esnek.\nEz egy nyílt forráskódú vizualizáció. A kód letölthető a GitHubról: https://github.com/Microsoft/powerbi-visuals-sunburst."
 }

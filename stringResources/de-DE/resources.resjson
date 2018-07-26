@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Legendenoptionen anzeigen",
 	"Visual_Description_Position": "Speicherort für die Legende auswählen",
 	"Visual_Description_Title": "Titel für Legendensymbole anzeigen",
-	"Visual_Description_LegendName": "Titeltext"
+	"Visual_Description_LegendName": "Titeltext",
+	"Sunburst_Short_Description": "Ringdiagramm mit mehreren Ebenen für eine effektive Visualisierung hierarchischer Daten.",
+	"Sunburst_Long_Description": "Ein Sunburstdiagramm wird zum Visualisieren von hierarchischen Daten in Form von konzentrischen Kreisen verwendet. Der Kreis in der Mitte stellt den Stammknoten dar, die Hierarchie verläuft von der Mitte nach außen. Ein Segment des inneren Kreises besitzt eine hierarchische Beziehung mit den Segmenten des äußeren Kreises, die sich im gleichen Kreisabschnitt wie das übergeordnete Segment befinden.\nDies ist ein Open Source-Visual. Rufen Sie den Code aus GitHub ab: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

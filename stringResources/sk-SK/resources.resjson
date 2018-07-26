@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Možnosti zobrazenia legendy",
 	"Visual_Description_Position": "Vyberte umiestnenie legendy",
 	"Visual_Description_Title": "Zobraziť názov pre symboly legendy",
-	"Visual_Description_LegendName": "Text názvu"
+	"Visual_Description_LegendName": "Text názvu",
+	"Sunburst_Short_Description": "Viacúrovňový prstencový graf na efektívnu vizualizáciu hierarchických údajov",
+	"Sunburst_Long_Description": "Lúčový graf sa používa na vizualizáciu hierarchických údajov, ktoré sú znázornené sústrednými kruhmi. Kruh v strede predstavuje koreňový uzol, pričom hierarchia sa pohybuje smerom von od stredu. Segment vnútorného kruhu nesie hierarchický vzťah k segmentom vonkajšieho kruhu, ktoré ležia v rámci uhlového vychyľovania nadradeného segmentu.\nTento vizuál je typu open source. Kód získate na stránke GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

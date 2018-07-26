@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "عرض خيارات وسيلة الإيضاح",
 	"Visual_Description_Position": "تحديد موقع وسيلة الإيضاح",
 	"Visual_Description_Title": "عرض عنوان لرموز وسيلة الإيضاح",
-	"Visual_Description_LegendName": "نص العنوان"
+	"Visual_Description_LegendName": "نص العنوان",
+	"Sunburst_Short_Description": "مخطط دائرة مجوفة متعدد المستويات لتصور البيانات الهرمية بفعالية",
+	"Sunburst_Long_Description": "يتم استخدام المخطط الحلقي لتصور البيانات الهرمية، التي يتم عرضها بواسطة دوائر متحدة المركز. تمثل الدائرة في المنتصف العقدة الجذرية، مع تحرك الهرم إلى الخارج من المركز. يحمل مقطع الدائرة الداخلية علاقة هرمية مع مقاطع الدائرة الخارجية التي تقع ضمن مسح قياس الزوايا للمقطع الأصل.\nفيما يلي مرئيات مفتوحة المصدر. احصل على التعليمات البرمجية من GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

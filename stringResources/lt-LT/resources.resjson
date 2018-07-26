@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Rodyti legendos parinktis",
 	"Visual_Description_Position": "Pasirinkite legendos vietą",
 	"Visual_Description_Title": "Rodyti legendos simbolių pavadinimą",
-	"Visual_Description_LegendName": "Pavadinimo tekstas"
+	"Visual_Description_LegendName": "Pavadinimo tekstas",
+	"Sunburst_Short_Description": "Daugiapakopė žiedinė diagrama, skirta efektyviai vizualizuoti hierarchinius duomenis",
+	"Sunburst_Long_Description": "Daugialygė skritulinė diagrama naudojama vizualizuoti hierarchiniams duomenims, kuriuos vaizduoja koncentriniai apskritimai. Centre esantis apskritimas perteikia šakninį mazgą, o hierarchija iš centro slenka į išorę. Vidinio apskritimo segmentas yra hierarchiškai susijęs su tais išorinio apskritimo segmentais, kurie patenka į pirminio segmento aprėpties kampą.\nTai yra atvirojo kodo vaizdinis elementas. Šį kodą galite gauti iš „GitHub“: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

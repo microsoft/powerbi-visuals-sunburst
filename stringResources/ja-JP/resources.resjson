@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "凡例オプションの表示",
 	"Visual_Description_Position": "凡例の場所を選ぶ",
 	"Visual_Description_Title": "凡例シンボルのタイトルを表示する",
-	"Visual_Description_LegendName": "タイトルのテキスト"
+	"Visual_Description_LegendName": "タイトルのテキスト",
+	"Sunburst_Short_Description": "階層状のデータを効果的に視覚化する複数レベルのドーナツ グラフ",
+	"Sunburst_Long_Description": "Sunburst Chart を使用すると、階層状のデータを同心円で視覚化して描くことができます。中心の円はルート ノードを表し、各階層は中心から外側に向かいます。内側の円のセグメントは外側の円のセグメントに対する階層関係を表しており、外側の円の角度範囲は親セグメントの角度範囲内に収まります。\nこれは、オープンソースの視覚エフェクトです。コードは GitHub から取得します : https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

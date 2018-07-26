@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Tampilkan opsi legenda",
 	"Visual_Description_Position": "Pilih lokasi untuk legenda",
 	"Visual_Description_Title": "Tampilkan judul untuk simbol legenda",
-	"Visual_Description_LegendName": "Teks judul"
+	"Visual_Description_LegendName": "Teks judul",
+	"Sunburst_Short_Description": "Bagan donat multitingkat untuk memvisualisasikan data hierarki secara efektif",
+	"Sunburst_Long_Description": "Bagan sunburst digunakan untuk memvisualisasikan data hierarki yang digambarkan dengan lingkaran konsentris. Lingkaran di pusatnya menunjukkan node akar, dengan hierarki yang bergerak ke luar dari tengah. Segmen lingkaran dalam menunjukkan hubungan hierarki dengan segmen lingkaran luar yang terletak dalam sapuan sudut segmen induk.\nIni adalah visual sumber terbuka. Dapatkan kodenya dari GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

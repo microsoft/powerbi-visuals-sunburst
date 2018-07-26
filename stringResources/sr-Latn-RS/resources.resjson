@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Prikaži opcije legende",
 	"Visual_Description_Position": "Izaberite lokaciju legende",
 	"Visual_Description_Title": "Prikaži naslov za simbole legende",
-	"Visual_Description_LegendName": "Tekst naslova"
+	"Visual_Description_LegendName": "Tekst naslova",
+	"Sunburst_Short_Description": "Višestruki prstenasti grafikon za efikasnu vizuelizaciju hijerarhijskih podataka",
+	"Sunburst_Long_Description": "„Sunburst“ grafikon se koristi za vizuelizaciju hijerarhijskih podataka, prikazanih po koncentričnim krugovima. Krug u centru predstavlja osnovni čvor, a hijerarhija se kreće ka spolja od centra. Segment unutrašnjeg kruga nosi hijerarhijski odnos sa tim segmentima spoljašnjeg kruga, koji se nalaze u završnom uglu nadređenog segmenta.\nOvo je open source vizuelni element. Preuzmite kôd iz usluge GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Kuva legendi valikud",
 	"Visual_Description_Position": "Valige legendi asukoht",
 	"Visual_Description_Title": "Kuva legendi sümbolite pealkiri",
-	"Visual_Description_LegendName": "Pealkirja tekst"
+	"Visual_Description_LegendName": "Pealkirja tekst",
+	"Sunburst_Short_Description": "Mitmetasandiline rõngasdiagramm hierarhiliste andmete tõhusaks visualiseerimiseks",
+	"Sunburst_Long_Description": "Radiaalkiirdiagrammi kasutatakse hierarhiliste andmete visualiseerimiseks, mis on kujutatud kontsentriliste ringidena. Keskel olev ring esindab juursõlme, hierarhia liigub keskelt väljapoole. Sisemise ringi segment omab nende välimise ringi segmentidega, mis asetsevad vanemsegmendi nurgalaotuses, hierarhilist seost.\nSee on avatud lähtekoodiga visuaal. Hankige kood GitHubist: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

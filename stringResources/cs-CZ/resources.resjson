@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Zobrazí možnosti pro legendu.",
 	"Visual_Description_Position": "Vyberte umístění pro legendu.",
 	"Visual_Description_Title": "Zobrazí nadpis pro symboly legendy.",
-	"Visual_Description_LegendName": "Text nadpisu"
+	"Visual_Description_LegendName": "Text nadpisu",
+	"Sunburst_Short_Description": "Víceúrovňový prstencový graf k efektivní vizualizaci hierarchických dat",
+	"Sunburst_Long_Description": "Vícevrstvý prstencový graf slouží k vizualizaci hierarchických dat vyobrazených soustřednými kružnicemi. Kružnice ve středu představuje kořenový uzel. Hierarchie dále postupuje od středu ven. Segment vnitřní kružnice nese hierarchický vztah vůči segmentům vnější kružnice, která leží v rámci úhlového oblouku nadřazeného segmentu.\nTento vizuál je typu open source. Kód můžete získat z Githubu: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

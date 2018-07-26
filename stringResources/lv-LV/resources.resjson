@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Rādīt apzīmējumu opcijas",
 	"Visual_Description_Position": "Atlasīt apzīmējumu atrašanās vietu",
 	"Visual_Description_Title": "Rādīt apzīmējumu simbolu nosaukumu",
-	"Visual_Description_LegendName": "Virsraksta teksts"
+	"Visual_Description_LegendName": "Virsraksta teksts",
+	"Sunburst_Short_Description": "Daudzlīmeņu gredzenveida diagramma efektīvai hierarhisku datu vizualizēšanai.",
+	"Sunburst_Long_Description": "Rozetveida diagrammu izmanto, lai vizualizētu hierarhiskus datus, attēlojot tos koncentriskos apļos. Aplis centrā attēlo saknes mezglu, un hierarhija pārvietojas uz āru prom no centra. Iekšējā apļa segmentam ir hierarhiskas attiecības ar tiem ārējā apļa segmentiem, kas novietoti leņķa amplitūdā pret vecāksegmentu.\nŠie ir atvērtā pirmkoda vizuālie dati. Iegūstiet kodu no GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

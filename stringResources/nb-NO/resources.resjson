@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Vis alternativer for forklaring",
 	"Visual_Description_Position": "Velg plasseringen for forklaringen",
 	"Visual_Description_Title": "Vis en tittel for forklaringssymboler",
-	"Visual_Description_LegendName": "Titteltekst"
+	"Visual_Description_LegendName": "Titteltekst",
+	"Sunburst_Short_Description": "Hjuldiagram med flere nivåer for effektiv visualisering av hierarkiske data",
+	"Sunburst_Long_Description": "Sunburst-diagram brukes til å visualisere hierarkiske data i form av konsentriske sirkler. Sirkelen i midten representerer rotnoden, og hierarkiet beveger seg utover fra midten. Et segment av den innerste sirkelen har en hierarkisk relasjon til de segmentene i den ytterste sirkelen som ligger innenfor vinkelåpningen til det overordnede segmentet.\nDette er et visualobjekt med åpen kildekode. Finn koden på GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

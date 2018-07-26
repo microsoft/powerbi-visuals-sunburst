@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "הצג אפשרויות מקרא",
 	"Visual_Description_Position": "בחר את המיקום עבור המקרא",
 	"Visual_Description_Title": "הצג כותרת לסימני המקרא",
-	"Visual_Description_LegendName": "טקסט כותרת"
+	"Visual_Description_LegendName": "טקסט כותרת",
+	"Sunburst_Short_Description": "תרשים טבעת לתצוגה חזותית של נתונים הירארכיים באופן אפקטיבי",
+	"Sunburst_Long_Description": "תרשים קרני שמש משמש לתצוגה חזותית של נתונים הירארכיים, והוא מתואר באמצעות מעגל חד-מרכזיים. המעגל שבמרכז מייצג את צומת הבסיס, כאשר ההירארכיה נעה החוצה מהמרכז. מקטע של המעגל הפנימי נושא קשר גומלין הירארכי למקטעים אלה של המעגל החיצוני שממוקמים בתוך ההטיה הזוויתית של מקטע האב.\nזהו עזר חזותי בקוד פתוח. הורד את הקוד מ- GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }

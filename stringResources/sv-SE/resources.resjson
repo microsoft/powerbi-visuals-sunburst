@@ -27,5 +27,7 @@
 	"Visual_Description_Legend": "Visa förklaringsalternativ",
 	"Visual_Description_Position": "Välj plats för förklaringen",
 	"Visual_Description_Title": "Visa en rubrik för förklaringssymboler",
-	"Visual_Description_LegendName": "Rubriktext"
+	"Visual_Description_LegendName": "Rubriktext",
+	"Sunburst_Short_Description": "Ringdiagram med flera nivåer för att effektivt visualisera hierarkiska data",
+	"Sunburst_Long_Description": "Soldiagram används för att visualisera hierarkiska data avbildade i koncentriska cirklar. Cirkeln i mitten representerar rotnoden och hierarkin rör sig utåt från centrum. Ett segment av den inre cirkeln har en hierarkisk relation till de segment av den yttre cirkeln som ligger inom vinkeln från det överordnade segmentet.\nDet här är ett visuellt objekt med öppen källkod. Hämta koden från GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
 }
