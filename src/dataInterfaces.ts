@@ -24,31 +24,35 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual {
-    // powerbi.extensibility.utils.tooltip
-    import TooltipEnabledDataPoint = powerbi.extensibility.utils.tooltip.TooltipEnabledDataPoint;
+import { TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
+import { interactivityService } from "powerbi-visuals-utils-interactivityutils";
+import SelectableDataPoint = interactivityService.SelectableDataPoint;
 
-    // powerbi.extensibility.utils.interactivity
-    import SelectableDataPoint = powerbi.extensibility.utils.interactivity.SelectableDataPoint;
+export interface SunburstData {
+    root: SunburstDataPoint; // Tree data points
+    dataPoints: SunburstDataPoint[]; // Flat data points
+    total: number;
+}
 
-    export interface SunburstData {
-        root: SunburstDataPoint; // Tree data points
-        dataPoints: SunburstDataPoint[]; // Flat data points
-        total: number;
-    }
+interface HierarchyNode {
+    x?: number;
+    dx?: number;
+    y?: number;
+    dy?: number;
+    depth?: number;
+}
 
-    export interface SunburstDataPoint extends
-        d3.layout.treemap.Node,
-        TooltipEnabledDataPoint,
-        SelectableDataPoint {
+export interface SunburstDataPoint extends
+    HierarchyNode,
+    TooltipEnabledDataPoint,
+    SelectableDataPoint {
 
-        children?: SunburstDataPoint[];
-        value?: number;
-        color?: string;
-        name?: string;
-        parent?: SunburstDataPoint;
-        total: number;
-        key: string;
-        highlight?: boolean;
-    }
+    children?: SunburstDataPoint[];
+    value?: number;
+    color?: string;
+    name?: string;
+    parent?: SunburstDataPoint;
+    total: number;
+    key: string;
+    highlight?: boolean;
 }
