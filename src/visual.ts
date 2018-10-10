@@ -58,7 +58,6 @@ import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutils";
 import {
     ITooltipServiceWrapper,
-    TooltipEnabledDataPoint,
     createTooltipServiceWrapper,
     TooltipEventArgs
 } from "powerbi-visuals-utils-tooltiputils";
