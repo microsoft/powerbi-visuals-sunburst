@@ -34,19 +34,9 @@ export interface SunburstData {
     total: number;
 }
 
-interface HierarchyNode {
-    x?: number;
-    dx?: number;
-    y?: number;
-    dy?: number;
-    depth?: number;
-}
-
 export interface SunburstDataPoint extends
-    HierarchyNode,
     TooltipEnabledDataPoint,
     SelectableDataPoint {
-
     children?: SunburstDataPoint[];
     value?: number;
     color?: string;
@@ -55,4 +45,10 @@ export interface SunburstDataPoint extends
     total: number;
     key: string;
     highlight?: boolean;
+    coords?: {
+        x0: number;
+        y0: number;
+        x1: number;
+        y1: number;
+    };
 }

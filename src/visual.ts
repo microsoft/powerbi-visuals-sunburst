@@ -26,9 +26,10 @@
 
 "use strict";
 
+import "../style/sunburst.less";
 import { Selection, select as d3Select } from "d3-selection";
-import { Arc, arc } from "d3-shape";
-import { partition as d3Partition } from "d3-hierarchy";
+import { Arc, arc as d3Arc } from "d3-shape";
+import { partition as d3Partition, hierarchy as d3Hierarchy, HierarchyRectangularNode } from "d3-hierarchy";
 
 import powerbi from "powerbi-visuals-api";
 import DataView = powerbi.DataView;
@@ -183,30 +184,17 @@ export class Sunburst implements IVisual {
 
         this.colorPalette = this.visualHost.colorPalette;
         this.colorHelper = new ColorHelper(this.colorPalette);
-
-        let arcSizeFactor: number = 3;
-
-        this.arc = arc<SunburstDataPoint>()
-            .startAngle((slice: SunburstDataPoint) => slice.x)
-            .endAngle((slice: SunburstDataPoint) => slice.x + slice.dx)
-            .innerRadius((slice: SunburstDataPoint) => {
-                let y: number = (slice.y) / (Sunburst.OuterRadius);
-                let dy: number = slice.dy / Sunburst.OuterRadius / arcSizeFactor;
-                let toAdd: number = this.maxLevels > slice.depth ? (this.maxLevels - slice.depth) * dy : 0;
-                return y + toAdd;
-            })
-            .outerRadius((slice: SunburstDataPoint) => {
-                let y2: number = (slice.y + slice.dy) / (Sunburst.OuterRadius);
-                let dy: number = slice.dy / Sunburst.OuterRadius / arcSizeFactor;
-                let toAdd: number = this.maxLevels > slice.depth ? (this.maxLevels - slice.depth) * dy : 0;
-                return y2 + toAdd - dy;
-            });
+        this.arc = d3Arc<HierarchyRectangularNode<SunburstDataPoint>>()
+                .startAngle(d => d.x0)
+                .endAngle(d => d.x1)
+                .innerRadius((d) => Math.sqrt(d.y0))
+                .outerRadius((d) => Math.sqrt(d.y1));
 
         this.colorPalette = options.host.colorPalette;
 
         this.interactivityService = new InteractivityService(
             options.host,
-            this.onVisualSelection.bind(this),
+            this.onVisualSelection.bind(this)
         );
 
         this.chartWrapper = d3Select(options.element)
@@ -268,7 +256,7 @@ export class Sunburst implements IVisual {
 
         this.viewport = options.viewport;
 
-        this.settings = this.parseSettings(options.dataViews[0], this.colorHelper);
+        this.settings = this.parseSettings(options.dataViews[0]);
 
         const formatter: IValueFormatter = valueFormatter.create({
             value: this.settings.tooltip.displayUnits,
@@ -281,10 +269,11 @@ export class Sunburst implements IVisual {
             this.colorPalette,
             this.colorHelper,
             this.visualHost,
-            formatter,
+            formatter
         );
 
-        const selection: Selection<d3.BaseType, SunburstDataPoint, d3.BaseType, SunburstDataPoint> = this.render(this.colorHelper);
+
+        const selection = this.render(this.colorHelper);
 
         if (this.data) {
             this.legendData = Sunburst.createLegend(this.data, this.settings);
@@ -305,13 +294,13 @@ export class Sunburst implements IVisual {
                 clearCatcher: this.svg,
                 interactivityService: this.interactivityService,
                 onSelect: this.onVisualSelection.bind(this),
-                dataPoints: this.data.dataPoints,
+                dataPoints: this.data.dataPoints
             };
 
             this.interactivityService.bind(
                 this.data.dataPoints,
                 this.behavior,
-                behaviorOptions,
+                behaviorOptions
             );
 
             this.behavior.renderSelection(false);
@@ -367,36 +356,26 @@ export class Sunburst implements IVisual {
     }
 
     private static labelShift: number = 26;
-
-    private render(colorHelper: ColorHelper): Selection<d3.BaseType, SunburstDataPoint, d3.BaseType, SunburstDataPoint> {
-        const self: Sunburst = this;
-
-        const partition: any =
-        d3Partition()
-            .size([2 * Math.PI, Sunburst.OuterRadius * Sunburst.OuterRadius]);
-
-        const pathSelection = this.main.datum<SunburstDataPoint>(this.data.root)
-            .selectAll("path")
-            .data<SunburstDataPoint>(<any>partition.nodes);
-
-        pathSelection
-            .enter()
-            .append("path")
-            .classed(this.appCssConstants.slice.className, true)
-            .style("display", (slice: SunburstDataPoint) => slice.depth ? null : "none")
-            .attr("d", this.arc)
-            .style("fill", (slice: SunburstDataPoint) => colorHelper.isHighContrast ? null : slice.color)
-            .style("stroke", (slice: SunburstDataPoint) => colorHelper.isHighContrast ? null : slice.color)
-            .style("stroke-width", (slice: SunburstDataPoint) => colorHelper.isHighContrast ? PixelConverter.toString(2) : null);
+    private render(colorHelper: ColorHelper): Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint> {
+        const root = this.partition(this.data.root).descendants().slice(1);
+        const pathSelection =
+            this.main
+                .selectAll("path")
+                .data(root)
+                .enter()
+                .append("path")
+                .classed(this.appCssConstants.slice.className, true)
+                .style("fill", slice => colorHelper.isHighContrast ? null : slice.data.color)
+                .style("stroke", slice => colorHelper.isHighContrast ? slice.data.color : null)
+                .style("stroke-width", () => colorHelper.isHighContrast ? PixelConverter.toString(2) : null)
+                .attr("d", this.arc);
 
         if (this.settings.group.showDataLabels) {
-            pathSelection.each(function (d: SunburstDataPoint, i: number) {
-                if (!d.depth) {
-                    return;
-                }
+            const self = this;
 
+            pathSelection.each(function (d: HierarchyRectangularNode<SunburstDataPoint>, i: number) {
                 const firstArcSection: RegExp = /(^.+?)L/;
-                const currentSelection: Selection<d3.BaseType, any, d3.BaseType, any> = d3Select(this);
+                const currentSelection = d3Select(this);
                 const arcRegExpArray: RegExpExecArray = firstArcSection.exec(currentSelection.attr("d"));
 
                 // if slice is section
@@ -413,8 +392,9 @@ export class Sunburst implements IVisual {
                 }
             });
 
-            this.main.selectAll(this.appCssConstants.sliceLabel.selectorName)
-                .data<SunburstDataPoint>(<any>partition.nodes)
+            this.main
+                .selectAll(this.appCssConstants.sliceLabel.selectorName)
+                .data(root)
                 .enter()
                 .append("text")
                 .style("fill", colorHelper.getHighContrastColor("foreground", null))
@@ -424,13 +404,13 @@ export class Sunburst implements IVisual {
                 .append("textPath")
                 .attr("startOffset", "50%")
                 .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
-                .text((dataPoint: SunburstDataPoint) => dataPoint.name)
+                .text(dataPoint => dataPoint.data.name)
                 .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding));
         }
 
         this.renderTooltip(pathSelection);
-        this.setCategoryLabelPosition(self.viewport.width);
-        this.setPercentageLabelPosition(self.viewport.width);
+        this.setCategoryLabelPosition(this.viewport.width);
+        this.setPercentageLabelPosition(this.viewport.width);
 
         pathSelection
             .exit()
@@ -438,6 +418,23 @@ export class Sunburst implements IVisual {
 
         return pathSelection;
     }
+
+    private partition(data: SunburstDataPoint) {
+        const root = d3Hierarchy<SunburstDataPoint>(data)
+            .sum(d => d.value)
+            .sort((a, b) => b.value - a.value);
+        return d3Partition<SunburstDataPoint>()
+            .size([2 * Math.PI, Sunburst.OuterRadius * Sunburst.OuterRadius])(root)
+            .each(d => {
+                d.data.coords = {
+                    x0: d.x0,
+                    y0: d.y0,
+                    x1: d.y0,
+                    y1: d.y1
+                };
+                return d;
+            });
+      }
 
     private onVisualSelection(dataPoint: SunburstDataPoint): void {
         const isSelected: boolean = !!(dataPoint && dataPoint.selected);
@@ -470,7 +467,6 @@ export class Sunburst implements IVisual {
         };
 
         this.maxLevels = 0;
-
         data.root = this.covertTreeNodeToSunBurstDataPoint(
             dataView.matrix.rows.root,
             null,
@@ -501,7 +497,6 @@ export class Sunburst implements IVisual {
         level: number,
         formatter: IValueFormatter,
     ): SunburstDataPoint {
-
         if (originParentNode.identity) {
             pathIdentity = pathIdentity.concat([originParentNode.identity]);
         }
@@ -511,11 +506,11 @@ export class Sunburst implements IVisual {
 
         const selectionIdBuilder: ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
 
-        pathIdentity.forEach((identity: ISelectionId) => {
+        pathIdentity.forEach((identity: any) => {
             const categoryColumn: DataViewCategoryColumn = {
                 source: {
                     displayName: null,
-                    queryName: identity.getKey()
+                    queryName: identity.key
                 },
                 values: null,
                 identity: [identity]
@@ -524,7 +519,7 @@ export class Sunburst implements IVisual {
             selectionIdBuilder.withCategory(categoryColumn, 0);
         });
 
-        const identity: ISelectionId = selectionIdBuilder.createSelectionId();
+        const identity: any = selectionIdBuilder.createSelectionId();
 
         const valueToSet: number = originParentNode.values
             ? <number>originParentNode.values[0].value
@@ -634,7 +629,7 @@ export class Sunburst implements IVisual {
             : formatter.format(value);
     }
 
-    private parseSettings(dataView: DataView, coloHelper: ColorHelper): SunburstSettings {
+    private parseSettings(dataView: DataView): SunburstSettings {
         const settings: SunburstSettings = SunburstSettings.parse<SunburstSettings>(dataView);
 
         settings.legend.labelColor = this.colorHelper.getHighContrastColor("foreground", settings.legend.labelColor);
@@ -666,9 +661,8 @@ export class Sunburst implements IVisual {
 
     private calculateLabelPosition(): void {
         const innerRadius: number = Math.min(
-            ...this.data.root.children.map((x: SunburstDataPoint) => this.arc.innerRadius()(x, null))
+            ...this.data.root.children.map((x: SunburstDataPoint) => Math.sqrt(x.coords.y0))
         );
-
         this.setPercentageLabelPosition(innerRadius);
         this.setCategoryLabelPosition(innerRadius);
     }
@@ -707,9 +701,10 @@ export class Sunburst implements IVisual {
             return;
         }
 
-        this.tooltipService.addTooltip(selection, (tooltipEvent: TooltipEventArgs<SunburstDataPoint>) => {
-            return tooltipEvent.data.tooltipInfo;
-        });
+        this.tooltipService.addTooltip(
+            selection,
+            (tooltipEvent: TooltipEventArgs<HierarchyRectangularNode<SunburstDataPoint>>) => tooltipEvent.data.data.tooltipInfo
+        );
     }
 
     private renderLegend(): void {
@@ -742,12 +737,9 @@ export class Sunburst implements IVisual {
         }
     }
 
-    private wrapPathText(padding?: number): (slice: SunburstDataPoint, index: number) => void {
+    private wrapPathText(padding?: number): (slice: HierarchyRectangularNode<SunburstDataPoint>, index: number) => void {
         const self = this;
-        return function (slice: SunburstDataPoint, index: number) {
-            if (!slice.depth) {
-                return;
-            }
+        return function () {
             const selection: Selection<d3.BaseType, any, d3.BaseType, any> = d3Select(this);
             const width = (<SVGPathElement>d3Select(selection.attr("xlink:href")).node()).getTotalLength();
             self.wrapText(selection, padding, width);
