@@ -114,7 +114,6 @@ export class Behavior implements IInteractiveBehavior {
 
         selection.style("opacity", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
             const { selected, highlight } = dataPoint.data;
-
             return getFillOpacity(
                 selected,
                 highlight,

@@ -28,7 +28,6 @@
 import powerbi from "powerbi-visuals-api";
 import DataView = powerbi.DataView;
 import VisualObjectInstance = powerbi.VisualObjectInstance;
-import { Sunburst as VisualClass } from "../src/visual";
 import { valueFormatter as vf } from "powerbi-visuals-utils-formattingutils";
 import { assertColorsMatch, d3Click} from "powerbi-visuals-utils-testutils";
 import valueFormatter = vf.valueFormatter;
@@ -62,7 +61,7 @@ describe("Sunburst", () => {
         visualBuilder.updateRenderTimeout(
             dataView,
             () => {
-                expect(visualBuilder.slices.length).toBe(13);
+                expect(visualBuilder.slices.length).toBe(12);
                 done();
             },
             2,
@@ -86,11 +85,11 @@ describe("Sunburst", () => {
         visualBuilder.updateRenderTimeout(
             initialDataView,
             () => {
-                expect(visualBuilder.slices.length).toBe(13);
+                expect(visualBuilder.slices.length).toBe(12);
                 visualBuilder.updateRenderTimeout(
                     updatedDataView,
                     () => {
-                        expect(visualBuilder.slices.length).toBe(40);
+                        expect(visualBuilder.slices.length).toBe(39);
                         done();
                     },
                     2,
@@ -209,7 +208,7 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    expect($(SliceLabelSelector).length).toBe(13);
+                    expect($(SliceLabelSelector).length).toBe(12);
                     done();
                 }, 2, DefaultWaitForRender);
         });
@@ -461,7 +460,7 @@ describe("Sunburst", () => {
 
                     visualBuilder.bookmarksCallback([]);
 
-                    expect(visualBuilder.selectedSlices.length).toBe((<any>visualBuilder.data).dataPoints.length);
+                    expect(visualBuilder.selectedSlices.length).toBe((<any>visualBuilder.data).dataPoints.length - 1); // ignore root node
 
                     done();
                 },
@@ -504,7 +503,7 @@ describe("Sunburst", () => {
             });
 
             function isColorAppliedToElements(
-                elements: JQuery<{}>[],
+                elements: JQuery[],
                 color?: string,
                 colorStyleName: string = "fill"
             ): boolean {
