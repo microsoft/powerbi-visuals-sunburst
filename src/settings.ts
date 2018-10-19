@@ -24,33 +24,32 @@
  *  THE SOFTWARE.
  */
 
-module powerbi.extensibility.visual {
-    // powerbi.extensibility.utils.dataview
-    import DataViewObjectsParser = powerbi.extensibility.utils.dataview.DataViewObjectsParser;
+import { dataViewObjectsParser } from "powerbi-visuals-utils-dataviewutils";
+import DataViewObjectsParser = dataViewObjectsParser.DataViewObjectsParser;
 
-    export class SunburstSettings extends DataViewObjectsParser {
-        public group: SunburstGroupSettings = new SunburstGroupSettings();
-        public legend: LegendSettings = new LegendSettings();
-        public tooltip: SunburstTooltipSettings = new SunburstTooltipSettings();
-    }
-
-    export class SunburstGroupSettings {
-        public fontSize: number = 14;
-        public showSelected: boolean = true;
-        public showDataLabels: boolean = true;
-    }
-
-    export class SunburstTooltipSettings {
-        public displayUnits: number = 0;
-        public precision: number = 2;
-    }
-
-    export class LegendSettings {
-        show: boolean = false;
-        position: string = "Top";
-        showTitle: boolean = true;
-        titleText: string = "Legend";
-        labelColor: string = "#000000";
-        fontSize: number = 8;
-    }
+class SunburstGroupSettings {
+    public fontSize: number = 14;
+    public showSelected: boolean = true;
+    public showDataLabels: boolean = true;
 }
+
+class SunburstTooltipSettings {
+    public displayUnits: number = 0;
+    public precision: number = 2;
+}
+
+class LegendSettings {
+    show: boolean = false;
+    position: string = "Top";
+    showTitle: boolean = true;
+    titleText: string = "Legend";
+    labelColor: string = "#000000";
+    fontSize: number = 8;
+}
+
+export class SunburstSettings extends DataViewObjectsParser {
+    public group: SunburstGroupSettings = new SunburstGroupSettings();
+    public legend: LegendSettings = new LegendSettings();
+    public tooltip: SunburstTooltipSettings = new SunburstTooltipSettings();
+}
+

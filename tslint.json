@@ -2,6 +2,7 @@
     "rules": {
         "insecure-random": true,
         "no-banned-terms": true,
+        "no-cookies": true,
         "no-delete-expression": true,
         "no-disable-auto-sanitization": true,
         "no-document-domain": true,
@@ -37,6 +38,8 @@
         "no-trailing-whitespace": true,
         "no-unsafe-finally": true,
         "no-var-keyword": true,
+        "no-unused-variable": true,
+        "no-unused-new": true,
         "no-unused-expression": true,
         "one-line": [
             true,
