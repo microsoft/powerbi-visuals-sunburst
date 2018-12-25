@@ -165,7 +165,7 @@ export class Sunburst implements IVisual {
     private colorPalette: IColorPalette;
     private colorHelper: ColorHelper;
 
-    private interactivityService: IInteractivityService<SelectableDataPoint>;
+    private interactivityService: InteractivityService;
     private behavior: IInteractiveBehavior = new Behavior();
 
     private tooltipService: ITooltipServiceWrapper;
@@ -512,7 +512,7 @@ export class Sunburst implements IVisual {
             const categoryColumn: DataViewCategoryColumn = {
                 source: {
                     displayName: null,
-                    queryName: identity.key
+                    queryName: `${Math.random()}-${+(new Date())}`
                 },
                 values: null,
                 identity: [identity]

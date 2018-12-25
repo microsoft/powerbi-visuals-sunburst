@@ -79,7 +79,7 @@ export class Behavior implements IInteractiveBehavior {
         const {
             selection,
             clearCatcher,
-            onSelect,
+            onSelect
         } = options;
 
         selection.on("click", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
@@ -109,11 +109,9 @@ export class Behavior implements IInteractiveBehavior {
             interactivityService,
         } = this.options;
 
-        this.options.dataPoints.forEach((point) => {
-            if (!point || !point.selected) {
-                this.markDataPointsAsSelected(point);
-            }
-        });
+        this.options.dataPoints
+            .filter((dataPoint: SunburstDataPoint) => dataPoint && dataPoint.selected)
+            .forEach(this.markDataPointsAsSelected.bind(this));
 
         const hasHighlights: boolean = interactivityService.hasSelection();
 
@@ -122,13 +120,13 @@ export class Behavior implements IInteractiveBehavior {
             return getFillOpacity(
                 selected,
                 highlight,
-                highlight && hasSelection,
-                selected && hasHighlights
+                !highlight && hasSelection,
+                !selected && hasHighlights
             );
         });
     }
 
-    private  markDataPointsAsSelected(root: SunburstDataPoint): void {
+    private markDataPointsAsSelected(root: SunburstDataPoint): void {
         if (!root || !root.parent) {
             return;
         }
@@ -150,7 +148,7 @@ export class InteractivityService extends InteractivitySelectionService {
     public restoreSelection(selectionIds: ISelectionId[]): void {
         super.restoreSelection(selectionIds);
         const selectedDataPoint: SunburstDataPoint = (this.selectableDataPoints as SunburstDataPoint[])
-            .filter(dataPoint => {
+            .filter((dataPoint: SunburstDataPoint) => {
                 return dataPoint
                     && dataPoint.identity
                     && selectionIds
