@@ -25,8 +25,8 @@
  */
 
 import { TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
-import { interactivityService } from "powerbi-visuals-utils-interactivityutils";
-import SelectableDataPoint = interactivityService.SelectableDataPoint;
+import { interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
+import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
 
 export interface SunburstData {
     root: SunburstDataPoint; // Tree data points

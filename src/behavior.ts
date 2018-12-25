@@ -26,15 +26,20 @@
 
 import { Selection, event as d3Event, HierarchyRectangularNode } from "d3";
 
+const getEvent = () => require("d3-selection").event as MouseEvent;
+
 import powerbi from "powerbi-visuals-api";
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { interactivityService } from "powerbi-visuals-utils-interactivityutils";
-import IInteractiveBehavior = interactivityService.IInteractiveBehavior;
-import IInteractivityService = interactivityService.IInteractivityService;
-import InteractivityServiceBase = interactivityService.InteractivityService;
-import ISelectionHandler = interactivityService.ISelectionHandler;
+import { interactivitySelectionService, interactivityBaseService } from "powerbi-visuals-utils-interactivityutils";
+import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
+import IInteractivityService = interactivityBaseService.IInteractivityService;
+import InteractivityServiceBase = interactivityBaseService.InteractivityBaseService;
+import ISelectionHandler = interactivityBaseService.ISelectionHandler;
+import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
+import IBehaviorOptions = interactivityBaseService.IBehaviorOptions;
+import InteractivitySelectionService = interactivitySelectionService.InteractivitySelectionService;
 
 import { SunburstDataPoint } from "./dataInterfaces";
 
@@ -54,11 +59,11 @@ function getFillOpacity(
     return DefaultOpacity;
 }
 
-export interface BehaviorOptions {
-    dataPoints: SunburstDataPoint[];
+export interface BehaviorOptions extends IBehaviorOptions<SunburstDataPoint>{
+    // dataPoints: SunburstDataPoint[];
     selection: Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint>;
     clearCatcher: Selection<d3.BaseType, any, d3.BaseType, any>;
-    interactivityService: IInteractivityService;
+    interactivityService: IInteractivityService<SelectableDataPoint>;
     onSelect?: (dataPoint: SunburstDataPoint) => void;
 }
 
@@ -78,7 +83,7 @@ export class Behavior implements IInteractiveBehavior {
         } = options;
 
         selection.on("click", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
-            const event: Event = d3Event as Event;
+            const event: Event = getEvent() as Event;
 
             selectionHandler.handleSelection(dataPoint.data, false);
 
@@ -134,7 +139,7 @@ export class Behavior implements IInteractiveBehavior {
     }
 }
 
-export class InteractivityService extends InteractivityServiceBase {
+export class InteractivityService extends InteractivitySelectionService {
     constructor(host: IVisualHost, private onSelect?: (dataPoint: SunburstDataPoint) => void) {
         super(host);
     }
