@@ -59,7 +59,7 @@ function getFillOpacity(
     return DefaultOpacity;
 }
 
-export interface BehaviorOptions extends IBehaviorOptions<SunburstDataPoint>{
+export interface BehaviorOptions extends IBehaviorOptions<SunburstDataPoint> {
     // dataPoints: SunburstDataPoint[];
     selection: Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint>;
     clearCatcher: Selection<d3.BaseType, any, d3.BaseType, any>;

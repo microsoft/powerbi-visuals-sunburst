@@ -12,7 +12,7 @@
     "package": "pbiviz package",
     "cert": "pbiviz --create-cert",
     "lint": "npm run lint:ts && npm run lint:less",
-    "lint:ts": "node node_modules/tslint/bin/tslint \"+(src|test)/**/*.ts\"",
+    "lint:ts": "node node_modules/tslint/bin/tslint -r \"node_modules/tslint-microsoft-contrib\" \"+(src|test)/**/*.ts\"",
     "lint:less": "stylelint -s less \"style/**/*.less\"",
     "pretest": "pbiviz package --resources --no-minify --no-pbiviz --no-plugin",
     "test": "karma start"
@@ -67,7 +67,7 @@
     "ts-loader": "5.3.2",
     "ts-node": "^7.0.0",
     "tslint": "5.11.0",
-    "tslint-microsoft-contrib": "^5.0.0",
+    "tslint-microsoft-contrib": "6.0.0",
     "typescript": "3.2.2",
     "webpack": "4.14.0"
   }
