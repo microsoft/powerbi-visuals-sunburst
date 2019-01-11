@@ -82,12 +82,13 @@ import {
 import createLegend = Legend.createLegend;
 import ILegend = LI.ILegend;
 import LegendData = LI.LegendData;
-import LegendIcon = LI.LegendIcon;
+import LegendIcon = LI.MarkerShape;
 import LegendPosition = LI.LegendPosition;
 
-import { interactivityService } from "powerbi-visuals-utils-interactivityutils";
-import IInteractiveBehavior = interactivityService.IInteractiveBehavior;
-import IInteractivityService = interactivityService.IInteractivityService;
+import { interactivityBaseService, interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
+import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
+import IInteractivityService = interactivityBaseService.IInteractivityService;
+import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
 
 
 import { Behavior, BehaviorOptions, InteractivityService } from "./behavior";
@@ -164,7 +165,7 @@ export class Sunburst implements IVisual {
     private colorPalette: IColorPalette;
     private colorHelper: ColorHelper;
 
-    private interactivityService: IInteractivityService;
+    private interactivityService: InteractivityService;
     private behavior: IInteractiveBehavior = new Behavior();
 
     private tooltipService: ITooltipServiceWrapper;
@@ -294,14 +295,11 @@ export class Sunburst implements IVisual {
                 clearCatcher: this.svg,
                 interactivityService: this.interactivityService,
                 onSelect: this.onVisualSelection.bind(this),
-                dataPoints: this.data.dataPoints
+                dataPoints: this.data.dataPoints,
+                behavior: this.behavior
             };
 
-            this.interactivityService.bind(
-                this.data.dataPoints,
-                this.behavior,
-                behaviorOptions
-            );
+            this.interactivityService.bind(behaviorOptions);
 
             this.behavior.renderSelection(false);
         }
@@ -358,12 +356,20 @@ export class Sunburst implements IVisual {
     private static labelShift: number = 26;
     private render(colorHelper: ColorHelper): Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint> {
         const root = this.partition(this.data.root).descendants().slice(1);
-        const pathSelection =
+        const pathSelection: Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint> =
             this.main
-                .selectAll("path")
-                .data(root)
-                .enter()
-                .append("path")
+                .selectAll("path");
+        const pathSelectionData = pathSelection.data(root);
+
+        pathSelectionData
+            .exit()
+            .remove();
+
+        const pathSelectionEnter: Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint> =
+        pathSelectionData.enter()
+                .append("path");
+        const pathSelectionMerged = pathSelectionEnter.merge(pathSelection);
+        pathSelectionMerged
                 .classed(this.appCssConstants.slice.className, true)
                 .style("fill", slice => colorHelper.isHighContrast ? null : slice.data.color)
                 .style("stroke", slice => colorHelper.isHighContrast ? slice.data.color : null)
@@ -373,7 +379,7 @@ export class Sunburst implements IVisual {
         if (this.settings.group.showDataLabels) {
             const self = this;
 
-            pathSelection.each(function (d: HierarchyRectangularNode<SunburstDataPoint>, i: number) {
+            pathSelectionMerged.each(function (d: HierarchyRectangularNode<SunburstDataPoint>, i: number) {
                 const firstArcSection: RegExp = /(^.+?)L/;
                 const currentSelection = d3Select(this);
                 const arcRegExpArray: RegExpExecArray = firstArcSection.exec(currentSelection.attr("d"));
@@ -408,15 +414,11 @@ export class Sunburst implements IVisual {
                 .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding));
         }
 
-        this.renderTooltip(pathSelection);
+        this.renderTooltip(pathSelectionMerged);
         this.setCategoryLabelPosition(this.viewport.width);
         this.setPercentageLabelPosition(this.viewport.width);
 
-        pathSelection
-            .exit()
-            .remove();
-
-        return pathSelection;
+        return pathSelectionMerged;
     }
 
     private partition(data: SunburstDataPoint) {
@@ -510,7 +512,7 @@ export class Sunburst implements IVisual {
             const categoryColumn: DataViewCategoryColumn = {
                 source: {
                     displayName: null,
-                    queryName: identity.key
+                    queryName: `${Math.random()}-${+(new Date())}`
                 },
                 values: null,
                 identity: [identity]
@@ -651,7 +653,7 @@ export class Sunburst implements IVisual {
             return {
                 label: dataPoint.name as string,
                 color: dataPoint.color,
-                icon: LegendIcon.Circle,
+                icon: LegendIcon.circle,
                 selected: false,
                 identity: dataPoint.identity
             };
