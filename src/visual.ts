@@ -26,6 +26,7 @@
 
 "use strict";
 
+import "@babel/polyfill";
 import "../style/sunburst.less";
 import { Selection, select as d3Select } from "d3-selection";
 import { Arc, arc as d3Arc } from "d3-shape";
