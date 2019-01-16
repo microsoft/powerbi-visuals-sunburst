@@ -1,7 +1,7 @@
 {
   "name": "powerbi-visuals-sunburst",
   "description": "SunBurst chart.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": {
     "name": "Microsoft",
     "email": "pbicvsupport@microsoft.com"
@@ -70,5 +70,8 @@
     "tslint-microsoft-contrib": "6.0.0",
     "typescript": "3.2.2",
     "webpack": "4.14.0"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.2.5"
   }
 }
