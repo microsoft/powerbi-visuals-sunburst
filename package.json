@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "d3": "3.5.5",
-    "lodash": "4.17.4",
+    "lodash": "4.17.5",
     "powerbi-visuals-utils-dataviewutils": "^1.2.0",
     "powerbi-visuals-utils-svgutils": "^1.1.0",
     "powerbi-visuals-utils-tooltiputils": "1.0.0",
