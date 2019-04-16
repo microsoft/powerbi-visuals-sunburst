@@ -44,17 +44,20 @@ import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnume
 import DataViewObjects = powerbi.DataViewObjects;
 import DataViewObjectPropertyIdentifier = powerbi.DataViewObjectPropertyIdentifier;
 import DataViewTreeNode = powerbi.DataViewTreeNode;
-import DataRepetitionSelector = powerbi.data.DataRepetitionSelector;
-import IVisual = powerbi.extensibility.visual.IVisual;
-import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+import DataViewHierarchyLevel = powerbi.DataViewHierarchyLevel;
+import DataSelector = powerbi.data.Selector;
+
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
+import ISelectionId = powerbi.visuals.ISelectionId;
+
+import IColorPalette = powerbi.extensibility.IColorPalette;
+import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+
+// powerbi.extensibility.visual
+import IVisual = powerbi.extensibility.visual.IVisual;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
-
-import IColorPalette = powerbi.extensibility.IColorPalette;
-import ISelectionId = powerbi.visuals.ISelectionId;
-
 
 import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutils";
@@ -481,6 +484,7 @@ export class Sunburst implements IVisual {
             visualHost,
             1,
             formatter,
+            dataView.matrix.rows.levels
         );
 
         return data;
@@ -493,12 +497,13 @@ export class Sunburst implements IVisual {
         sunburstParentNode: SunburstDataPoint,
         colorPalette: IColorPalette,
         colorHelper: ColorHelper,
-        pathIdentity: DataRepetitionSelector[],
+        pathIdentity: DataSelector[],
         data: SunburstData,
-        color: string,
+        parentColor: string,
         visualHost: IVisualHost,
         level: number,
         formatter: IValueFormatter,
+        levels: DataViewHierarchyLevel[],
     ): SunburstDataPoint {
         if (originParentNode.identity) {
             pathIdentity = pathIdentity.concat([originParentNode.identity]);
@@ -508,19 +513,7 @@ export class Sunburst implements IVisual {
         }
 
         const selectionIdBuilder: ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
-
-        pathIdentity.forEach((identity: any) => {
-            const categoryColumn: DataViewCategoryColumn = {
-                source: {
-                    displayName: null,
-                    queryName: `${Math.random()}-${+(new Date())}`
-                },
-                values: null,
-                identity: [identity]
-            };
-
-            selectionIdBuilder.withCategory(categoryColumn, 0);
-        });
+        selectionIdBuilder.withMatrixNode(originParentNode, levels);
 
         const identity: any = selectionIdBuilder.createSelectionId();
 
@@ -552,22 +545,29 @@ export class Sunburst implements IVisual {
         newDataPointNode.children = [];
 
         if (name && level === 2 && !originParentNode.objects) {
-            const color: string = colorHelper.getHighContrastColor(
-                "foreground",
-                colorPalette.getColor(name).value,
+            const initialColor: string = colorPalette.getColor(name).value;
+            const parsedColor: string = this.getColor(
+                Sunburst.LegendPropertyIdentifier,
+                initialColor,
+                originParentNode.objects,
+                name
             );
 
-            newDataPointNode.color = color;
+            newDataPointNode.color = colorHelper.getHighContrastColor(
+                "foreground",
+                parsedColor,
+            );
         } else {
-            newDataPointNode.color = color;
+            newDataPointNode.color = parentColor;
         }
 
         if (originParentNode.children && originParentNode.children.length > 0) {
             for (const child of originParentNode.children) {
-                const color_node: string = this.getColor(
+                const nodeColor: string = this.getColor(
                     Sunburst.LegendPropertyIdentifier,
                     newDataPointNode.color,
-                    child.objects
+                    child.objects,
+                    name
                 );
 
                 const newChild: SunburstDataPoint = this.covertTreeNodeToSunBurstDataPoint(
@@ -577,10 +577,11 @@ export class Sunburst implements IVisual {
                     colorHelper,
                     pathIdentity,
                     data,
-                    color_node,
+                    nodeColor,
                     visualHost,
                     level + 1,
                     formatter,
+                    levels,
                 );
 
                 newDataPointNode.children.push(newChild);
@@ -604,7 +605,9 @@ export class Sunburst implements IVisual {
     private getColor(
         properties: DataViewObjectPropertyIdentifier,
         defaultColor: string,
-        objects: DataViewObjects): string {
+        objects: DataViewObjects,
+        measureKey: string
+        ): string {
 
         const colorHelper: ColorHelper = new ColorHelper(
             this.colorPalette,
@@ -612,7 +615,7 @@ export class Sunburst implements IVisual {
             defaultColor
         );
 
-        return colorHelper.getColorForMeasure(objects, "", "foreground");
+        return colorHelper.getColorForMeasure(objects, measureKey, "foreground");
     }
 
     private getTooltipData(

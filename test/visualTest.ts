@@ -538,7 +538,8 @@ describe("Sunburst", () => {
                 "#00ff00",
                 visualBuilder.visualHost,
                 0,
-                valueFormatter.create({})
+                valueFormatter.create({}),
+                []
             );
 
             expect(dataPoint.name).not.toBe("undefined");
