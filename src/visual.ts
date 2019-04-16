@@ -36,15 +36,16 @@ import powerbi from "powerbi-visuals-api";
 import DataView = powerbi.DataView;
 import IViewport = powerbi.IViewport;
 import PrimitiveValue = powerbi.PrimitiveValue;
+
 import VisualObjectInstance = powerbi.VisualObjectInstance;
-import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import VisualObjectInstanceEnumeration = powerbi.VisualObjectInstanceEnumeration;
 import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
 import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
+
+import DataViewHierarchyLevel = powerbi.DataViewHierarchyLevel;
 import DataViewObjects = powerbi.DataViewObjects;
 import DataViewObjectPropertyIdentifier = powerbi.DataViewObjectPropertyIdentifier;
 import DataViewTreeNode = powerbi.DataViewTreeNode;
-import DataViewHierarchyLevel = powerbi.DataViewHierarchyLevel;
 import DataSelector = powerbi.data.Selector;
 
 import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
@@ -52,13 +53,12 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 
 import IColorPalette = powerbi.extensibility.IColorPalette;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+import IVisualEventService =  powerbi.extensibility.IVisualEventService;
 
-// powerbi.extensibility.visual
 import IVisual = powerbi.extensibility.visual.IVisual;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
-
 import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutils";
 import {
@@ -89,14 +89,10 @@ import LegendData = LI.LegendData;
 import LegendIcon = LI.MarkerShape;
 import LegendPosition = LI.LegendPosition;
 
-import { interactivityBaseService, interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
+import { interactivityBaseService } from "powerbi-visuals-utils-interactivityutils";
 import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
-import IInteractivityService = interactivityBaseService.IInteractivityService;
-import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
-
 
 import { Behavior, BehaviorOptions, InteractivityService } from "./behavior";
-
 import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
 import { SunburstSettings } from "./settings";
 
@@ -144,6 +140,7 @@ export class Sunburst implements IVisual {
     private settings: SunburstSettings;
 
     private visualHost: IVisualHost;
+    private events: IVisualEventService;
     private data: SunburstData;
     private arc: Arc<any, any>;
     private chartWrapper: Selection<d3.BaseType, any, d3.BaseType, any>;
@@ -179,6 +176,8 @@ export class Sunburst implements IVisual {
 
     constructor(options: VisualConstructorOptions) {
         this.visualHost = options.host;
+
+        this.events = options.host.eventService;
 
         this.tooltipService = createTooltipServiceWrapper(
             options.host.tooltipService,
@@ -259,53 +258,63 @@ export class Sunburst implements IVisual {
             return;
         }
 
-        this.viewport = options.viewport;
+        try {
+            this.events.renderingStarted(options);
 
-        this.settings = this.parseSettings(options.dataViews[0]);
+            this.viewport = options.viewport;
 
-        const formatter: IValueFormatter = valueFormatter.create({
-            value: this.settings.tooltip.displayUnits,
-            precision: this.settings.tooltip.precision,
-            cultureSelector: this.visualHost.locale
-        });
+            this.settings = this.parseSettings(options.dataViews[0]);
 
-        this.data = this.convert(
-            options.dataViews[0],
-            this.colorPalette,
-            this.colorHelper,
-            this.visualHost,
-            formatter
-        );
+            const formatter: IValueFormatter = valueFormatter.create({
+                value: this.settings.tooltip.displayUnits,
+                precision: this.settings.tooltip.precision,
+                cultureSelector: this.visualHost.locale
+            });
+
+            this.data = this.convert(
+                options.dataViews[0],
+                this.colorPalette,
+                this.colorHelper,
+                this.visualHost,
+                formatter
+            );
 
 
-        const selection = this.render(this.colorHelper);
+            const selection = this.render(this.colorHelper);
 
-        if (this.data) {
-            this.legendData = Sunburst.createLegend(this.data, this.settings);
+            if (this.data) {
+                this.legendData = Sunburst.createLegend(this.data, this.settings);
 
-            this.renderLegend();
+                this.renderLegend();
+            }
+
+            if (this.settings.legend.show) {
+                this.chartWrapper.style("width", PixelConverter.toString(this.viewport.width));
+                this.chartWrapper.style("height", PixelConverter.toString(this.viewport.height));
+            } else {
+                this.chartWrapper.attr("style", null);
+            }
+
+            if (this.interactivityService) {
+                const behaviorOptions: BehaviorOptions = {
+                    selection,
+                    clearCatcher: this.svg,
+                    interactivityService: this.interactivityService,
+                    onSelect: this.onVisualSelection.bind(this),
+                    dataPoints: this.data.dataPoints,
+                    behavior: this.behavior
+                };
+
+                this.interactivityService.bind(behaviorOptions);
+
+                this.behavior.renderSelection(false);
+            }
+
+            this.events.renderingFinished(options);
         }
-
-        if (this.settings.legend.show) {
-            this.chartWrapper.style("width", PixelConverter.toString(this.viewport.width));
-            this.chartWrapper.style("height", PixelConverter.toString(this.viewport.height));
-        } else {
-            this.chartWrapper.attr("style", null);
-        }
-
-        if (this.interactivityService) {
-            const behaviorOptions: BehaviorOptions = {
-                selection,
-                clearCatcher: this.svg,
-                interactivityService: this.interactivityService,
-                onSelect: this.onVisualSelection.bind(this),
-                dataPoints: this.data.dataPoints,
-                behavior: this.behavior
-            };
-
-            this.interactivityService.bind(behaviorOptions);
-
-            this.behavior.renderSelection(false);
+        catch (e) {
+            console.error(e);
+            this.events.renderingFailed(options);
         }
     }
 
