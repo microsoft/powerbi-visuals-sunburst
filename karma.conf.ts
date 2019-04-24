@@ -24,75 +24,111 @@
  *  THE SOFTWARE.
  */
 
-'use strict';
+"use strict";
 
-const recursivePathToTests = 'test/**/*.ts';
-const srcRecursivePath = '.tmp/drop/visual.js';
-const srcCssRecursivePath = '.tmp/drop/visual.css';
-const srcOriginalRecursivePath = 'src/**/*.ts';
-const coverageFolder = 'coverage';
+const webpackConfig = require("./test.webpack.config.js");
+const tsconfig = require("./test.tsconfig.json");
+const path = require("path");
 
-process.env.CHROME_BIN = require('puppeteer').executablePath();
+const testRecursivePath = "test/visualTest.ts";
+const srcOriginalRecursivePath = "src/**/*.ts";
+const srcRecursivePath = ".tmp/drop/**/*.js";
+const coverageFolder = "coverage";
+const globals = "./test/globals.ts";
 
-module.exports = (config) => {
-    config.set({
-        browsers: ['ChromeHeadless'],
+process.env.CHROME_BIN = require("puppeteer").executablePath();
+
+import { Config, ConfigOptions } from "karma";
+
+module.exports = (config: Config) => {
+    config.set(<ConfigOptions>{
+        browserNoActivityTimeout: 100000,
+        browsers: ["ChromeHeadless"],
         colors: true,
-        frameworks: ['jasmine'],
+        frameworks: ["jasmine"],
         reporters: [
-            'progress',
-            'coverage',
-            'karma-remap-istanbul'
+            "progress",
+            "coverage",
+            "coverage-istanbul"
         ],
         singleRun: true,
+        plugins: [
+            "karma-coverage",
+            "karma-typescript",
+            "karma-webpack",
+            "karma-jasmine",
+            "karma-sourcemap-loader",
+            "karma-chrome-launcher",
+            "karma-coverage-istanbul-reporter"
+        ],
         files: [
-            srcCssRecursivePath,
+            "node_modules/jquery/dist/jquery.min.js",
+            "node_modules/jasmine-jquery/lib/jasmine-jquery.js",
+            globals,
             srcRecursivePath,
-            {
-                pattern: './capabilities.json',
-                watched: false,
-                served: true,
-                included: false
-            },
-            'node_modules/lodash/lodash.min.js',
-            'node_modules/jquery/dist/jquery.min.js',
-            'node_modules/jasmine-jquery/lib/jasmine-jquery.js',
-            'node_modules/powerbi-visuals-utils-testutils/lib/index.js',
-            recursivePathToTests,
+            testRecursivePath,
             {
                 pattern: srcOriginalRecursivePath,
                 included: false,
                 served: true
+            },
+            {
+                pattern: "./capabilities.json",
+                watched: false,
+                served: true,
+                included: false
             }
         ],
         preprocessors: {
-            [recursivePathToTests]: ['typescript'],
-            [srcRecursivePath]: ['sourcemap', 'coverage']
+            [testRecursivePath]: ["webpack"],
+            [srcRecursivePath]: ["sourcemap"]
         },
         typescriptPreprocessor: {
-            options: {
-                sourceMap: false,
-                target: 'ES5',
-                removeComments: false,
-                concatenateOutput: false
+            options: tsconfig.compilerOptions
+        },
+        coverageIstanbulReporter: {
+            // reports can be any that are listed here: https://github.com/istanbuljs/istanbuljs/tree/aae256fb8b9a3d19414dcf069c592e88712c32c6/packages/istanbul-reports/lib
+            reports: {
+                lcovonly: coverageFolder + "lcov.info",
+                html: coverageFolder,
+                "text-summary": null
+            },
+
+            // base output directory. If you include %browser% in the path it will be replaced with the karma browser name
+            dir: path.join(__dirname, "coverage"),
+
+            // Combines coverage information from multiple browsers into one report rather than outputting a report
+            // for each browser.
+            combineBrowserReports: true,
+
+            // if using webpack and pre-loaders, work around webpack breaking the source path
+            fixWebpackSourcePaths: true,
+
+            // Omit files with no statements, no functions and no branches from the report
+            skipFilesWithNoCoverage: true,
+
+            // Most reporters accept additional config options. You can pass these through the `report-config` option
+            "report-config": {
+                // all options available at: https://github.com/istanbuljs/istanbuljs/blob/aae256fb8b9a3d19414dcf069c592e88712c32c6/packages/istanbul-reports/lib/html/index.js#L135-L137
+                html: {
+                    // outputs the report in ./coverage/html
+                    subdir: "html"
+                }
             }
         },
         coverageReporter: {
             dir: coverageFolder,
-            reporters: [{
-                    type: 'html'
-                },
-                {
-                    type: 'lcov'
-                }
+            reporters: [
+                { type: "html" },
+                { type: "lcov" }
             ]
         },
-        remapIstanbulReporter: {
-            reports: {
-                lcovonly: coverageFolder + '/lcov.info',
-                html: coverageFolder,
-                'text-summary': null
-            }
+        mime: {
+            "text/x-typescript": ["ts", "tsx"]
+        },
+        webpack: webpackConfig,
+        webpackMiddleware: {
+            stats: "errors-only"
         }
     });
 };
