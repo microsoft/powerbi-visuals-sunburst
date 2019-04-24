@@ -329,7 +329,7 @@ export class Sunburst implements IVisual {
             this.enumerateColors(topCategories, instanceEnumeration);
         }
 
-        return instanceEnumeration || [];
+        return (instanceEnumeration as VisualObjectInstanceEnumerationObject).instances || [];
     }
 
     private enumerateColors(topCategories: SunburstDataPoint[], instanceEnumeration: VisualObjectInstanceEnumeration): void {
@@ -482,6 +482,11 @@ export class Sunburst implements IVisual {
         };
 
         this.maxLevels = 0;
+
+        // levels[matrixNode.level].sources[0].queryName
+        dataView.matrix.rows.levels.forEach(level => {
+            level.sources[0].queryName += Math.random();
+        });
         data.root = this.covertTreeNodeToSunBurstDataPoint(
             dataView.matrix.rows.root,
             null,
@@ -513,6 +518,7 @@ export class Sunburst implements IVisual {
         level: number,
         formatter: IValueFormatter,
         levels: DataViewHierarchyLevel[],
+        parentNodes: DataViewTreeNode[] = [],
     ): SunburstDataPoint {
         if (originParentNode.identity) {
             pathIdentity = pathIdentity.concat([originParentNode.identity]);
@@ -522,7 +528,9 @@ export class Sunburst implements IVisual {
         }
 
         const selectionIdBuilder: ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
-        selectionIdBuilder.withMatrixNode(originParentNode, levels);
+        // need to use previous nodes fo three too
+        let pathNode = parentNodes.concat([originParentNode]);
+        pathNode.forEach(node => selectionIdBuilder.withMatrixNode(node, levels));
 
         const identity: any = selectionIdBuilder.createSelectionId();
 
@@ -591,6 +599,7 @@ export class Sunburst implements IVisual {
                     level + 1,
                     formatter,
                     levels,
+                    pathNode
                 );
 
                 newDataPointNode.children.push(newChild);
