@@ -1,6 +1,5 @@
 {
     "rules": {
-        "insecure-random": true,
         "no-banned-terms": true,
         "no-delete-expression": true,
         "no-disable-auto-sanitization": true,
@@ -22,7 +21,6 @@
         "react-anchor-blank-noopener": true,
         "react-iframe-missing-sandbox": true,
         "react-no-dangerous-html": true,
-        "no-eval": true,
         "class-name": true,
         "comment-format": [
             true,
@@ -33,11 +31,11 @@
             "spaces"
         ],
         "no-duplicate-variable": true,
+        "no-eval": true,
         "no-internal-module": false,
         "no-trailing-whitespace": true,
         "no-unsafe-finally": true,
         "no-var-keyword": true,
-        "no-unused-expression": true,
         "one-line": [
             true,
             "check-open-brace",

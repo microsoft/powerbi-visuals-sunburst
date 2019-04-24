@@ -23,18 +23,30 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-import * as d3 from "d3";
+
+import { Selection, event as d3Event, HierarchyRectangularNode } from "d3";
+
+const getEvent = () => require("d3-selection").event as MouseEvent;
+
+import powerbi from "powerbi-visuals-api";
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import ISelectionId = powerbi.visuals.ISelectionId;
+
+import { interactivitySelectionService, interactivityBaseService } from "powerbi-visuals-utils-interactivityutils";
+import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
+import IInteractivityService = interactivityBaseService.IInteractivityService;
+import InteractivityServiceBase = interactivityBaseService.InteractivityBaseService;
+import ISelectionHandler = interactivityBaseService.ISelectionHandler;
+import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
+import IBehaviorOptions = interactivityBaseService.IBehaviorOptions;
+import InteractivitySelectionService = interactivitySelectionService.InteractivitySelectionService;
+
 import { SunburstDataPoint } from "./dataInterfaces";
 
-import ISelectionHandler = powerbi.extensibility.utils.interactivity.ISelectionHandler;
-import IInteractiveBehavior = powerbi.extensibility.utils.interactivity.IInteractiveBehavior;
-import IInteractivityService = powerbi.extensibility.utils.interactivity.IInteractivityService;
-import InteractivityServiceBase = powerbi.extensibility.utils.interactivity.InteractivityService;
+const DimmedOpacity: number = 0.2;
+const DefaultOpacity: number = 1.0;
 
-export const DimmedOpacity: number = 0.2;
-export const DefaultOpacity: number = 1.0;
-
-export function getFillOpacity(
+function getFillOpacity(
     selected: boolean,
     highlight: boolean,
     hasSelection: boolean,
@@ -47,11 +59,11 @@ export function getFillOpacity(
     return DefaultOpacity;
 }
 
-export interface BehaviorOptions {
-    dataPoints: SunburstDataPoint[];
-    selection: d3.Selection<SunburstDataPoint>;
-    clearCatcher: d3.Selection<any>;
-    interactivityService: IInteractivityService;
+export interface BehaviorOptions extends IBehaviorOptions<SunburstDataPoint> {
+    // dataPoints: SunburstDataPoint[];
+    selection: Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint>;
+    clearCatcher: Selection<d3.BaseType, any, d3.BaseType, any>;
+    interactivityService: IInteractivityService<SelectableDataPoint>;
     onSelect?: (dataPoint: SunburstDataPoint) => void;
 }
 
@@ -67,18 +79,18 @@ export class Behavior implements IInteractiveBehavior {
         const {
             selection,
             clearCatcher,
-            onSelect,
+            onSelect
         } = options;
 
-        selection.on("click", (dataPoint: SunburstDataPoint) => {
-            const event: Event = d3.event as Event;
+        selection.on("click", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
+            const event: Event = getEvent() as Event;
 
-            selectionHandler.handleSelection(dataPoint, false);
+            selectionHandler.handleSelection(dataPoint.data, false);
 
             event.stopPropagation();
 
             if (onSelect) {
-                onSelect(dataPoint);
+                onSelect(dataPoint.data);
             }
         });
 
@@ -103,12 +115,13 @@ export class Behavior implements IInteractiveBehavior {
 
         const hasHighlights: boolean = interactivityService.hasSelection();
 
-        selection.style("opacity", (dataPoint: SunburstDataPoint) => {
+        selection.style("opacity", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
+            const { selected, highlight } = dataPoint.data;
             return getFillOpacity(
-                dataPoint.selected,
-                dataPoint.highlight,
-                !dataPoint.highlight && hasSelection,
-                !dataPoint.selected && hasHighlights
+                selected,
+                highlight,
+                !highlight && hasSelection,
+                !selected && hasHighlights
             );
         });
     }
@@ -124,7 +137,7 @@ export class Behavior implements IInteractiveBehavior {
     }
 }
 
-export class InteractivityService extends InteractivityServiceBase {
+export class InteractivityService extends InteractivitySelectionService {
     constructor(host: IVisualHost, private onSelect?: (dataPoint: SunburstDataPoint) => void) {
         super(host);
     }
@@ -132,16 +145,15 @@ export class InteractivityService extends InteractivityServiceBase {
     /**
      * Sunburst does not support multi selection because it's hard to render a center tooltip for more than a single data point
      */
-    public restoreSelection(selectionIds: visuals.ISelectionId[]): void {
+    public restoreSelection(selectionIds: ISelectionId[]): void {
         super.restoreSelection(selectionIds);
-
         const selectedDataPoint: SunburstDataPoint = (this.selectableDataPoints as SunburstDataPoint[])
             .filter((dataPoint: SunburstDataPoint) => {
                 return dataPoint
                     && dataPoint.identity
                     && selectionIds
                     && selectionIds[0]
-                    && selectionIds[0].equals(dataPoint.identity as visuals.ISelectionId);
+                    && selectionIds[0].equals(dataPoint.identity as ISelectionId);
             })[0];
 
         if (this.onSelect) {
@@ -149,4 +161,3 @@ export class InteractivityService extends InteractivityServiceBase {
         }
     }
 }
-

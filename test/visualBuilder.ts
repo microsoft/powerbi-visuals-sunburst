@@ -24,79 +24,76 @@
  *  THE SOFTWARE.
  */
 
-// tslint:disable-next-line:no-reference
-/// <reference path="_references.ts"/>
+import powerbi from "powerbi-visuals-api";
+import DataView = powerbi.DataView;
+import VisualUpdateType = powerbi.VisualUpdateType;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
-module powerbi.extensibility.visual.test {
-    // powerbi.extensibility.utils.test
-    import VisualBuilderBase = powerbi.extensibility.utils.test.VisualBuilderBase;
-    import renderTimeout = powerbi.extensibility.utils.test.helpers.renderTimeout;
+import { VisualBuilderBase, renderTimeout } from "powerbi-visuals-utils-testutils";
+import { Sunburst as VisualClass } from "../src/visual";
+import { VisualData } from "./visualData";
+import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 
-    // Sunburst1445472000808
-    import VisualClass = powerbi.extensibility.visual.Sunburst1445472000808.Sunburst;
-    import VisualData = powerbi.extensibility.visual.Sunburst1445472000808.SunburstData;
+export class VisualBuilder extends VisualBuilderBase<VisualClass> {
+    bookmarksCallback: (ids: ISelectionId[]) => void;
+    constructor(width: number, height: number) {
+        super(width, height, "Sunburst1445472000808");
+    }
 
-    export class VisualBuilder extends VisualBuilderBase<VisualClass> {
-        bookmarksCallback: (ids: ISelectionId[]) => void;
-        constructor(width: number, height: number) {
-            super(width, height, "Sunburst1445472000808");
-        }
+    public update(dataView: DataView[] | DataView, updateType?: VisualUpdateType): void {
+        this.visual.update({
+            dataViews: Array.isArray(dataView) ? dataView : [dataView],
+            viewport: this.viewport,
+            type: updateType
+        });
+    }
 
-        public update(dataView: DataView[] | DataView, updateType?: VisualUpdateType): void {
-            this.visual.update(<VisualUpdateOptions>{
-                dataViews: _.isArray(dataView) ? dataView : [dataView],
-                viewport: this.viewport,
-                type: updateType
-            });
-        }
+    public updateRenderTimeout(
+        dataViews: DataView[] | DataView,
+        fn: Function,
+        updateType?: VisualUpdateType,
+        timeout?: number): number {
+        this.update(dataViews, updateType);
+        return renderTimeout(fn, timeout);
+    }
 
-        public updateRenderTimeout(
-            dataViews: DataView[] | DataView,
-            fn: Function,
-            updateType?: VisualUpdateType,
-            timeout?: number): number {
-            this.update(dataViews, updateType);
-            return renderTimeout(fn, timeout);
-        }
+    protected build(options: VisualConstructorOptions): VisualClass {
+        options.host["selectionManager"].registerOnSelectCallback = (callback: (ids: ISelectionId[]) => void) => {
+            this.bookmarksCallback = (selectionIds: ISelectionId[]) => {
+                options.host["selectionManager"].selectionIds = selectionIds;
 
-        protected build(options: VisualConstructorOptions): VisualClass {
-            options.host["selectionManager"].registerOnSelectCallback = (callback: (ids: ISelectionId[]) => void) => {
-                this.bookmarksCallback = (selectionIds: ISelectionId[]) => {
-                    options.host["selectionManager"].selectionIds = selectionIds;
-
-                    callback(selectionIds);
-                };
+                callback(selectionIds);
             };
+        };
 
-            return new VisualClass(options);
-        }
+        return new VisualClass(options);
+    }
 
-        public get instance(): VisualClass {
-            return this.visual;
-        }
+    public get instance(): VisualClass {
+        return this.visual;
+    }
 
-        public get mainElement(): JQuery {
-            return this.element.find(".sunburst svg");
-        }
+    public get mainElement(): JQuery {
+        return this.element.find(".sunburst svg");
+    }
 
-        public selectBookmarks(ids: ISelectionId[]) {
-            this.bookmarksCallback(ids);
-        }
+    public selectBookmarks(ids: ISelectionId[]) {
+        this.bookmarksCallback(ids);
+    }
 
-        public get data(): VisualData {
-            return this.instance["data"];
-        }
+    public get data(): VisualData {
+        return <any>(this.instance)["data"];
+    }
 
-        public get slices(): JQuery {
-            return this.element.find(".sunburst__slice");
-        }
+    public get slices(): JQuery {
+        return this.element.find(".sunburst__slice");
+    }
 
-        public get selectedSlices(): JQuery {
-            return this.slices.filter(function () {
-                const appliedOpacity: number = parseFloat($(this).css("opacity"));
+    public get selectedSlices(): JQuery {
+        return this.slices.filter(function () {
+            const appliedOpacity: number = parseFloat($(this).css("opacity"));
 
-                return appliedOpacity === 1;
-            });
-        }
+            return appliedOpacity === 1;
+        });
     }
 }

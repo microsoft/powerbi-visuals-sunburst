@@ -1,5 +1,5 @@
 const path = require('path');
-const webpack = require('webpack');
+const webpack = require("webpack");
 
 module.exports = {
     devtool: 'source-map',
@@ -9,14 +9,6 @@ module.exports = {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/
-            },
-            {
-                test: /\.tsx?$/i,
-                enforce: 'post',
-                include: /(src)/,
-                exclude: /(node_modules|resources\/js\/vendor)/,
-                loader: 'istanbul-instrumenter-loader',
-                options: { esModules: true }
             },
             {
                 test: /\.json$/,
@@ -42,13 +34,13 @@ module.exports = {
         ]
     },
     externals: {
-        'powerbi-visuals-api': '{}',
+        "powerbi-visuals-api": '{}'
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.css']
     },
     output: {
-        path: path.resolve(__dirname, '.tmp/test')
+        path: path.resolve(__dirname, ".tmp/test")
     },
     plugins: [
         new webpack.ProvidePlugin({

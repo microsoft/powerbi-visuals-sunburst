@@ -26,7 +26,6 @@
 import * as d3 from "d3";
 
 import { TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
-
 import { interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
 import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
 
@@ -37,10 +36,8 @@ export interface SunburstData {
 }
 
 export interface SunburstDataPoint extends
-    d3.TreemapLayout<SelectableDataPoint>, //UPD d3.layout.treemap.Node
     TooltipEnabledDataPoint,
     SelectableDataPoint {
-
     children?: SunburstDataPoint[];
     value?: number;
     color?: string;
@@ -49,5 +46,11 @@ export interface SunburstDataPoint extends
     total: number;
     key: string;
     highlight?: boolean;
+    coords?: {
+        x0: number;
+        y0: number;
+        x1: number;
+        y1: number;
+    };
 }
 
