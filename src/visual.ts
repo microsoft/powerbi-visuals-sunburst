@@ -43,6 +43,7 @@ import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInst
 import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
 
 import DataViewHierarchyLevel = powerbi.DataViewHierarchyLevel;
+import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import DataViewObjects = powerbi.DataViewObjects;
 import DataViewObjectPropertyIdentifier = powerbi.DataViewObjectPropertyIdentifier;
 import DataViewTreeNode = powerbi.DataViewTreeNode;
@@ -259,7 +260,7 @@ export class Sunburst implements IVisual {
         }
 
         try {
-            this.events.renderingStarted(options);
+            this.events && this.events.renderingStarted(options);
 
             this.viewport = options.viewport;
 
@@ -310,11 +311,11 @@ export class Sunburst implements IVisual {
                 this.behavior.renderSelection(false);
             }
 
-            this.events.renderingFinished(options);
+            this.events && this.events.renderingFinished(options);
         }
         catch (e) {
             console.error(e);
-            this.events.renderingFailed(options);
+            this.events && this.events.renderingFailed(options);
         }
     }
 
@@ -528,9 +529,22 @@ export class Sunburst implements IVisual {
         }
 
         const selectionIdBuilder: ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
+        pathIdentity.forEach((identity: any) => {
+            const categoryColumn: DataViewCategoryColumn = {
+                source: {
+                    displayName: null,
+                    queryName: `${Math.random()}-${+(new Date())}`
+                },
+                values: null,
+                identity: [identity]
+            };
+
+            selectionIdBuilder.withCategory(categoryColumn, 0);
+        });
         // need to use previous nodes fo three too
         let pathNode = parentNodes.concat([originParentNode]);
-        pathNode.forEach(node => selectionIdBuilder.withMatrixNode(node, levels));
+
+        // pathNode.forEach(node => selectionIdBuilder.withMatrixNode(node, levels));
 
         const identity: any = selectionIdBuilder.createSelectionId();
 
