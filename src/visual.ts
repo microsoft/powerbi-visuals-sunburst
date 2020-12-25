@@ -484,15 +484,8 @@ export class Sunburst implements IVisual {
 
         this.maxLevels = 0;
 
-        // levels[matrixNode.level].sources[0].queryName
-        dataView.matrix.rows.levels.forEach(level => {
-            level.sources[0].queryName += Math.random();
-        });
         data.root = this.covertTreeNodeToSunBurstDataPoint(
             dataView.matrix.rows.root,
-            null,
-            colorPalette,
-            colorHelper,
             [],
             data,
             undefined,
@@ -509,9 +502,6 @@ export class Sunburst implements IVisual {
 
     public covertTreeNodeToSunBurstDataPoint(
         originParentNode: DataViewTreeNode,
-        sunburstParentNode: SunburstDataPoint,
-        colorPalette: IColorPalette,
-        colorHelper: ColorHelper,
         pathIdentity: DataSelector[],
         data: SunburstData,
         parentColor: string,
@@ -519,35 +509,8 @@ export class Sunburst implements IVisual {
         level: number,
         formatter: IValueFormatter,
         levels: DataViewHierarchyLevel[],
-        parentNodes: DataViewTreeNode[] = [],
     ): SunburstDataPoint {
-        if (originParentNode.identity) {
-            pathIdentity = pathIdentity.concat([originParentNode.identity]);
-        }
-        if (this.maxLevels < level) {
-            this.maxLevels = level;
-        }
-
-        const selectionIdBuilder: ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
-        pathIdentity.forEach((identity: any) => {
-            const categoryColumn: DataViewCategoryColumn = {
-                source: {
-                    displayName: null,
-                    queryName: `${Math.random()}-${+(new Date())}`
-                },
-                values: null,
-                identity: [identity]
-            };
-
-            selectionIdBuilder.withCategory(categoryColumn, 0);
-        });
-        // need to use previous nodes fo three too
-        let pathNode = parentNodes.concat([originParentNode]);
-
-        // pathNode.forEach(node => selectionIdBuilder.withMatrixNode(node, levels));
-
-        const identity: any = selectionIdBuilder.createSelectionId();
-
+        const identity: ISelectionId = visualHost.createSelectionIdBuilder().withMatrixNode(originParentNode, levels).createSelectionId();
         const valueToSet: number = originParentNode.values
             ? <number>originParentNode.values[0].value
             : 0;
@@ -575,22 +538,7 @@ export class Sunburst implements IVisual {
         data.total += newDataPointNode.value;
         newDataPointNode.children = [];
 
-        if (name && level === 2 && !originParentNode.objects) {
-            const initialColor: string = colorPalette.getColor(name).value;
-            const parsedColor: string = this.getColor(
-                Sunburst.LegendPropertyIdentifier,
-                initialColor,
-                originParentNode.objects,
-                name
-            );
-
-            newDataPointNode.color = colorHelper.getHighContrastColor(
-                "foreground",
-                parsedColor,
-            );
-        } else {
-            newDataPointNode.color = parentColor;
-        }
+        newDataPointNode.color = parentColor;
 
         if (originParentNode.children && originParentNode.children.length > 0) {
             for (const child of originParentNode.children) {
@@ -603,9 +551,6 @@ export class Sunburst implements IVisual {
 
                 const newChild: SunburstDataPoint = this.covertTreeNodeToSunBurstDataPoint(
                     child,
-                    newDataPointNode,
-                    colorPalette,
-                    colorHelper,
                     pathIdentity,
                     data,
                     nodeColor,
@@ -613,7 +558,6 @@ export class Sunburst implements IVisual {
                     level + 1,
                     formatter,
                     levels,
-                    pathNode
                 );
 
                 newDataPointNode.children.push(newChild);
@@ -626,10 +570,6 @@ export class Sunburst implements IVisual {
             name,
             newDataPointNode.total
         );
-
-        if (sunburstParentNode) {
-            newDataPointNode.parent = sunburstParentNode;
-        }
 
         return newDataPointNode;
     }

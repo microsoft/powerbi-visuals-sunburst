@@ -82,24 +82,11 @@ export class Behavior implements IInteractiveBehavior {
             onSelect
         } = options;
 
-        selection.on("click", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
-            const event: Event = getEvent() as Event;
-
-            selectionHandler.handleSelection(dataPoint.data, false);
-
-            event.stopPropagation();
-
-            if (onSelect) {
-                onSelect(dataPoint.data);
-            }
+        selection.on("click", (d, i: number) => {
+            selectionHandler.handleSelection(d.data, (<MouseEvent>getEvent()).ctrlKey);
         });
-
         clearCatcher.on("click", () => {
             selectionHandler.handleClearSelection();
-
-            if (onSelect) {
-                onSelect(null);
-            }
         });
     }
 
@@ -108,10 +95,6 @@ export class Behavior implements IInteractiveBehavior {
             selection,
             interactivityService,
         } = this.options;
-
-        this.options.dataPoints
-            .filter((dataPoint: SunburstDataPoint) => dataPoint && dataPoint.selected)
-            .forEach(this.markDataPointsAsSelected.bind(this));
 
         const hasHighlights: boolean = interactivityService.hasSelection();
 
@@ -124,16 +107,6 @@ export class Behavior implements IInteractiveBehavior {
                 !selected && hasHighlights
             );
         });
-    }
-
-    private markDataPointsAsSelected(root: SunburstDataPoint): void {
-        if (!root || !root.parent) {
-            return;
-        }
-
-        root.parent.selected = true;
-
-        this.markDataPointsAsSelected(root.parent);
     }
 }
 
