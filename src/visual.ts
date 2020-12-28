@@ -90,10 +90,12 @@ import LegendData = LI.LegendData;
 import LegendIcon = LI.MarkerShape;
 import LegendPosition = LI.LegendPosition;
 
-import { interactivityBaseService } from "powerbi-visuals-utils-interactivityutils";
+import { interactivityBaseService, interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
+import IInteractivityService = interactivityBaseService.IInteractivityService;
 import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
+import createInteractivitySelectionService = interactivitySelectionService.createInteractivitySelectionService;
 
-import { Behavior, BehaviorOptions, InteractivityService } from "./behavior";
+import { Behavior, BehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
 import { SunburstSettings } from "./settings";
 
@@ -167,7 +169,7 @@ export class Sunburst implements IVisual {
     private colorPalette: IColorPalette;
     private colorHelper: ColorHelper;
 
-    private interactivityService: InteractivityService;
+    private interactivityService: IInteractivityService<any>;
     private behavior: IInteractiveBehavior = new Behavior();
 
     private tooltipService: ITooltipServiceWrapper;
@@ -197,10 +199,7 @@ export class Sunburst implements IVisual {
 
         this.colorPalette = options.host.colorPalette;
 
-        this.interactivityService = new InteractivityService(
-            options.host,
-            this.onVisualSelection.bind(this)
-        );
+        this.interactivityService = createInteractivitySelectionService(options.host);
 
         this.chartWrapper = d3Select(options.element)
             .append("div")

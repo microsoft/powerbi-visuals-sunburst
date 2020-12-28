@@ -83,6 +83,7 @@ export class Behavior implements IInteractiveBehavior {
         } = options;
 
         selection.on("click", (d, i: number) => {
+            debugger;
             selectionHandler.handleSelection(d.data, (<MouseEvent>getEvent()).ctrlKey);
         });
         clearCatcher.on("click", () => {
@@ -107,30 +108,5 @@ export class Behavior implements IInteractiveBehavior {
                 !selected && hasHighlights
             );
         });
-    }
-}
-
-export class InteractivityService extends InteractivitySelectionService {
-    constructor(host: IVisualHost, private onSelect?: (dataPoint: SunburstDataPoint) => void) {
-        super(host);
-    }
-
-    /**
-     * Sunburst does not support multi selection because it's hard to render a center tooltip for more than a single data point
-     */
-    public restoreSelection(selectionIds: ISelectionId[]): void {
-        super.restoreSelection(selectionIds);
-        const selectedDataPoint: SunburstDataPoint = (this.selectableDataPoints as SunburstDataPoint[])
-            .filter((dataPoint: SunburstDataPoint) => {
-                return dataPoint
-                    && dataPoint.identity
-                    && selectionIds
-                    && selectionIds[0]
-                    && selectionIds[0].equals(dataPoint.identity as ISelectionId);
-            })[0];
-
-        if (this.onSelect) {
-            this.onSelect(selectedDataPoint);
-        }
     }
 }
