@@ -24,9 +24,8 @@
  *  THE SOFTWARE.
  */
 
-import { Selection, event as d3Event, HierarchyRectangularNode } from "d3";
-
-const getEvent = () => require("d3-selection").event as MouseEvent;
+import { BaseType, Selection } from "d3-selection";
+import { HierarchyRectangularNode } from "d3-hierarchy";
 
 import powerbi from "powerbi-visuals-api";
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
@@ -61,8 +60,8 @@ function getFillOpacity(
 
 export interface BehaviorOptions extends IBehaviorOptions<SunburstDataPoint> {
     // dataPoints: SunburstDataPoint[];
-    selection: Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint>;
-    clearCatcher: Selection<d3.BaseType, any, d3.BaseType, any>;
+    selection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint>;
+    clearCatcher: Selection<BaseType, any, BaseType, any>;
     interactivityService: IInteractivityService<SelectableDataPoint>;
     onSelect?: (dataPoint: SunburstDataPoint) => void;
 }
@@ -82,9 +81,10 @@ export class Behavior implements IInteractiveBehavior {
             onSelect
         } = options;
 
-        selection.on("click", (d, i: number) => {
+        selection.on("click", (d, i) => {
             debugger;
-            selectionHandler.handleSelection(d.data, (<MouseEvent>getEvent()).ctrlKey);
+            selectionHandler.handleSelection(d.data, false);
+            //selectionHandler.handleSelection(d.data, (<MouseEvent>getEvent()).ctrlKey);
         });
         clearCatcher.on("click", () => {
             selectionHandler.handleClearSelection();

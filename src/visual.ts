@@ -26,9 +26,8 @@
 
 "use strict";
 
-import "@babel/polyfill";
 import "../style/sunburst.less";
-import { Selection, select as d3Select } from "d3-selection";
+import { BaseType, Selection, select as d3Select } from "d3-selection";
 import { Arc, arc as d3Arc } from "d3-shape";
 import { partition as d3Partition, hierarchy as d3Hierarchy, HierarchyRectangularNode } from "d3-hierarchy";
 
@@ -76,9 +75,8 @@ import translate = manipulation.translate;
 import ClassAndSelector = CssConstants.ClassAndSelector;
 import createClassAndSelector = CssConstants.createClassAndSelector;
 
-import { valueFormatter as vf } from "powerbi-visuals-utils-formattingutils";
-import valueFormatter = vf.valueFormatter;
-import IValueFormatter = vf.IValueFormatter;
+import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
+import IValueFormatter = valueFormatter.IValueFormatter;
 
 import {
     legend as Legend,
@@ -146,12 +144,12 @@ export class Sunburst implements IVisual {
     private events: IVisualEventService;
     private data: SunburstData;
     private arc: Arc<any, any>;
-    private chartWrapper: Selection<d3.BaseType, any, d3.BaseType, any>;
-    private svg: Selection<d3.BaseType, string, d3.BaseType, string>;
-    private main: Selection<d3.BaseType, any, d3.BaseType, any>;
-    private percentageLabel: Selection<d3.BaseType, string, d3.BaseType, string>;
+    private chartWrapper: Selection<BaseType, any, BaseType, any>;
+    private svg: Selection<BaseType, string, BaseType, string>;
+    private main: Selection<BaseType, any, BaseType, any>;
+    private percentageLabel: Selection<BaseType, string, BaseType, string>;
     private percentageFormatter: IValueFormatter;
-    private selectedCategoryLabel: Selection<d3.BaseType, string, d3.BaseType, string>;
+    private selectedCategoryLabel: Selection<BaseType, string, BaseType, string>;
 
     private appCssConstants: IAppCssConstants = {
         main: createClassAndSelector("sunburst"),
@@ -367,9 +365,9 @@ export class Sunburst implements IVisual {
     }
 
     private static labelShift: number = 26;
-    private render(colorHelper: ColorHelper): Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint> {
+    private render(colorHelper: ColorHelper): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
         const root = this.partition(this.data.root).descendants().slice(1);
-        const pathSelection: Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint> =
+        const pathSelection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> =
             this.main
                 .selectAll("path");
         const pathSelectionData = pathSelection.data(root);
@@ -378,7 +376,7 @@ export class Sunburst implements IVisual {
             .exit()
             .remove();
 
-        const pathSelectionEnter: Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint> =
+        const pathSelectionEnter: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> =
         pathSelectionData.enter()
                 .append("path");
         const pathSelectionMerged = pathSelectionEnter.merge(pathSelection);
@@ -673,7 +671,7 @@ export class Sunburst implements IVisual {
             .text((x: string) => x).each(function (d: string) { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
     }
 
-    private renderTooltip(selection: Selection<d3.BaseType, any, d3.BaseType, any>): void {
+    private renderTooltip(selection: Selection<BaseType, any, BaseType, any>): void {
         if (!this.tooltipService) {
             return;
         }
@@ -717,13 +715,13 @@ export class Sunburst implements IVisual {
     private wrapPathText(padding?: number): (slice: HierarchyRectangularNode<SunburstDataPoint>, index: number) => void {
         const self = this;
         return function () {
-            const selection: Selection<d3.BaseType, any, d3.BaseType, any> = d3Select(this);
+            const selection: Selection<BaseType, any, BaseType, any> = d3Select(this);
             const width = (<SVGPathElement>d3Select(selection.attr("xlink:href")).node()).getTotalLength();
             self.wrapText(selection, padding, width);
         };
     }
 
-    private wrapText(selection: Selection<d3.BaseType, any, d3.BaseType, any>, padding?: number, width?: number): void {
+    private wrapText(selection: Selection<BaseType, any, BaseType, any>, padding?: number, width?: number): void {
         let node: SVGTextElement = <SVGTextElement>selection.node(),
             textLength: number = node.getComputedTextLength(),
             text: string = selection.text();
