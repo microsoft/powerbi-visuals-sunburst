@@ -81,13 +81,21 @@ export class Behavior implements IInteractiveBehavior {
             onSelect
         } = options;
 
-        selection.on("click", (d, i) => {
-            debugger;
-            selectionHandler.handleSelection(d.data, false);
-            //selectionHandler.handleSelection(d.data, (<MouseEvent>getEvent()).ctrlKey);
+        selection.on("click", (event:MouseEvent, d:HierarchyRectangularNode<SunburstDataPoint>) => {
+            selectionHandler.handleSelection(d.data, event.ctrlKey);
+            event.stopPropagation();
+
+            if (onSelect) {
+                onSelect(d.data);
+            }
+
         });
         clearCatcher.on("click", () => {
             selectionHandler.handleClearSelection();
+
+            if (onSelect) {
+                onSelect(null);
+            }
         });
     }
 

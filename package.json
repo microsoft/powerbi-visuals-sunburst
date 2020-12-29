@@ -32,6 +32,7 @@
     "@types/karma": "5.0.1",
     "@types/lodash": "4.14.166",
     "@types/webpack": "4.41.25",
+    "core-js": "^3.8.1",
     "coveralls": "3.1.0",
     "css-loader": "5.0.1",
     "d3-hierarchy": "^2.0.0",
@@ -74,8 +75,7 @@
     "tslint": "5.20.1",
     "tslint-microsoft-contrib": "6.2.0",
     "typescript": "4.1.3",
-    "webpack": "5.11.1"
+    "webpack": "^4.44.2"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }

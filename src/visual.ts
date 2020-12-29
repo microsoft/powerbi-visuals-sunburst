@@ -26,6 +26,11 @@
 
 "use strict";
 
+require("core-js/stable");
+
+
+
+
 import "../style/sunburst.less";
 import { BaseType, Selection, select as d3Select } from "d3-selection";
 import { Arc, arc as d3Arc } from "d3-shape";
@@ -96,6 +101,7 @@ import createInteractivitySelectionService = interactivitySelectionService.creat
 import { Behavior, BehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
 import { SunburstSettings } from "./settings";
+import { identity } from "lodash";
 
 interface IAppCssConstants {
     main: ClassAndSelector;
@@ -176,6 +182,7 @@ export class Sunburst implements IVisual {
     private legendData: LegendData;
 
     constructor(options: VisualConstructorOptions) {
+
         this.visualHost = options.host;
 
         this.events = options.host.eventService;
@@ -499,7 +506,7 @@ export class Sunburst implements IVisual {
 
     public covertTreeNodeToSunBurstDataPoint(
         originParentNode: DataViewTreeNode,
-        pathIdentity: DataSelector[],
+        parentNodes: DataViewTreeNode[],
         data: SunburstData,
         parentColor: string,
         visualHost: IVisualHost,
@@ -507,7 +514,17 @@ export class Sunburst implements IVisual {
         formatter: IValueFormatter,
         levels: DataViewHierarchyLevel[],
     ): SunburstDataPoint {
-        const identity: ISelectionId = visualHost.createSelectionIdBuilder().withMatrixNode(originParentNode, levels).createSelectionId();
+
+        let identityBuilder: ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
+
+        parentNodes.push(originParentNode);
+    
+        for (let i=0; i < parentNodes.length; i++) {
+            identityBuilder = identityBuilder.withMatrixNode(parentNodes[i], levels)
+        }
+
+        const identity: ISelectionId = identityBuilder.createSelectionId();
+
         const valueToSet: number = originParentNode.values
             ? <number>originParentNode.values[0].value
             : 0;
@@ -548,7 +565,7 @@ export class Sunburst implements IVisual {
 
                 const newChild: SunburstDataPoint = this.covertTreeNodeToSunBurstDataPoint(
                     child,
-                    pathIdentity,
+                    [...parentNodes],
                     data,
                     nodeColor,
                     visualHost,
@@ -678,7 +695,8 @@ export class Sunburst implements IVisual {
 
         this.tooltipService.addTooltip(
             selection,
-            (tooltipEvent: TooltipEventArgs<HierarchyRectangularNode<SunburstDataPoint>>) => tooltipEvent.data.data.tooltipInfo
+            (data: HierarchyRectangularNode<SunburstDataPoint>) => data.data.tooltipInfo,
+            (data: HierarchyRectangularNode<SunburstDataPoint>) => data.data.identity
         );
     }
 
