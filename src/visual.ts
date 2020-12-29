@@ -26,9 +26,13 @@
 
 "use strict";
 
-import "@babel/polyfill";
+require("core-js/stable");
+
+
+
+
 import "../style/sunburst.less";
-import { Selection, select as d3Select } from "d3-selection";
+import { BaseType, Selection, select as d3Select } from "d3-selection";
 import { Arc, arc as d3Arc } from "d3-shape";
 import { partition as d3Partition, hierarchy as d3Hierarchy, HierarchyRectangularNode } from "d3-hierarchy";
 
@@ -76,9 +80,8 @@ import translate = manipulation.translate;
 import ClassAndSelector = CssConstants.ClassAndSelector;
 import createClassAndSelector = CssConstants.createClassAndSelector;
 
-import { valueFormatter as vf } from "powerbi-visuals-utils-formattingutils";
-import valueFormatter = vf.valueFormatter;
-import IValueFormatter = vf.IValueFormatter;
+import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
+import IValueFormatter = valueFormatter.IValueFormatter;
 
 import {
     legend as Legend,
@@ -90,12 +93,15 @@ import LegendData = LI.LegendData;
 import LegendIcon = LI.MarkerShape;
 import LegendPosition = LI.LegendPosition;
 
-import { interactivityBaseService } from "powerbi-visuals-utils-interactivityutils";
+import { interactivityBaseService, interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
+import IInteractivityService = interactivityBaseService.IInteractivityService;
 import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
+import createInteractivitySelectionService = interactivitySelectionService.createInteractivitySelectionService;
 
-import { Behavior, BehaviorOptions, InteractivityService } from "./behavior";
+import { Behavior, BehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
 import { SunburstSettings } from "./settings";
+import { identity } from "lodash";
 
 interface IAppCssConstants {
     main: ClassAndSelector;
@@ -144,12 +150,12 @@ export class Sunburst implements IVisual {
     private events: IVisualEventService;
     private data: SunburstData;
     private arc: Arc<any, any>;
-    private chartWrapper: Selection<d3.BaseType, any, d3.BaseType, any>;
-    private svg: Selection<d3.BaseType, string, d3.BaseType, string>;
-    private main: Selection<d3.BaseType, any, d3.BaseType, any>;
-    private percentageLabel: Selection<d3.BaseType, string, d3.BaseType, string>;
+    private chartWrapper: Selection<BaseType, any, BaseType, any>;
+    private svg: Selection<BaseType, string, BaseType, string>;
+    private main: Selection<BaseType, any, BaseType, any>;
+    private percentageLabel: Selection<BaseType, string, BaseType, string>;
     private percentageFormatter: IValueFormatter;
-    private selectedCategoryLabel: Selection<d3.BaseType, string, d3.BaseType, string>;
+    private selectedCategoryLabel: Selection<BaseType, string, BaseType, string>;
 
     private appCssConstants: IAppCssConstants = {
         main: createClassAndSelector("sunburst"),
@@ -167,7 +173,7 @@ export class Sunburst implements IVisual {
     private colorPalette: IColorPalette;
     private colorHelper: ColorHelper;
 
-    private interactivityService: InteractivityService;
+    private interactivityService: IInteractivityService<any>;
     private behavior: IInteractiveBehavior = new Behavior();
 
     private tooltipService: ITooltipServiceWrapper;
@@ -176,6 +182,7 @@ export class Sunburst implements IVisual {
     private legendData: LegendData;
 
     constructor(options: VisualConstructorOptions) {
+
         this.visualHost = options.host;
 
         this.events = options.host.eventService;
@@ -197,10 +204,7 @@ export class Sunburst implements IVisual {
 
         this.colorPalette = options.host.colorPalette;
 
-        this.interactivityService = new InteractivityService(
-            options.host,
-            this.onVisualSelection.bind(this)
-        );
+        this.interactivityService = createInteractivitySelectionService(options.host);
 
         this.chartWrapper = d3Select(options.element)
             .append("div")
@@ -368,9 +372,9 @@ export class Sunburst implements IVisual {
     }
 
     private static labelShift: number = 26;
-    private render(colorHelper: ColorHelper): Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint> {
+    private render(colorHelper: ColorHelper): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
         const root = this.partition(this.data.root).descendants().slice(1);
-        const pathSelection: Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint> =
+        const pathSelection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> =
             this.main
                 .selectAll("path");
         const pathSelectionData = pathSelection.data(root);
@@ -379,7 +383,7 @@ export class Sunburst implements IVisual {
             .exit()
             .remove();
 
-        const pathSelectionEnter: Selection<d3.BaseType, HierarchyRectangularNode<SunburstDataPoint>, d3.BaseType, SunburstDataPoint> =
+        const pathSelectionEnter: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> =
         pathSelectionData.enter()
                 .append("path");
         const pathSelectionMerged = pathSelectionEnter.merge(pathSelection);
@@ -484,15 +488,8 @@ export class Sunburst implements IVisual {
 
         this.maxLevels = 0;
 
-        // levels[matrixNode.level].sources[0].queryName
-        dataView.matrix.rows.levels.forEach(level => {
-            level.sources[0].queryName += Math.random();
-        });
         data.root = this.covertTreeNodeToSunBurstDataPoint(
             dataView.matrix.rows.root,
-            null,
-            colorPalette,
-            colorHelper,
             [],
             data,
             undefined,
@@ -509,44 +506,24 @@ export class Sunburst implements IVisual {
 
     public covertTreeNodeToSunBurstDataPoint(
         originParentNode: DataViewTreeNode,
-        sunburstParentNode: SunburstDataPoint,
-        colorPalette: IColorPalette,
-        colorHelper: ColorHelper,
-        pathIdentity: DataSelector[],
+        parentNodes: DataViewTreeNode[],
         data: SunburstData,
         parentColor: string,
         visualHost: IVisualHost,
         level: number,
         formatter: IValueFormatter,
         levels: DataViewHierarchyLevel[],
-        parentNodes: DataViewTreeNode[] = [],
     ): SunburstDataPoint {
-        if (originParentNode.identity) {
-            pathIdentity = pathIdentity.concat([originParentNode.identity]);
+
+        let identityBuilder: ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
+
+        parentNodes.push(originParentNode);
+    
+        for (let i=0; i < parentNodes.length; i++) {
+            identityBuilder = identityBuilder.withMatrixNode(parentNodes[i], levels)
         }
-        if (this.maxLevels < level) {
-            this.maxLevels = level;
-        }
 
-        const selectionIdBuilder: ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
-        pathIdentity.forEach((identity: any) => {
-            const categoryColumn: DataViewCategoryColumn = {
-                source: {
-                    displayName: null,
-                    queryName: `${Math.random()}-${+(new Date())}`
-                },
-                values: null,
-                identity: [identity]
-            };
-
-            selectionIdBuilder.withCategory(categoryColumn, 0);
-        });
-        // need to use previous nodes fo three too
-        let pathNode = parentNodes.concat([originParentNode]);
-
-        // pathNode.forEach(node => selectionIdBuilder.withMatrixNode(node, levels));
-
-        const identity: any = selectionIdBuilder.createSelectionId();
+        const identity: ISelectionId = identityBuilder.createSelectionId();
 
         const valueToSet: number = originParentNode.values
             ? <number>originParentNode.values[0].value
@@ -575,22 +552,7 @@ export class Sunburst implements IVisual {
         data.total += newDataPointNode.value;
         newDataPointNode.children = [];
 
-        if (name && level === 2 && !originParentNode.objects) {
-            const initialColor: string = colorPalette.getColor(name).value;
-            const parsedColor: string = this.getColor(
-                Sunburst.LegendPropertyIdentifier,
-                initialColor,
-                originParentNode.objects,
-                name
-            );
-
-            newDataPointNode.color = colorHelper.getHighContrastColor(
-                "foreground",
-                parsedColor,
-            );
-        } else {
-            newDataPointNode.color = parentColor;
-        }
+        newDataPointNode.color = parentColor;
 
         if (originParentNode.children && originParentNode.children.length > 0) {
             for (const child of originParentNode.children) {
@@ -603,17 +565,13 @@ export class Sunburst implements IVisual {
 
                 const newChild: SunburstDataPoint = this.covertTreeNodeToSunBurstDataPoint(
                     child,
-                    newDataPointNode,
-                    colorPalette,
-                    colorHelper,
-                    pathIdentity,
+                    [...parentNodes],
                     data,
                     nodeColor,
                     visualHost,
                     level + 1,
                     formatter,
                     levels,
-                    pathNode
                 );
 
                 newDataPointNode.children.push(newChild);
@@ -626,10 +584,6 @@ export class Sunburst implements IVisual {
             name,
             newDataPointNode.total
         );
-
-        if (sunburstParentNode) {
-            newDataPointNode.parent = sunburstParentNode;
-        }
 
         return newDataPointNode;
     }
@@ -734,14 +688,15 @@ export class Sunburst implements IVisual {
             .text((x: string) => x).each(function (d: string) { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
     }
 
-    private renderTooltip(selection: Selection<d3.BaseType, any, d3.BaseType, any>): void {
+    private renderTooltip(selection: Selection<BaseType, any, BaseType, any>): void {
         if (!this.tooltipService) {
             return;
         }
 
         this.tooltipService.addTooltip(
             selection,
-            (tooltipEvent: TooltipEventArgs<HierarchyRectangularNode<SunburstDataPoint>>) => tooltipEvent.data.data.tooltipInfo
+            (data: HierarchyRectangularNode<SunburstDataPoint>) => data.data.tooltipInfo,
+            (data: HierarchyRectangularNode<SunburstDataPoint>) => data.data.identity
         );
     }
 
@@ -778,13 +733,13 @@ export class Sunburst implements IVisual {
     private wrapPathText(padding?: number): (slice: HierarchyRectangularNode<SunburstDataPoint>, index: number) => void {
         const self = this;
         return function () {
-            const selection: Selection<d3.BaseType, any, d3.BaseType, any> = d3Select(this);
+            const selection: Selection<BaseType, any, BaseType, any> = d3Select(this);
             const width = (<SVGPathElement>d3Select(selection.attr("xlink:href")).node()).getTotalLength();
             self.wrapText(selection, padding, width);
         };
     }
 
-    private wrapText(selection: Selection<d3.BaseType, any, d3.BaseType, any>, padding?: number, width?: number): void {
+    private wrapText(selection: Selection<BaseType, any, BaseType, any>, padding?: number, width?: number): void {
         let node: SVGTextElement = <SVGTextElement>selection.node(),
             textLength: number = node.getComputedTextLength(),
             text: string = selection.text();

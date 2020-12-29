@@ -23,7 +23,6 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  *  THE SOFTWARE.
  */
-import * as d3 from "d3";
 
 import { TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
 import { interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
