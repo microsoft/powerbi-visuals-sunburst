@@ -1,5 +1,6 @@
 ## 2.1.6
 * Updated tooltiputils to v2.5.2
+* Added context menu
 
 ## 2.0.1
 * Include @babel/polyfill to support IE11
