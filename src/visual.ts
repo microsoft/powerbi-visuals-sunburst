@@ -59,7 +59,7 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import IColorPalette = powerbi.extensibility.IColorPalette;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import IVisualEventService =  powerbi.extensibility.IVisualEventService;
-
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import IVisual = powerbi.extensibility.visual.IVisual;
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
@@ -147,6 +147,7 @@ export class Sunburst implements IVisual {
     private settings: SunburstSettings;
 
     private visualHost: IVisualHost;
+    private selectionManager: ISelectionManager;
     private events: IVisualEventService;
     private data: SunburstData;
     private arc: Arc<any, any>;
@@ -216,6 +217,22 @@ export class Sunburst implements IVisual {
             .attr("width", "100%")
             .attr("height", "100%")
             .attr("preserveAspectRatio", "xMidYMid meet");
+
+        this.selectionManager = options.host.createSelectionManager();
+
+        this.svg.on('contextmenu', (event) => {​​
+            const emptySelection = {​​
+                "measures": [],
+                "dataMap": {​​
+                }​​
+            }​​;
+
+            this.selectionManager.showContextMenu(emptySelection, {​​
+                x: event.clientX,
+                y: event.clientY
+            }​​);
+            event.preventDefault();
+        }​​);
 
         this.main = this.svg.append("g");
         this.main.attr(CssConstants.transformProperty, translate(Sunburst.CentralPoint, Sunburst.CentralPoint));
