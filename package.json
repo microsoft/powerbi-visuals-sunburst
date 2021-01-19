@@ -68,6 +68,7 @@
     "powerbi-visuals-utils-tooltiputils": "^2.5.2",
     "powerbi-visuals-utils-typeutils": "^2.3.0",
     "puppeteer": "^5.5.0",
+    "regenerator-runtime": "^0.13.7",
     "style-loader": "2.0.0",
     "stylelint": "^13.8.0",
     "ts-loader": "8.0.12",

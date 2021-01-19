@@ -26,10 +26,8 @@
 
 "use strict";
 
-require("core-js/stable");
-
-
-
+import "core-js/stable";
+import "regenerator-runtime/runtime";
 
 import "../style/sunburst.less";
 import { BaseType, Selection, select as d3Select } from "d3-selection";
