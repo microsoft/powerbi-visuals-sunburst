@@ -1,3 +1,7 @@
+## 2.1.8
+* Updated tslint
+* Updated context menu
+
 ## 2.1.6
 * Updated tooltiputils to v2.5.2
 * Added context menu

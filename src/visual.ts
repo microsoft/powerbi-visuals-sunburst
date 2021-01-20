@@ -218,14 +218,8 @@ export class Sunburst implements IVisual {
 
         this.selectionManager = options.host.createSelectionManager();
 
-        this.svg.on('contextmenu', (event) => {​​
-            const emptySelection = {​​
-                "measures": [],
-                "dataMap": {​​
-                }​​
-            }​​;
-
-            this.selectionManager.showContextMenu(emptySelection, {​​
+        this.svg.on('contextmenu', (event, dataPoint: any) => {​​
+            this.selectionManager.showContextMenu(dataPoint? dataPoint.selectionId : {}, {​​
                 x: event.clientX,
                 y: event.clientY
             }​​);
