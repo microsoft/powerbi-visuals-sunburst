@@ -25,12 +25,12 @@
  */
 
 // import * as d3 from "d3";
-import powerbi from "powerbi-visuals-api";
-import DataView = powerbi.DataView;
-import VisualObjectInstance = powerbi.VisualObjectInstance;
+import powerbiVisualsApi from "powerbi-visuals-api";
+import DataView = powerbiVisualsApi.DataView;
+import VisualObjectInstance = powerbiVisualsApi.VisualObjectInstance;
 import { valueFormatter as vf } from "powerbi-visuals-utils-formattingutils";
 import { assertColorsMatch, d3Click} from "powerbi-visuals-utils-testutils";
-import valueFormatter = vf.valueFormatter;
+// import valueFormatter = vf.valueFormatter;
 import { VisualData } from "./visualData";
 import { VisualBuilder } from "./visualBuilder";
 import { SunburstDataPoint } from "../src/dataInterfaces";
@@ -425,7 +425,7 @@ describe("Sunburst", () => {
             let jsonData = getJSONFixture("capabilities.json");
 
             let objectsChecker: Function = (obj) => {
-                for (let property in obj) {
+                for (let property ща obj) {
                     let value: any = obj[property];
 
                     if (value.displayName) {
@@ -538,7 +538,7 @@ describe("Sunburst", () => {
                 "#00ff00",
                 visualBuilder.visualHost,
                 0,
-                valueFormatter.create({}),
+                vf.create({}),
                 []
             );
 

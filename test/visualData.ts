@@ -25,12 +25,12 @@
  */
 
 import { getRandomNumber, testDataViewBuilder as TDVB } from "powerbi-visuals-utils-testutils";
-import powerbi from "powerbi-visuals-api";
-import DataView = powerbi.DataView;
-import DataViewMatrix = powerbi.DataViewMatrix;
-import DataViewMatrixNode = powerbi.DataViewMatrixNode;
+import powerbiVisualsApi from "powerbi-visuals-api";
+import DataView = powerbiVisualsApi.DataView;
+import DataViewMatrix = powerbiVisualsApi.DataViewMatrix;
+import DataViewMatrixNode = powerbiVisualsApi.DataViewMatrixNode;
 import TestDataViewBuilder = TDVB.TestDataViewBuilder;
-import DataViewMetadataColumn = powerbi.DataViewMetadataColumn;
+import DataViewMetadataColumn = powerbiVisualsApi.DataViewMetadataColumn;
 
 interface INamed {
     name: string;

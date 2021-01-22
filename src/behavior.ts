@@ -27,18 +27,16 @@
 import { BaseType, Selection } from "d3-selection";
 import { HierarchyRectangularNode } from "d3-hierarchy";
 
-import powerbi from "powerbi-visuals-api";
-import IVisualHost = powerbi.extensibility.visual.IVisualHost;
-import ISelectionId = powerbi.visuals.ISelectionId;
+import powerbiVisualsApi from "powerbi-visuals-api";
+import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
+import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
 import { interactivitySelectionService, interactivityBaseService } from "powerbi-visuals-utils-interactivityutils";
 import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
 import IInteractivityService = interactivityBaseService.IInteractivityService;
-import InteractivityServiceBase = interactivityBaseService.InteractivityBaseService;
 import ISelectionHandler = interactivityBaseService.ISelectionHandler;
 import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
 import IBehaviorOptions = interactivityBaseService.IBehaviorOptions;
-import InteractivitySelectionService = interactivitySelectionService.InteractivitySelectionService;
 
 import { SunburstDataPoint } from "./dataInterfaces";
 

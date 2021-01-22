@@ -24,15 +24,15 @@
  *  THE SOFTWARE.
  */
 
-import powerbi from "powerbi-visuals-api";
-import DataView = powerbi.DataView;
-import VisualUpdateType = powerbi.VisualUpdateType;
-import ISelectionId = powerbi.visuals.ISelectionId;
+import powerbiVisualsApi from "powerbi-visuals-api";
+import DataView = powerbiVisualsApi.DataView;
+import VisualUpdateType = powerbiVisualsApi.VisualUpdateType;
+import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
 import { VisualBuilderBase, renderTimeout } from "powerbi-visuals-utils-testutils";
-import { Sunburst as VisualClass } from "../src/visual";
+import { Sunburst as VisualClass } from "../src/Sunburst";
 import { VisualData } from "./visualData";
-import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
+import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
 
 export class VisualBuilder extends VisualBuilderBase<VisualClass> {
     bookmarksCallback: (ids: ISelectionId[]) => void;
