@@ -73,8 +73,8 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
         return this.visual;
     }
 
-    public get mainElement(): JQuery {
-        return this.element.find(".sunburst svg");
+    public get mainElement(): NodeListOf<HTMLElement> {
+        return this.element.querySelectorAll(".sunburst svg");
     }
 
     public selectBookmarks(ids: ISelectionId[]) {
@@ -85,13 +85,13 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
         return <any>(this.instance)["data"];
     }
 
-    public get slices(): JQuery {
-        return this.element.find(".sunburst__slice");
+    public get slices(): NodeListOf<HTMLElement> {
+        return this.element.querySelectorAll(".sunburst__slice");
     }
 
-    public get selectedSlices(): JQuery {
-        return this.slices.filter(function () {
-            const appliedOpacity: number = parseFloat($(this).css("opacity"));
+    public get selectedSlices(): Element[] {
+        return Array.from(this.slices).filter((element: HTMLElement) => {
+            const appliedOpacity: number = parseFloat(element.style.opacity);
 
             return appliedOpacity === 1;
         });

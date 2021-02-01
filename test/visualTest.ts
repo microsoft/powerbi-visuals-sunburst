@@ -111,16 +111,16 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstPoint: JQuery = visualBuilder.slices.last();
-                    const secondClickPoint: JQuery = visualBuilder.mainElement;
+                    const firstPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstPoint, 5, 5);
                     setTimeout(
                         () => {
-                            expect($(LabelVisibleSelector).length).toBe(2);
+                            expect(document.querySelectorAll(LabelVisibleSelector).length).toBe(2);
                             d3Click(secondClickPoint, 1, 1);
                             setTimeout(
                                 () => {
-                                    expect($(LabelVisibleSelector).length).toBe(0);
+                                    expect(document.querySelectorAll(LabelVisibleSelector).length).toBe(0);
                                     done();
                                 },
                                 DefaultWaitForRender);
@@ -145,8 +145,8 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstClickPoint: JQuery = visualBuilder.slices.last();
-                    const secondClickPoint: JQuery = visualBuilder.mainElement;
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstClickPoint, 5, 5);
                     setTimeout(
                         () => {
@@ -179,8 +179,8 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstClickPoint: JQuery = visualBuilder.slices.last();
-                    const secondClickPoint: JQuery = visualBuilder.mainElement;
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstClickPoint, 5, 5);
                     setTimeout(
                         () => {
@@ -297,8 +297,8 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstClickPoint: JQuery = visualBuilder.slices.last();
-                    const secondClickPoint: JQuery = visualBuilder.mainElement;
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstClickPoint, 5, 5);
                     setTimeout(
                         () => {
@@ -330,15 +330,15 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstClickPoint: JQuery = visualBuilder.slices.last();
-                    const secondClickPoint: JQuery = visualBuilder.mainElement;
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstClickPoint, 5, 5);
                     setTimeout(
                         () => {
                             d3Click(secondClickPoint, 1, 1);
                             setTimeout(
                                 () => {
-                                    expect($(PercentageSelector).css("font-size")).toBe(expectedFontSize);
+                                    expect( (document.querySelector( PercentageSelector ) as HTMLElement ).style.fontSize).toBe(expectedFontSize);
                                     done();
                                 },
                                 DefaultWaitForRender);
@@ -405,8 +405,8 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const elements: JQuery = visualBuilder.slices.filter(function () {
-                        const appliedColor: string = $(this).css("fill");
+                    const elements: HTMLElement[] = Array.from(visualBuilder.slices).filter(element => {
+                        const appliedColor: string = element.style.fill;
 
                         return appliedColor === colorAsRGB;
                     });
@@ -425,7 +425,7 @@ describe("Sunburst", () => {
             let jsonData = getJSONFixture("capabilities.json");
 
             let objectsChecker: Function = (obj) => {
-                for (let property ща obj) {
+                for (let property in obj) {
                     let value: any = obj[property];
 
                     if (value.displayName) {
@@ -484,7 +484,7 @@ describe("Sunburst", () => {
 
             it("should not use fill style", (done) => {
                 visualBuilder.updateRenderTimeout(dataView, () => {
-                    const layers = visualBuilder.slices.toArray().map($);
+                    const layers = visualBuilder.slices;
 
                     expect(isColorAppliedToElements(layers, null, "fill"));
 
@@ -494,7 +494,7 @@ describe("Sunburst", () => {
 
             it("should use stroke style", (done) => {
                 visualBuilder.updateRenderTimeout(dataView, () => {
-                    const layers = visualBuilder.slices.toArray().map($);
+                    const layers = visualBuilder.slices;
 
                     expect(isColorAppliedToElements(layers, foregroundColor, "stroke"));
 
@@ -503,12 +503,12 @@ describe("Sunburst", () => {
             });
 
             function isColorAppliedToElements(
-                elements: JQuery[],
+                elements: NodeListOf<HTMLElement>,
                 color?: string,
                 colorStyleName: string = "fill"
             ): boolean {
-                return elements.some((element: JQuery) => {
-                    const currentColor: string = element.css(colorStyleName);
+                return Array.from(elements).some((element: HTMLElement) => {
+                    const currentColor: string = element.style[colorStyleName];
 
                     if (!currentColor || !color) {
                         return currentColor === color;
@@ -526,9 +526,6 @@ describe("Sunburst", () => {
                 {
                     name: undefined
                 },
-                undefined,
-                undefined,
-                undefined,
                 [],
                 {
                     dataPoints: [],

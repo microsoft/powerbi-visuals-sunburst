@@ -373,7 +373,7 @@ export class Sunburst implements IVisual {
         }
     }
 
-    private static labelShift: number = 20;
+    private static labelShift: number = 15;
     private render(colorHelper: ColorHelper): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
         const root = this.partition(this.data.root).descendants().slice(1);
         const pathSelection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> =
@@ -426,7 +426,9 @@ export class Sunburst implements IVisual {
                 .style("fill", colorHelper.getHighContrastColor("foreground", null))
                 .classed(this.appCssConstants.sliceLabel.className, true)
                 // font size + slice padding
-                .attr("dy", Sunburst.labelShift)
+                .attr("dy", (d, i) => {
+                    return 20;
+                })
                 .append("textPath")
                 .attr("startOffset", "50%")
                 .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
