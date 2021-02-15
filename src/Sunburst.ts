@@ -121,6 +121,8 @@ export class Sunburst implements IVisual {
     private static CategoryLineInterval: number = 0.6;
     private static DefaultPercentageLineInterval: number = 0.25;
     private static MultilinePercentageLineInterval: number = 0.6;
+    private static LabelShift: number = 26;
+    private static LabelShiftMultiplier: number = 1.7;
 
     private static DefaultDataLabelPadding: number = 15;
 
@@ -373,7 +375,6 @@ export class Sunburst implements IVisual {
         }
     }
 
-    private static labelShift: number = 15;
     private render(colorHelper: ColorHelper): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
         const root = this.partition(this.data.root).descendants().slice(1);
         const pathSelection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> =
@@ -427,12 +428,13 @@ export class Sunburst implements IVisual {
                 .classed(this.appCssConstants.sliceLabel.className, true)
                 // font size + slice padding
                 .attr("dy", (d, i) => {
-                    return 20;
+                    return Sunburst.LabelShift - d.depth*Sunburst.LabelShiftMultiplier;
                 })
                 .append("textPath")
                 .attr("startOffset", "50%")
                 .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
                 .text(dataPoint => dataPoint.data.name)
+                .text((d) => d.y1)
                 .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding));
         }
 
@@ -707,7 +709,7 @@ export class Sunburst implements IVisual {
     private renderContextMenu() {
         this.svg.on('contextmenu', (event) => {
             let dataPoint: any = d3Select(event.target).datum();
-            this.selectionManager.showContextMenu(dataPoint?.data?.identity ? dataPoint.data.identity : {}, {​​
+            this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.data.identity : {}, {​​
                 x: event.clientX,
                 y: event.clientY
             });

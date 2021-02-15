@@ -111,16 +111,16 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length];
+                    const firstPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length-1];
                     const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstPoint, 5, 5);
                     setTimeout(
                         () => {
-                            expect(document.querySelectorAll(LabelVisibleSelector).length).toBe(2);
+                            expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(2);
                             d3Click(secondClickPoint, 1, 1);
                             setTimeout(
                                 () => {
-                                    expect(document.querySelectorAll(LabelVisibleSelector).length).toBe(0);
+                                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
                                     done();
                                 },
                                 DefaultWaitForRender);
@@ -131,104 +131,104 @@ describe("Sunburst", () => {
                 DefaultWaitForRender);
         });
 
-        // it("category labels should be hidden", (done: DoneFn) => {
-        //     dataView = defaultDataViewBuilder.getDataView(
-        //         [
-        //             defaultDataViewBuilder.RegionsDataSet,
-        //             defaultDataViewBuilder.CountriesDataSet
-        //         ]);
+        it("category labels should be hidden", (done: DoneFn) => {
+            dataView = defaultDataViewBuilder.getDataView(
+                [
+                    defaultDataViewBuilder.RegionsDataSet,
+                    defaultDataViewBuilder.CountriesDataSet
+                ]);
 
-        //     dataView.metadata.objects = {
-        //         group: { showSelected: false }
-        //     };
+            dataView.metadata.objects = {
+                group: { showSelected: false }
+            };
 
-        //     visualBuilder.updateRenderTimeout(
-        //         dataView,
-        //         () => {
-        //             const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length];
-        //             const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-        //             d3Click(firstClickPoint, 5, 5);
-        //             setTimeout(
-        //                 () => {
-        //                     expect($(LabelVisibleSelector).length).toBe(1);
-        //                     d3Click(secondClickPoint, 1, 1);
-        //                     setTimeout(
-        //                         () => {
-        //                             expect($(LabelVisibleSelector).length).toBe(0);
-        //                             done();
-        //                         },
-        //                         DefaultWaitForRender);
-        //                 },
-        //                 DefaultWaitForRender);
-        //         },
-        //         2,
-        //         DefaultWaitForRender);
-        // });
+            visualBuilder.updateRenderTimeout(
+                dataView,
+                () => {
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
+                    d3Click(firstClickPoint, 5, 5);
+                    setTimeout(
+                        () => {
+                            expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(1);
+                            d3Click(secondClickPoint, 1, 1);
+                            setTimeout(
+                                () => {
+                                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
+                                    done();
+                                },
+                                DefaultWaitForRender);
+                        },
+                        DefaultWaitForRender);
+                },
+                2,
+                DefaultWaitForRender);
+        });
 
-        // it("category labels should be visible always", (done: DoneFn) => {
-        //     dataView = defaultDataViewBuilder.getDataView(
-        //         [
-        //             defaultDataViewBuilder.RegionsDataSet,
-        //             defaultDataViewBuilder.CountriesDataSet
-        //         ]);
+        it("category labels should be visible always", (done: DoneFn) => {
+            dataView = defaultDataViewBuilder.getDataView(
+                [
+                    defaultDataViewBuilder.RegionsDataSet,
+                    defaultDataViewBuilder.CountriesDataSet
+                ]);
 
-        //     dataView.metadata.objects = {
-        //         group: { showSelected: true }
-        //     };
+            dataView.metadata.objects = {
+                group: { showSelected: true }
+            };
 
-        //     visualBuilder.updateRenderTimeout(
-        //         dataView,
-        //         () => {
-        //             const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length];
-        //             const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-        //             d3Click(firstClickPoint, 5, 5);
-        //             setTimeout(
-        //                 () => {
-        //                     expect($(LabelVisibleSelector).length).toBe(2);
-        //                     d3Click(secondClickPoint, 1, 1);
-        //                     setTimeout(
-        //                         () => {
-        //                             expect($(LabelVisibleSelector).length).toBe(0);
-        //                             done();
-        //                         },
-        //                         DefaultWaitForRender);
-        //                 },
-        //                 DefaultWaitForRender);
-        //         },
-        //         2,
-        //         DefaultWaitForRender);
-        // });
+            visualBuilder.updateRenderTimeout(
+                dataView,
+                () => {
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
+                    d3Click(firstClickPoint, 5, 5);
+                    setTimeout(
+                        () => {
+                            expect($(LabelVisibleSelector).length).toBe(2);
+                            d3Click(secondClickPoint, 1, 1);
+                            setTimeout(
+                                () => {
+                                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
+                                    done();
+                                },
+                                DefaultWaitForRender);
+                        },
+                        DefaultWaitForRender);
+                },
+                2,
+                DefaultWaitForRender);
+        });
 
-        // it("data labels should not be hidden by default", (done: DoneFn) => {
-        //     dataView = defaultDataViewBuilder.getDataView(
-        //         [
-        //             defaultDataViewBuilder.RegionsDataSet,
-        //             defaultDataViewBuilder.CountriesDataSet
-        //         ]);
-        //     visualBuilder.updateRenderTimeout(
-        //         dataView,
-        //         () => {
-        //             expect($(SliceLabelSelector).length).toBe(12);
-        //             done();
-        //         }, 2, DefaultWaitForRender);
-        // });
+        it("data labels should not be hidden by default", (done: DoneFn) => {
+            dataView = defaultDataViewBuilder.getDataView(
+                [
+                    defaultDataViewBuilder.RegionsDataSet,
+                    defaultDataViewBuilder.CountriesDataSet
+                ]);
+            visualBuilder.updateRenderTimeout(
+                dataView,
+                () => {
+                    expect(visualBuilder.element.querySelectorAll(SliceLabelSelector).length).toBe(12);
+                    done();
+                }, 2, DefaultWaitForRender);
+        });
 
-        // it("count of data labels should be equal slice count", (done: DoneFn) => {
-        //     dataView = defaultDataViewBuilder.getDataView(
-        //         [
-        //             defaultDataViewBuilder.RegionsDataSet,
-        //             defaultDataViewBuilder.CountriesDataSet
-        //         ]);
-        //     dataView.metadata.objects = {
-        //         group: { showDataLabels: true }
-        //     };
-        //     visualBuilder.updateRenderTimeout(
-        //         dataView,
-        //         () => {
-        //             expect($(SliceLabelSelector).length).toBe(visualBuilder.slices.length);
-        //             done();
-        //         }, 2, DefaultWaitForRender);
-        // });
+        it("count of data labels should be equal slice count", (done: DoneFn) => {
+            dataView = defaultDataViewBuilder.getDataView(
+                [
+                    defaultDataViewBuilder.RegionsDataSet,
+                    defaultDataViewBuilder.CountriesDataSet
+                ]);
+            dataView.metadata.objects = {
+                group: { showDataLabels: true }
+            };
+            visualBuilder.updateRenderTimeout(
+                dataView,
+                () => {
+                    expect(visualBuilder.element.querySelectorAll(SliceLabelSelector).length).toBe(visualBuilder.slices.length);
+                    done();
+                }, 2, DefaultWaitForRender);
+        });
     });
 
     describe("Test invalid input data", () => {
@@ -260,7 +260,7 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    expect($(LegendSelector).children().length).toBe(0);
+                    expect(visualBuilder.element.querySelectorAll(`${LegendSelector.trim()}>*`).length).toBe(0);
                     done();
                 }, 2, DefaultWaitForRender);
         });
@@ -276,78 +276,80 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    expect(document.querySelectorAll(`${LegendSelector.trim()}>*`).length).toBeTruthy();
+                    debugger;
+                    expect(visualBuilder.element.querySelectorAll(`${LegendSelector.trim()}>*`).length).toBeTruthy();
                     done();
                 }, 2, DefaultWaitForRender);
         });
     });
 
     describe("Central caption", () => {
-        // it("percentage font size should be correct", (done: DoneFn) => {
-        //     dataView = defaultDataViewBuilder.getDataView(
-        //         [
-        //             defaultDataViewBuilder.RegionsDataSet,
-        //             defaultDataViewBuilder.CountriesDataSet
-        //         ]);
+        it("percentage font size should be correct", (done: DoneFn) => {
+            dataView = defaultDataViewBuilder.getDataView(
+                [
+                    defaultDataViewBuilder.RegionsDataSet,
+                    defaultDataViewBuilder.CountriesDataSet
+                ]);
 
-        //     dataView.metadata.objects = {
-        //         group: { showSelected: false }
-        //     };
+            dataView.metadata.objects = {
+                group: { showSelected: false }
+            };
 
-        //     visualBuilder.updateRenderTimeout(
-        //         dataView,
-        //         () => {
-        //             const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length];
-        //             const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-        //             d3Click(firstClickPoint, 5, 5);
-        //             setTimeout(
-        //                 () => {
-        //                     expect(document.querySelectorAll(LabelVisibleSelector).length).toBe(1);
-        //                     d3Click(secondClickPoint, 1, 1);
-        //                     setTimeout(
-        //                         () => {
-        //                             expect((<HTMLElement>document.querySelector(PercentageSelector)).style['font-size']).toBe("28px");
-        //                             done();
-        //                         },
-        //                         DefaultWaitForRender);
-        //                 },
-        //                 DefaultWaitForRender);
-        //         },
-        //         2,
-        //         DefaultWaitForRender);
-        // });
-        // it("label font size should be correct", (done: DoneFn) => {
-        //     dataView = defaultDataViewBuilder.getDataView(
-        //         [
-        //             defaultDataViewBuilder.RegionsDataSet,
-        //             defaultDataViewBuilder.CountriesDataSet
-        //         ]);
-        //     const fontSize: number = 22;
-        //     const expectedFontSize: string = "44px";
-        //     dataView.metadata.objects = {
-        //         group: { fontSize: fontSize }
-        //     };
-        //     visualBuilder.updateRenderTimeout(
-        //         dataView,
-        //         () => {
-        //             const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length];
-        //             const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-        //             d3Click(firstClickPoint, 5, 5);
-        //             setTimeout(
-        //                 () => {
-        //                     d3Click(secondClickPoint, 1, 1);
-        //                     setTimeout(
-        //                         () => {
-        //                             expect( (document.querySelector( PercentageSelector ) as HTMLElement ).style.fontSize).toBe(expectedFontSize);
-        //                             done();
-        //                         },
-        //                         DefaultWaitForRender);
-        //                 },
-        //                 DefaultWaitForRender);
-        //         },
-        //         2,
-        //         DefaultWaitForRender);
-        // });
+            visualBuilder.updateRenderTimeout(
+                dataView,
+                () => {
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
+                    d3Click(firstClickPoint, 5, 5);
+                    setTimeout(
+                        () => {
+                            expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(1);
+                            d3Click(secondClickPoint, 1, 1);
+                            setTimeout(
+                                () => {
+                                    expect((<HTMLElement>visualBuilder.element.querySelector(PercentageSelector)).style['font-size']).toBe("28px");
+                                    done();
+                                },
+                                DefaultWaitForRender);
+                        },
+                        DefaultWaitForRender);
+                },
+                2,
+                DefaultWaitForRender);
+        });
+        
+        it("label font size should be correct", (done: DoneFn) => {
+            dataView = defaultDataViewBuilder.getDataView(
+                [
+                    defaultDataViewBuilder.RegionsDataSet,
+                    defaultDataViewBuilder.CountriesDataSet
+                ]);
+            const fontSize: number = 22;
+            const expectedFontSize: string = "44px";
+            dataView.metadata.objects = {
+                group: { fontSize: fontSize }
+            };
+            visualBuilder.updateRenderTimeout(
+                dataView,
+                () => {
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
+                    d3Click(firstClickPoint, 5, 5);
+                    setTimeout(
+                        () => {
+                            d3Click(secondClickPoint, 1, 1);
+                            setTimeout(
+                                () => {
+                                    expect((<HTMLElement>visualBuilder.element.querySelector( PercentageSelector )).style.fontSize).toBe(expectedFontSize);
+                                    done();
+                                },
+                                DefaultWaitForRender);
+                        },
+                        DefaultWaitForRender);
+                },
+                2,
+                DefaultWaitForRender);
+        });
     });
 
     describe("Colors", () => {
@@ -425,7 +427,7 @@ describe("Sunburst", () => {
             let jsonData = getJSONFixture("capabilities.json");
 
             let objectsChecker: Function = (obj) => {
-                for (let property in obj) {
+                for (let property of Object.keys(obj)) {
                     let value: any = obj[property];
 
                     if (value.displayName) {
