@@ -144,7 +144,6 @@ export class Sunburst implements IVisual {
     }
 
     private settings: SunburstSettings;
-
     private visualHost: IVisualHost;
     private selectionManager: ISelectionManager;
     private events: IVisualEventService;
