@@ -42,7 +42,7 @@ module.exports = (config) => {
     config.set({
         mode: "development",
         browserNoActivityTimeout: 100000,
-        browsers: ["Chrome"],
+        browsers: ["ChromeHeadless"],
         colors: true,
         frameworks: ["jasmine"],
         reporters: [
@@ -55,7 +55,7 @@ module.exports = (config) => {
             outputFile: "TESTS-report.xml",
             useBrowserName: false
         },
-        singleRun: false,
+        singleRun: true,
         plugins: [
             "karma-coverage",
             "karma-typescript",
