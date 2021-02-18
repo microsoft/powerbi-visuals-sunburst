@@ -24,15 +24,15 @@
  *  THE SOFTWARE.
  */
 
-import powerbi from "powerbi-visuals-api";
-import DataView = powerbi.DataView;
-import VisualUpdateType = powerbi.VisualUpdateType;
-import ISelectionId = powerbi.visuals.ISelectionId;
+import powerbiVisualsApi from "powerbi-visuals-api";
+import DataView = powerbiVisualsApi.DataView;
+import VisualUpdateType = powerbiVisualsApi.VisualUpdateType;
+import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
 import { VisualBuilderBase, renderTimeout } from "powerbi-visuals-utils-testutils";
-import { Sunburst as VisualClass } from "../src/visual";
+import { Sunburst as VisualClass } from "../src/Sunburst";
 import { VisualData } from "./visualData";
-import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
+import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
 
 export class VisualBuilder extends VisualBuilderBase<VisualClass> {
     bookmarksCallback: (ids: ISelectionId[]) => void;
@@ -73,8 +73,8 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
         return this.visual;
     }
 
-    public get mainElement(): JQuery {
-        return this.element.find(".sunburst svg");
+    public get mainElement(): NodeListOf<HTMLElement> {
+        return this.element.querySelectorAll(".sunburst svg");
     }
 
     public selectBookmarks(ids: ISelectionId[]) {
@@ -85,13 +85,13 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
         return <any>(this.instance)["data"];
     }
 
-    public get slices(): JQuery {
-        return this.element.find(".sunburst__slice");
+    public get slices(): NodeListOf<HTMLElement> {
+        return this.element.querySelectorAll(".sunburst__slice");
     }
 
-    public get selectedSlices(): JQuery {
-        return this.slices.filter(function () {
-            const appliedOpacity: number = parseFloat($(this).css("opacity"));
+    public get selectedSlices(): Element[] {
+        return Array.from(this.slices).filter((element: HTMLElement) => {
+            const appliedOpacity: number = parseFloat(element.style.opacity);
 
             return appliedOpacity === 1;
         });

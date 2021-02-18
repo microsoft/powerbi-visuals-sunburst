@@ -26,44 +26,41 @@
 
 "use strict";
 
-require("core-js/stable");
-
-
-
+import "core-js/stable";
+import "regenerator-runtime/runtime";
 
 import "../style/sunburst.less";
 import { BaseType, Selection, select as d3Select } from "d3-selection";
 import { Arc, arc as d3Arc } from "d3-shape";
 import { partition as d3Partition, hierarchy as d3Hierarchy, HierarchyRectangularNode } from "d3-hierarchy";
 
-import powerbi from "powerbi-visuals-api";
-import DataView = powerbi.DataView;
-import IViewport = powerbi.IViewport;
-import PrimitiveValue = powerbi.PrimitiveValue;
+import powerbiVisualsApi from "powerbi-visuals-api";
+import DataView = powerbiVisualsApi.DataView;
+import IViewport = powerbiVisualsApi.IViewport;
+import PrimitiveValue = powerbiVisualsApi.PrimitiveValue;
 
-import VisualObjectInstance = powerbi.VisualObjectInstance;
-import VisualObjectInstanceEnumeration = powerbi.VisualObjectInstanceEnumeration;
-import EnumerateVisualObjectInstancesOptions = powerbi.EnumerateVisualObjectInstancesOptions;
-import VisualObjectInstanceEnumerationObject = powerbi.VisualObjectInstanceEnumerationObject;
+import VisualObjectInstance = powerbiVisualsApi.VisualObjectInstance;
+import VisualObjectInstanceEnumeration = powerbiVisualsApi.VisualObjectInstanceEnumeration;
+import EnumerateVisualObjectInstancesOptions = powerbiVisualsApi.EnumerateVisualObjectInstancesOptions;
+import VisualObjectInstanceEnumerationObject = powerbiVisualsApi.VisualObjectInstanceEnumerationObject;
 
-import DataViewHierarchyLevel = powerbi.DataViewHierarchyLevel;
-import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
-import DataViewObjects = powerbi.DataViewObjects;
-import DataViewObjectPropertyIdentifier = powerbi.DataViewObjectPropertyIdentifier;
-import DataViewTreeNode = powerbi.DataViewTreeNode;
-import DataSelector = powerbi.data.Selector;
+import DataViewHierarchyLevel = powerbiVisualsApi.DataViewHierarchyLevel;
+import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
+import DataViewObjects = powerbiVisualsApi.DataViewObjects;
+import DataViewObjectPropertyIdentifier = powerbiVisualsApi.DataViewObjectPropertyIdentifier;
+import DataViewTreeNode = powerbiVisualsApi.DataViewTreeNode;
 
-import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
-import ISelectionId = powerbi.visuals.ISelectionId;
+import ISelectionIdBuilder = powerbiVisualsApi.visuals.ISelectionIdBuilder;
+import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
-import IColorPalette = powerbi.extensibility.IColorPalette;
-import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
-import IVisualEventService =  powerbi.extensibility.IVisualEventService;
-
-import IVisual = powerbi.extensibility.visual.IVisual;
-import IVisualHost = powerbi.extensibility.visual.IVisualHost;
-import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
-import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
+import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
+import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
+import IVisualEventService =  powerbiVisualsApi.extensibility.IVisualEventService;
+import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
+import IVisual = powerbiVisualsApi.extensibility.visual.IVisual;
+import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
+import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
+import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
 import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutils";
 import {
@@ -90,7 +87,7 @@ import {
 import createLegend = Legend.createLegend;
 import ILegend = LI.ILegend;
 import LegendData = LI.LegendData;
-import LegendIcon = LI.MarkerShape;
+import MarkerShape = LI.MarkerShape;
 import LegendPosition = LI.LegendPosition;
 
 import { interactivityBaseService, interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
@@ -100,7 +97,7 @@ import createInteractivitySelectionService = interactivitySelectionService.creat
 
 import { Behavior, BehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
-import { SunburstSettings } from "./settings";
+import { SunburstSettings } from "./SunburstSettings";
 import { identity } from "lodash";
 
 interface IAppCssConstants {
@@ -124,6 +121,8 @@ export class Sunburst implements IVisual {
     private static CategoryLineInterval: number = 0.6;
     private static DefaultPercentageLineInterval: number = 0.25;
     private static MultilinePercentageLineInterval: number = 0.6;
+    private static LabelShift: number = 26;
+    private static LabelShiftMultiplier: number = 1.7;
 
     private static DefaultDataLabelPadding: number = 15;
 
@@ -145,8 +144,8 @@ export class Sunburst implements IVisual {
     }
 
     private settings: SunburstSettings;
-
     private visualHost: IVisualHost;
+    private selectionManager: ISelectionManager;
     private events: IVisualEventService;
     private data: SunburstData;
     private arc: Arc<any, any>;
@@ -217,6 +216,8 @@ export class Sunburst implements IVisual {
             .attr("height", "100%")
             .attr("preserveAspectRatio", "xMidYMid meet");
 
+        this.selectionManager = options.host.createSelectionManager();
+
         this.main = this.svg.append("g");
         this.main.attr(CssConstants.transformProperty, translate(Sunburst.CentralPoint, Sunburst.CentralPoint));
 
@@ -242,6 +243,8 @@ export class Sunburst implements IVisual {
             true,
             LegendPosition.Top
         );
+
+        this.renderContextMenu();
     }
 
     public update(options: VisualUpdateOptions): void {
@@ -334,14 +337,14 @@ export class Sunburst implements IVisual {
             this.enumerateColors(topCategories, instanceEnumeration);
         }
 
-        return (instanceEnumeration as VisualObjectInstanceEnumerationObject).instances || [];
+        return (<VisualObjectInstanceEnumerationObject>instanceEnumeration).instances || [];
     }
 
     private enumerateColors(topCategories: SunburstDataPoint[], instanceEnumeration: VisualObjectInstanceEnumeration): void {
         if (topCategories && topCategories.length > 0) {
             topCategories.forEach((category: SunburstDataPoint) => {
                 const displayName: string = category.name.toString();
-                const identity: ISelectionId = category.identity as ISelectionId;
+                const identity: ISelectionId = <ISelectionId>category.identity;
 
                 this.addAnInstanceToEnumeration(instanceEnumeration, {
                     displayName,
@@ -362,16 +365,15 @@ export class Sunburst implements IVisual {
         instance: VisualObjectInstance
     ): void {
 
-        if ((instanceEnumeration as VisualObjectInstanceEnumerationObject).instances) {
-            (instanceEnumeration as VisualObjectInstanceEnumerationObject)
+        if ((<VisualObjectInstanceEnumerationObject>instanceEnumeration).instances) {
+            (<VisualObjectInstanceEnumerationObject>instanceEnumeration)
                 .instances
                 .push(instance);
         } else {
-            (instanceEnumeration as VisualObjectInstance[]).push(instance);
+            (<VisualObjectInstance[]>instanceEnumeration).push(instance);
         }
     }
 
-    private static labelShift: number = 26;
     private render(colorHelper: ColorHelper): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
         const root = this.partition(this.data.root).descendants().slice(1);
         const pathSelection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> =
@@ -424,11 +426,14 @@ export class Sunburst implements IVisual {
                 .style("fill", colorHelper.getHighContrastColor("foreground", null))
                 .classed(this.appCssConstants.sliceLabel.className, true)
                 // font size + slice padding
-                .attr("dy", Sunburst.labelShift)
+                .attr("dy", (d, i) => {
+                    return Sunburst.LabelShift - d.depth*Sunburst.LabelShiftMultiplier;
+                })
                 .append("textPath")
                 .attr("startOffset", "50%")
                 .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
                 .text(dataPoint => dataPoint.data.name)
+                .text((d) => d.y1)
                 .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding));
         }
 
@@ -641,9 +646,9 @@ export class Sunburst implements IVisual {
 
         legendData.dataPoints = rootCategory.map((dataPoint: SunburstDataPoint) => {
             return {
-                label: dataPoint.name as string,
+                label: <string>dataPoint.name,
                 color: dataPoint.color,
-                icon: LegendIcon.circle,
+                icon: MarkerShape.circle,
                 selected: false,
                 identity: dataPoint.identity
             };
@@ -698,6 +703,17 @@ export class Sunburst implements IVisual {
             (data: HierarchyRectangularNode<SunburstDataPoint>) => data.data.tooltipInfo,
             (data: HierarchyRectangularNode<SunburstDataPoint>) => data.data.identity
         );
+    }
+
+    private renderContextMenu() {
+        this.svg.on('contextmenu', (event) => {
+            let dataPoint: any = d3Select(event.target).datum();
+            this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.data.identity : {}, {​​
+                x: event.clientX,
+                y: event.clientY
+            });
+            event.preventDefault();
+        });
     }
 
     private renderLegend(): void {

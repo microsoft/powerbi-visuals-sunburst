@@ -25,12 +25,12 @@
  */
 
 // import * as d3 from "d3";
-import powerbi from "powerbi-visuals-api";
-import DataView = powerbi.DataView;
-import VisualObjectInstance = powerbi.VisualObjectInstance;
+import powerbiVisualsApi from "powerbi-visuals-api";
+import DataView = powerbiVisualsApi.DataView;
+import VisualObjectInstance = powerbiVisualsApi.VisualObjectInstance;
 import { valueFormatter as vf } from "powerbi-visuals-utils-formattingutils";
 import { assertColorsMatch, d3Click} from "powerbi-visuals-utils-testutils";
-import valueFormatter = vf.valueFormatter;
+// import valueFormatter = vf.valueFormatter;
 import { VisualData } from "./visualData";
 import { VisualBuilder } from "./visualBuilder";
 import { SunburstDataPoint } from "../src/dataInterfaces";
@@ -111,16 +111,16 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstPoint: JQuery = visualBuilder.slices.last();
-                    const secondClickPoint: JQuery = visualBuilder.mainElement;
+                    const firstPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length-1];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstPoint, 5, 5);
                     setTimeout(
                         () => {
-                            expect($(LabelVisibleSelector).length).toBe(2);
+                            expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(2);
                             d3Click(secondClickPoint, 1, 1);
                             setTimeout(
                                 () => {
-                                    expect($(LabelVisibleSelector).length).toBe(0);
+                                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
                                     done();
                                 },
                                 DefaultWaitForRender);
@@ -145,16 +145,16 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstClickPoint: JQuery = visualBuilder.slices.last();
-                    const secondClickPoint: JQuery = visualBuilder.mainElement;
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstClickPoint, 5, 5);
                     setTimeout(
                         () => {
-                            expect($(LabelVisibleSelector).length).toBe(1);
+                            expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(1);
                             d3Click(secondClickPoint, 1, 1);
                             setTimeout(
                                 () => {
-                                    expect($(LabelVisibleSelector).length).toBe(0);
+                                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
                                     done();
                                 },
                                 DefaultWaitForRender);
@@ -179,8 +179,8 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstClickPoint: JQuery = visualBuilder.slices.last();
-                    const secondClickPoint: JQuery = visualBuilder.mainElement;
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstClickPoint, 5, 5);
                     setTimeout(
                         () => {
@@ -188,7 +188,7 @@ describe("Sunburst", () => {
                             d3Click(secondClickPoint, 1, 1);
                             setTimeout(
                                 () => {
-                                    expect($(LabelVisibleSelector).length).toBe(0);
+                                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
                                     done();
                                 },
                                 DefaultWaitForRender);
@@ -208,7 +208,7 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    expect($(SliceLabelSelector).length).toBe(12);
+                    expect(visualBuilder.element.querySelectorAll(SliceLabelSelector).length).toBe(12);
                     done();
                 }, 2, DefaultWaitForRender);
         });
@@ -225,7 +225,7 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    expect($(SliceLabelSelector).length).toBe(visualBuilder.slices.length);
+                    expect(visualBuilder.element.querySelectorAll(SliceLabelSelector).length).toBe(visualBuilder.slices.length);
                     done();
                 }, 2, DefaultWaitForRender);
         });
@@ -260,7 +260,7 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    expect($(LegendSelector).children().length).toBe(0);
+                    expect(visualBuilder.element.querySelectorAll(`${LegendSelector.trim()}>*`).length).toBe(0);
                     done();
                 }, 2, DefaultWaitForRender);
         });
@@ -276,7 +276,8 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    expect($(LegendSelector).children().length).toBeTruthy();
+                    debugger;
+                    expect(visualBuilder.element.querySelectorAll(`${LegendSelector.trim()}>*`).length).toBeTruthy();
                     done();
                 }, 2, DefaultWaitForRender);
         });
@@ -297,16 +298,16 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstClickPoint: JQuery = visualBuilder.slices.last();
-                    const secondClickPoint: JQuery = visualBuilder.mainElement;
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstClickPoint, 5, 5);
                     setTimeout(
                         () => {
-                            expect($(LabelVisibleSelector).length).toBe(1);
+                            expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(1);
                             d3Click(secondClickPoint, 1, 1);
                             setTimeout(
                                 () => {
-                                    expect($(PercentageSelector).css("font-size")).toBe("28px");
+                                    expect((<HTMLElement>visualBuilder.element.querySelector(PercentageSelector)).style['font-size']).toBe("28px");
                                     done();
                                 },
                                 DefaultWaitForRender);
@@ -316,6 +317,7 @@ describe("Sunburst", () => {
                 2,
                 DefaultWaitForRender);
         });
+        
         it("label font size should be correct", (done: DoneFn) => {
             dataView = defaultDataViewBuilder.getDataView(
                 [
@@ -330,15 +332,15 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstClickPoint: JQuery = visualBuilder.slices.last();
-                    const secondClickPoint: JQuery = visualBuilder.mainElement;
+                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
+                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstClickPoint, 5, 5);
                     setTimeout(
                         () => {
                             d3Click(secondClickPoint, 1, 1);
                             setTimeout(
                                 () => {
-                                    expect($(PercentageSelector).css("font-size")).toBe(expectedFontSize);
+                                    expect((<HTMLElement>visualBuilder.element.querySelector( PercentageSelector )).style.fontSize).toBe(expectedFontSize);
                                     done();
                                 },
                                 DefaultWaitForRender);
@@ -405,8 +407,8 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const elements: JQuery = visualBuilder.slices.filter(function () {
-                        const appliedColor: string = $(this).css("fill");
+                    const elements: HTMLElement[] = Array.from(visualBuilder.slices).filter(element => {
+                        const appliedColor: string = element.style.fill;
 
                         return appliedColor === colorAsRGB;
                     });
@@ -425,7 +427,7 @@ describe("Sunburst", () => {
             let jsonData = getJSONFixture("capabilities.json");
 
             let objectsChecker: Function = (obj) => {
-                for (let property in obj) {
+                for (let property of Object.keys(obj)) {
                     let value: any = obj[property];
 
                     if (value.displayName) {
@@ -484,7 +486,7 @@ describe("Sunburst", () => {
 
             it("should not use fill style", (done) => {
                 visualBuilder.updateRenderTimeout(dataView, () => {
-                    const layers = visualBuilder.slices.toArray().map($);
+                    const layers = visualBuilder.slices;
 
                     expect(isColorAppliedToElements(layers, null, "fill"));
 
@@ -494,7 +496,7 @@ describe("Sunburst", () => {
 
             it("should use stroke style", (done) => {
                 visualBuilder.updateRenderTimeout(dataView, () => {
-                    const layers = visualBuilder.slices.toArray().map($);
+                    const layers = visualBuilder.slices;
 
                     expect(isColorAppliedToElements(layers, foregroundColor, "stroke"));
 
@@ -503,12 +505,12 @@ describe("Sunburst", () => {
             });
 
             function isColorAppliedToElements(
-                elements: JQuery[],
+                elements: NodeListOf<HTMLElement>,
                 color?: string,
                 colorStyleName: string = "fill"
             ): boolean {
-                return elements.some((element: JQuery) => {
-                    const currentColor: string = element.css(colorStyleName);
+                return Array.from(elements).some((element: HTMLElement) => {
+                    const currentColor: string = element.style[colorStyleName];
 
                     if (!currentColor || !color) {
                         return currentColor === color;
@@ -526,9 +528,6 @@ describe("Sunburst", () => {
                 {
                     name: undefined
                 },
-                undefined,
-                undefined,
-                undefined,
                 [],
                 {
                     dataPoints: [],
@@ -538,7 +537,7 @@ describe("Sunburst", () => {
                 "#00ff00",
                 visualBuilder.visualHost,
                 0,
-                valueFormatter.create({}),
+                vf.create({}),
                 []
             );
 
