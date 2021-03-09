@@ -566,7 +566,6 @@ export class Sunburst implements IVisual {
         }
 
         if (name && level === 2 && !originParentNode.objects) {
-
             const initialColor: string = this.colorPalette.getColor(name).value;
             const parsedColor: string = this.getColor(
                 Sunburst.LegendPropertyIdentifier,
@@ -581,7 +580,7 @@ export class Sunburst implements IVisual {
             );
         } else {
             newDataPointNode.color = parentColor;
-        }        
+        }
  
         if (originParentNode.children && originParentNode.children.length > 0) {
             for (const child of originParentNode.children) {
