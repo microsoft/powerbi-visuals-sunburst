@@ -1,3 +1,7 @@
+## 2.2.2
+* Updated visualData to use matrix builder from test utils
+* Updated test.webpack.config.json for development mode
+
 ## 2.1.8
 * Updated tslint
 * Updated context menu
