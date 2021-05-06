@@ -3,6 +3,11 @@ const webpack = require("webpack");
 
 module.exports = {
     devtool: 'source-map',
+    mode: 'development',
+    optimization : {
+        concatenateModules: false,
+        minimize: false
+    },
     module: {
         rules: [
             {

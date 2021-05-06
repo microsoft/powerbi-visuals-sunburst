@@ -31,6 +31,7 @@ import DataViewMatrix = powerbiVisualsApi.DataViewMatrix;
 import DataViewMatrixNode = powerbiVisualsApi.DataViewMatrixNode;
 import TestDataViewBuilder = TDVB.TestDataViewBuilder;
 import DataViewMetadataColumn = powerbiVisualsApi.DataViewMetadataColumn;
+import { DataTable } from "powerbi-visuals-utils-testutils/lib/dataViewBuilder/matrixBuilder";
 
 interface INamed {
     name: string;
@@ -329,80 +330,87 @@ export class VisualData extends TestDataViewBuilder {
     public set countGeneratedElements(count: number) {
         this.countElements = count;
     }
+
+    public getMatrixDataTable(testData: INamed[][], useValues: boolean = true): DataTable {
+        let result: (string | number)[][] = [];
+
+
+        // hardcoded to have max 3 depth, but loop below will work for any
+        result[0] = [this.RegionsDataSet, this.CountriesDataSet, this.StatesDataSet].slice(0, testData.length);
+        let finished: boolean = false;
+
+        let counters: number[] = Array.from({ length: testData.length }, () => 0);
+        while (!finished) {
+            result.push(counters.map((val, i) => testData[i][val].name));
+            counters[counters.length - 1]++;
+
+            // update counters' values
+            let currentIndex = counters.length;
+            while (currentIndex > 0) {
+                currentIndex--;
+                if (counters[currentIndex] >= testData[currentIndex].length) {
+                    if (currentIndex === 0) {
+                        finished = true;
+                        break;
+                    }
+                    counters[currentIndex] %= testData[currentIndex].length;
+                    counters[currentIndex - 1]++;
+                }
+            }
+        }
+        if (useValues) {
+            result[0].push("Values");
+            for (let i = 1; i < result.length; i++) {
+                result[i].push(getRandomNumber(0, 1000));
+            }
+        }
+        return new DataTable(result);
+    }
+
     public getDataView(columnNames?: string[]): DataView {
         if (!columnNames) {
             return;
         }
         const testData: INamed[][] = [];
-        const columns: DataViewMetadataColumn[] = [];
         columnNames.forEach((columnName: string, index: number) => {
-            columns.push(this.generateColumn(columnName, index, this.visualName));
             testData.push(this.getRandomArrayElements<INamed>(this.allData[columnName], this.countElements));
         });
 
-        return {
-            matrix: this.buildMatrix(testData, columns, this.measure),
-            metadata: { columns: [...columns, this.measure] }
-        };
+        const data: DataTable = this.getMatrixDataTable(testData);
+        let matrixBuilder = VisualData.createMatrixDataViewBuilder(data);
+
+        columnNames.forEach((col, i) => {
+            matrixBuilder = matrixBuilder.withRowGroup({
+                columns: [{
+                    metadata: {
+                        name: col,
+                        displayName: col,
+                        type: { text: true },
+                    },
+                    role: col,
+                    index: i,
+                }]
+            })
+        })
+        return matrixBuilder.withValues([{
+            metadata: {
+                name: "Values",
+                displayName: "Values",
+                type: { numeric: true },
+            },
+            role: "Values",
+            index: columnNames.length,
+        }]).build()
+
     }
 
     private readonly allData: { [name: string]: INamed[] } =
-    {
-        Regions: Regions,
-        Countries: Countries,
-        States: States
-    };
-
-    private buildMatrix(data: INamed[][], columns: DataViewMetadataColumn[], measure: DataViewMetadataColumn): DataViewMatrix {
-        const rootNode: DataViewMatrixNode = this.generateNode(null, data);
-        return {
-            rows: {
-                root: rootNode,
-                levels: [{
-                    sources: columns
-                }]
-            },
-            columns: {
-                root: {
-                    children: [{ level: 0 }]
-                },
-                levels: [{
-                    sources: [this.measure]
-                }]
-            },
-            valueSources: [this.measure]
+        {
+            Regions: Regions,
+            Countries: Countries,
+            States: States
         };
-    }
 
-    private generateColumn(columnName: string, index: number, visualName?: string): DataViewMetadataColumn {
-        visualName = visualName || "testVisual";
-        return { displayName: columnName, index: index, queryName: `${visualName}.${columnName}`, roles: { Values: true } };
-    }
-
-    private generateNode(head: INamed, data: INamed[][], level: number = -1): DataViewMatrixNode {
-        let treeNode: DataViewMatrixNode;
-        const nextLevel: number = level + 1;
-        if (level === -1) {
-            treeNode = {
-                children: []
-            };
-        } else {
-            const isLastLevel: boolean = !data[nextLevel];
-            treeNode = {
-                name: head.name,
-                level: level,
-                value: head.name,
-                values: isLastLevel ? { 0: { value: getRandomNumber(0, 1000) } } : null,
-                children: []
-            };
-        }
-        if (data[nextLevel]) {
-            data[nextLevel].forEach((item: INamed) => {
-                treeNode.children.push(this.generateNode(item, data, nextLevel));
-            });
-        }
-        return treeNode;
-    }
     private getRandomArrayElements<T>(arr: T[], count: number): T[] {
         if (arr.length < count) {
             return arr;
