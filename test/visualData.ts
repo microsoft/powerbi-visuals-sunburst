@@ -339,7 +339,7 @@ export class VisualData extends TestDataViewBuilder {
         result[0] = [this.RegionsDataSet, this.CountriesDataSet, this.StatesDataSet].slice(0, testData.length);
         let finished: boolean = false;
 
-        let counters = Array(testData.length).fill(0);
+        let counters: number[] = Array.from({ length: testData.length }, () => 0);
         while (!finished) {
             result.push(counters.map((val, i) => testData[i][val].name));
             counters[counters.length - 1]++;
