@@ -522,7 +522,7 @@ export class Sunburst implements IVisual {
         let identityBuilder: ISelectionIdBuilder = visualHost.createSelectionIdBuilder();
 
         parentNodes.push(originParentNode);
-    
+
         for (let i=0; i < parentNodes.length; i++) {
             identityBuilder = identityBuilder.withMatrixNode(parentNodes[i], levels)
         }
@@ -783,14 +783,29 @@ export class Sunburst implements IVisual {
             text: string = selection.text();
         width = width || 0;
         padding = padding || 0;
-        while (textLength > (width - 2 * padding) && text.length > 0) {
-            text = text.slice(0, -1);
-            selection.text(text + "\u2026");
-            textLength = node.getComputedTextLength();
+
+        let resultString:string;
+
+        if (width < 2 * padding){
+            resultString = ""
+        } else {
+            if (textLength > (width - 2 * padding)) {
+                const lengthOfText = Math.round((width - 2 * padding) / textLength * text.length);
+
+                if (lengthOfText > 1){
+                    text = text.slice(0, lengthOfText);
+
+                    if (text.length > 2){
+                        resultString = text.slice(0, -2) + "\u2026";
+                    }
+                    else {
+                        resultString = text.slice(0, -1) + "\u2026";
+                    }
+                }
+
+            }
         }
-        if (textLength > (width - 2 * padding)) {
-            selection.text("");
-        }
+        selection.text(resultString);
     }
 
     private clear(): void {
