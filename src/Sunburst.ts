@@ -781,7 +781,7 @@ export class Sunburst implements IVisual {
         let textWidth: number = textMeasurementService.measureSvgTextWidth(properties, text);
         let newText = text;
 
-        if (maxWidth > 0 && maxWidth > ellipsisWidth) {
+        if (maxWidth > ellipsisWidth) {
             while (textWidth > maxWidth && text.length > 0) {
                 text = text.slice(0, -1);
                 newText = text + "\u2026";
@@ -790,7 +790,7 @@ export class Sunburst implements IVisual {
         } else {
             newText = "";
         }
-        
+
         if (textWidth > maxWidth) {
             newText = "";
         }
