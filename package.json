@@ -1,7 +1,7 @@
 {
   "name": "powerbi-visuals-sunburst",
   "description": "SunBurst chart.",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "author": {
     "name": "Microsoft",
     "email": "pbicvsupport@microsoft.com"
@@ -57,7 +57,7 @@
     "less-loader": "^7.2.1",
     "lodash-es": "4.17.20",
     "powerbi-models": "^1.7.0",
-    "powerbi-visuals-api": "^3.5.1",
+    "powerbi-visuals-api": "^4.2.0",
     "powerbi-visuals-tools": "3.1.15",
     "powerbi-visuals-utils-chartutils": "^2.5.0",
     "powerbi-visuals-utils-colorutils": "^2.3.0",
