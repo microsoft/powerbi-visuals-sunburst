@@ -773,10 +773,7 @@ export class Sunburst implements IVisual {
     }
 
     private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {
-        let width = (<SVGPathElement>d3Select("#sliceLabel_" + i).node()).getTotalLength();
-
-        width = width || 0;
-
+        let width = (<SVGPathElement>d3Select('#sliceLabel_${i}').node()).getTotalLength() || 0;
         const maxWidth = width - 2 * Sunburst.DefaultDataLabelPadding;
         let textWidth: number = textMeasurementService.measureSvgTextWidth(properties, text);
         let newText = text;
