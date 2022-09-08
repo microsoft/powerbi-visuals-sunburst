@@ -58,7 +58,7 @@
     "lodash-es": "4.17.20",
     "powerbi-models": "^1.7.0",
     "powerbi-visuals-api": "^4.2.0",
-    "powerbi-visuals-tools": "3.1.15",
+    "powerbi-visuals-tools": "3.4.3",
     "powerbi-visuals-utils-chartutils": "^2.5.0",
     "powerbi-visuals-utils-colorutils": "^2.3.0",
     "powerbi-visuals-utils-dataviewutils": "^2.4.0",
