@@ -419,7 +419,7 @@ export class Sunburst implements IVisual {
                 }
             });
 
-            let properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(this.main.node() as any);
+            let properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(<any> this.main.node());
             let ellipsesWidth: number = textMeasurementService.measureSvgTextWidth(properties, "\u2026");
 
             this.main
