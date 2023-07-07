@@ -70,7 +70,7 @@
     "powerbi-visuals-utils-testutils": "^2.4.1",
     "powerbi-visuals-utils-tooltiputils": "^2.5.2",
     "powerbi-visuals-utils-typeutils": "^2.3.0",
-    "puppeteer": "^5.5.0",
+    "puppeteer": "20.8.0",
     "regenerator-runtime": "^0.13.7",
     "style-loader": "2.0.0",
     "stylelint": "^14.0.0",
