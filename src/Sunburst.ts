@@ -55,7 +55,7 @@ import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
 import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
 import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
-import IVisualEventService =  powerbiVisualsApi.extensibility.IVisualEventService;
+import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
 import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
 import IVisual = powerbiVisualsApi.extensibility.visual.IVisual;
 import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
@@ -77,7 +77,7 @@ import translate = manipulation.translate;
 import ClassAndSelector = CssConstants.ClassAndSelector;
 import createClassAndSelector = CssConstants.createClassAndSelector;
 
-import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
+import { textMeasurementService, valueFormatter } from "powerbi-visuals-utils-formattingutils";
 import IValueFormatter = valueFormatter.IValueFormatter;
 
 import {
@@ -99,6 +99,7 @@ import { Behavior, BehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
 import { SunburstSettings } from "./SunburstSettings";
 import { identity } from "lodash";
+import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
 interface IAppCssConstants {
     main: ClassAndSelector;
@@ -196,10 +197,10 @@ export class Sunburst implements IVisual {
         this.colorPalette = this.visualHost.colorPalette;
         this.colorHelper = new ColorHelper(this.colorPalette);
         this.arc = d3Arc<HierarchyRectangularNode<SunburstDataPoint>>()
-                .startAngle(d => d.x0)
-                .endAngle(d => d.x1)
-                .innerRadius((d) => Math.sqrt(d.y0))
-                .outerRadius((d) => Math.sqrt(d.y1));
+            .startAngle(d => d.x0)
+            .endAngle(d => d.x1)
+            .innerRadius((d) => Math.sqrt(d.y0))
+            .outerRadius((d) => Math.sqrt(d.y1));
 
         this.colorPalette = options.host.colorPalette;
 
@@ -386,15 +387,15 @@ export class Sunburst implements IVisual {
             .remove();
 
         const pathSelectionEnter: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> =
-        pathSelectionData.enter()
+            pathSelectionData.enter()
                 .append("path");
         const pathSelectionMerged = pathSelectionEnter.merge(pathSelection);
         pathSelectionMerged
-                .classed(this.appCssConstants.slice.className, true)
-                .style("fill", slice => colorHelper.isHighContrast ? null : slice.data.color)
-                .style("stroke", slice => colorHelper.isHighContrast ? slice.data.color : null)
-                .style("stroke-width", () => colorHelper.isHighContrast ? PixelConverter.toString(2) : null)
-                .attr("d", this.arc);
+            .classed(this.appCssConstants.slice.className, true)
+            .style("fill", slice => colorHelper.isHighContrast ? null : slice.data.color)
+            .style("stroke", slice => colorHelper.isHighContrast ? slice.data.color : null)
+            .style("stroke-width", () => colorHelper.isHighContrast ? PixelConverter.toString(2) : null)
+            .attr("d", this.arc);
 
         if (this.settings.group.showDataLabels) {
             const self = this;
@@ -418,6 +419,9 @@ export class Sunburst implements IVisual {
                 }
             });
 
+            let properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(this.main.node() as any);
+            let ellipsesWidth: number = textMeasurementService.measureSvgTextWidth(properties, "\u2026");
+
             this.main
                 .selectAll(this.appCssConstants.sliceLabel.selectorName)
                 .data(root)
@@ -427,13 +431,12 @@ export class Sunburst implements IVisual {
                 .classed(this.appCssConstants.sliceLabel.className, true)
                 // font size + slice padding
                 .attr("dy", (d, i) => {
-                    return Sunburst.LabelShift - d.depth*Sunburst.LabelShiftMultiplier;
+                    return Sunburst.LabelShift - d.depth * Sunburst.LabelShiftMultiplier;
                 })
                 .append("textPath")
                 .attr("startOffset", "50%")
                 .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
-                .text(dataPoint => dataPoint.data.name)
-                .each(this.wrapPathText(Sunburst.DefaultDataLabelPadding));
+                .text((d, i) => this.wrapPathText(d.data.name, i, properties, ellipsesWidth));
         }
 
         this.renderTooltip(pathSelectionMerged);
@@ -458,7 +461,7 @@ export class Sunburst implements IVisual {
                 };
                 return d;
             });
-      }
+    }
 
     private onVisualSelection(dataPoint: SunburstDataPoint): void {
         const isSelected: boolean = !!(dataPoint && dataPoint.selected);
@@ -620,7 +623,7 @@ export class Sunburst implements IVisual {
         defaultColor: string,
         objects: DataViewObjects,
         measureKey: string
-        ): string {
+    ): string {
 
         const colorHelper: ColorHelper = new ColorHelper(
             this.colorPalette,
@@ -709,6 +712,7 @@ export class Sunburst implements IVisual {
             (this.settings.group.showSelected ?
                 Sunburst.MultilinePercentageLineInterval :
                 Sunburst.DefaultPercentageLineInterval);
+
         this.percentageLabel
             .attr(CssConstants.transformProperty, translate(0, labelTransform))
             .style("font-size", PixelConverter.toString(labelSize))
@@ -730,7 +734,7 @@ export class Sunburst implements IVisual {
     private renderContextMenu() {
         this.svg.on('contextmenu', (event) => {
             let dataPoint: any = d3Select(event.target).datum();
-            this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.data.identity : {}, {​​
+            this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.data.identity : {}, {
                 x: event.clientX,
                 y: event.clientY
             });
@@ -768,13 +772,30 @@ export class Sunburst implements IVisual {
         }
     }
 
-    private wrapPathText(padding?: number): (slice: HierarchyRectangularNode<SunburstDataPoint>, index: number) => void {
-        const self = this;
-        return function () {
-            const selection: Selection<BaseType, any, BaseType, any> = d3Select(this);
-            const width = (<SVGPathElement>d3Select(selection.attr("xlink:href")).node()).getTotalLength();
-            self.wrapText(selection, padding, width);
-        };
+    private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {
+        
+        // let width = (<SVGPathElement>d3Select("#sliceLabel_" + i).node()).getTotalLength();
+
+        // width = width || 0;
+        let width = (<SVGPathElement>d3Select("#sliceLabel_"+i).node()).getTotalLength() || 0;
+        const maxWidth = width - 2 * Sunburst.DefaultDataLabelPadding;
+        let textWidth: number = textMeasurementService.measureSvgTextWidth(properties, text);
+        let newText = text;
+
+        if (maxWidth > ellipsisWidth) {
+            while (textWidth > maxWidth && text.length > 0) {
+                text = text.slice(0, -1);
+                newText = text + "\u2026";
+                textWidth = textMeasurementService.measureSvgTextWidth(properties, newText);
+            }
+        } else {
+            newText = "";
+        }
+
+        if (textWidth > maxWidth) {
+            newText = "";
+        }
+        return newText;
     }
 
     private wrapText(selection: Selection<BaseType, any, BaseType, any>, padding?: number, width?: number): void {
