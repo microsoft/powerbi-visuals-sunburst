@@ -1,3 +1,10 @@
+## 2.3.0
+* Fixed linting
+* Updated config in .stylelintrc following the CHANGELOG and migration guide
+* Added es-lint following the power-bi standards
+* Removed tslint
+* Fixed the code and styles to pass the linting
+
 ## 2.2.2
 * Updated visualData to use matrix builder from test utils
 * Updated test.webpack.config.json for development mode
