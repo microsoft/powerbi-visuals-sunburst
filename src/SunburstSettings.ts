@@ -28,9 +28,19 @@ import { dataViewObjectsParser } from "powerbi-visuals-utils-dataviewutils";
 import DataViewObjectsParser = dataViewObjectsParser.DataViewObjectsParser;
 
 class SunburstGroupSettings {
-    public fontSize: number = 14;
     public showSelected: boolean = true;
+    public fontSize: number = 14;
+    public fontFamily: string = "wf_standard-font, helvetica, arial, sans-serif";
+    public fontBold: boolean = false;
+    public fontItalic: boolean = false;
+    public fontUnderline: boolean = false;
+
     public showDataLabels: boolean = true;
+    public labelFontSize: number = 14;
+    public labelFontFamily: string = "wf_standard-font, helvetica, arial, sans-serif";
+    public labelFontBold: boolean = false;
+    public labelFontItalic: boolean = false;
+    public labelFontUnderline: boolean = false;
 }
 
 class SunburstTooltipSettings {
@@ -39,12 +49,13 @@ class SunburstTooltipSettings {
 }
 
 class LegendSettings {
-    show: boolean = false;
-    position: string = "Top";
-    showTitle: boolean = true;
-    titleText: string = "Legend";
-    labelColor: string = "#000000";
-    fontSize: number = 8;
+    public show: boolean = false;
+    public position: string = "Top";
+    public showTitle: boolean = true;
+    public titleText: string = "Legend";
+    public labelColor: string = "#000000";
+    public fontSize: number = 8;
+    public fontFamily: string = "wf_standard-font, helvetica, arial, sans-serif";
 }
 
 export class SunburstSettings extends DataViewObjectsParser {

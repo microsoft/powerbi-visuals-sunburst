@@ -1,3 +1,7 @@
+## 2.4.0
+* Updated the deprecatedEnumerateInstances API to instead use the FormattingModel API (to go with Visual API version 5.1+)
+* Clarified some UI to make it more intuitive and expanded font size inputs to full font control inputs (font size, family, style, etc.).
+
 ## 2.2.2
 * Updated visualData to use matrix builder from test utils
 * Updated test.webpack.config.json for development mode

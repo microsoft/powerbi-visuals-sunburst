@@ -42,35 +42,76 @@
   ],
   "objects": {
     "group": {
-      "displayName": "Group",
-      "displayNameKey": "Visual_Group",
       "properties": {
         "showSelected": {
-          "displayName": "Show category label",
-          "displayNameKey": "Visual_ShowCategoryLabel",
-          "type": {
-            "bool": true
-          }
-        },
-        "showDataLabels": {
-          "displayName": "Show data labels",
-          "displayNameKey": "Visual_ShowDataLabels",
           "type": {
             "bool": true
           }
         },
         "fontSize": {
-          "displayName": "Font size",
-          "displayNameKey": "Visual_FontSize",
           "type": {
             "formatting": {
               "fontSize": true
             }
           }
         },
+        "fontFamily": {
+            "type": {
+                "formatting": {
+                    "fontFamily": true
+                }
+            }
+        },
+        "fontBold": {
+            "type": {
+                "bool": true
+            }
+        },
+        "fontUnderline": {
+            "type": {
+                "bool": true
+            }
+        },
+        "fontItalic": {
+            "type": {
+                "bool": true
+            }
+        },
+        "showDataLabels": {
+          "type": {
+            "bool": true
+          }
+        },
+        "labelFontSize": {
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "labelFontFamily": {
+            "type": {
+                "formatting": {
+                    "fontFamily": true
+                }
+            }
+        },
+        "labelFontBold": {
+            "type": {
+                "bool": true
+            }
+        },
+        "labelFontUnderline": {
+            "type": {
+                "bool": true
+            }
+        },
+        "labelFontItalic": {
+            "type": {
+                "bool": true
+            }
+        },
         "fill": {
-          "displayName": "Top category color",
-          "displayNameKey": "Visual_TopCategoryColor",
           "type": {
             "fill": {
               "solid": {
@@ -82,12 +123,8 @@
       }
     },
     "tooltip": {
-      "displayName": "Tooltip",
-      "displayNameKey": "Visual_Tooltip",
       "properties": {
         "displayUnits": {
-          "displayName": "Display Units",
-          "displayNameKey": "Visual_DisplayUnits",
           "type": {
             "formatting": {
               "labelDisplayUnits": true
@@ -95,8 +132,6 @@
           }
         },
         "precision": {
-          "displayName": "Decimal Places",
-          "displayNameKey": "Visual_Precision",
           "type": {
             "numeric": true
           }
@@ -104,23 +139,13 @@
       }
     },
     "legend": {
-      "displayName": "Legend",
-      "description": "Display legend options",
-      "descriptionKey": "Visual_Description_Legend",
-      "displayNameKey": "Visual_DisplayLegendOptions",
       "properties": {
         "show": {
-          "displayName": "Show",
-          "displayNameKey": "Visual_Show",
           "type": {
             "bool": true
           }
         },
         "position": {
-          "displayName": "Position",
-          "displayNameKey": "Visual_Position",
-          "description": "Select the location for the legend",
-          "descriptionKey": "Visual_Description_Position",
           "type": {
             "enumeration": [
               {
@@ -167,27 +192,17 @@
           }
         },
         "showTitle": {
-          "displayName": "Title",
-          "displayNameKey": "Visual_Title",
-          "description": "Display a title for legend symbols",
-          "descriptionKey": "Visual_Description_Title",
           "type": {
             "bool": true
           }
         },
         "titleText": {
-          "displayName": "Legend Name",
-          "displayNameKey": "Visual_LegendName",
-          "description": "Title text",
-          "descriptionKey": "Visual_Description_LegendName",
           "type": {
             "text": true
           },
           "suppressFormatPainterCopy": true
         },
         "labelColor": {
-          "displayName": "Color",
-          "displayNameKey": "Visual_Color",
           "type": {
             "fill": {
               "solid": {
@@ -197,13 +212,18 @@
           }
         },
         "fontSize": {
-          "displayName": "Text Size",
-          "displayNameKey": "Visual_TextSize",
-          "type": {
-            "formatting": {
-              "fontSize": true
+            "type": {
+                "formatting": {
+                "fontSize": true
+                }
             }
-          }
+        },
+        "fontFamily": {
+            "type": {
+                "formatting": {
+                    "fontFamily": true
+                }
+            }
         }
       }
     }

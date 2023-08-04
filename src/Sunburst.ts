@@ -39,13 +39,7 @@ import DataView = powerbiVisualsApi.DataView;
 import IViewport = powerbiVisualsApi.IViewport;
 import PrimitiveValue = powerbiVisualsApi.PrimitiveValue;
 
-import VisualObjectInstance = powerbiVisualsApi.VisualObjectInstance;
-import VisualObjectInstanceEnumeration = powerbiVisualsApi.VisualObjectInstanceEnumeration;
-import EnumerateVisualObjectInstancesOptions = powerbiVisualsApi.EnumerateVisualObjectInstancesOptions;
-import VisualObjectInstanceEnumerationObject = powerbiVisualsApi.VisualObjectInstanceEnumerationObject;
-
 import DataViewHierarchyLevel = powerbiVisualsApi.DataViewHierarchyLevel;
-import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
 import DataViewObjects = powerbiVisualsApi.DataViewObjects;
 import DataViewObjectPropertyIdentifier = powerbiVisualsApi.DataViewObjectPropertyIdentifier;
 import DataViewTreeNode = powerbiVisualsApi.DataViewTreeNode;
@@ -66,7 +60,6 @@ import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutil
 import {
     ITooltipServiceWrapper,
     createTooltipServiceWrapper,
-    TooltipEventArgs
 } from "powerbi-visuals-utils-tooltiputils";
 
 import {
@@ -98,7 +91,6 @@ import createInteractivitySelectionService = interactivitySelectionService.creat
 import { Behavior, BehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
 import { SunburstSettings } from "./SunburstSettings";
-import { identity } from "lodash";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
 interface IAppCssConstants {
@@ -327,53 +319,325 @@ export class Sunburst implements IVisual {
         }
     }
 
-    public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
-        const instanceEnumeration: VisualObjectInstanceEnumeration = SunburstSettings.enumerateObjectInstances(
-            this.settings || SunburstSettings.getDefault(),
-            options
-        );
-
-        if (options.objectName === Sunburst.LegendPropertyIdentifier.objectName) {
-            const topCategories: SunburstDataPoint[] = this.data.root.children;
-            this.enumerateColors(topCategories, instanceEnumeration);
+    public getFormattingModel(): powerbi.visuals.FormattingModel {
+        const visual_datacard: powerbi.visuals.FormattingCard = {
+            description: "Settings for the layout of the visual",
+            displayName: "Layout Settings",
+            uid: "visual_datacard_uid",
+            groups: []
         }
 
-        return (<VisualObjectInstanceEnumerationObject>instanceEnumeration).instances || [];
+        const group_group: powerbi.visuals.FormattingGroup = this.getGroupGroup();
+        visual_datacard.groups.push(group_group);
+
+        const tooltip_group: powerbi.visuals.FormattingGroup = this.getTooltipGroup();
+        visual_datacard.groups.push(tooltip_group);
+
+        const legend_group: powerbi.visuals.FormattingGroup = this.getLegendGroup();
+        visual_datacard.groups.push(legend_group);
+
+        return { cards: [visual_datacard] };
     }
 
-    private enumerateColors(topCategories: SunburstDataPoint[], instanceEnumeration: VisualObjectInstanceEnumeration): void {
+    // eslint-disable-next-line max-lines-per-function
+    private getGroupGroup(): powerbiVisualsApi.visuals.FormattingGroup {
+        const group_group: powerbi.visuals.FormattingGroup = {
+            displayName: "Group",
+            uid: "visual_datacard_group_group_uid",
+            slices: [
+                {
+                    uid: "visual_datacard_group_group_showSelected_uid",
+                    displayName: "Show Selected Category Label",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: {
+                                objectName: "group",
+                                propertyName: "showSelected"
+                            },
+                            value: this.settings.group.showSelected
+                        }
+                    }
+                },
+                {
+                    uid: "visual_datacard_group_group_fontControl_uid",
+                    displayName: "Selected Category Font",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.FontControl,
+                        properties: {
+                            fontFamily: {
+                                descriptor: {
+                                    objectName: "group",
+                                    propertyName: "fontFamily"
+                                },
+                                value: this.settings.group.fontFamily
+                            },
+                            fontSize: {
+                                descriptor: {
+                                    objectName: "group",
+                                    propertyName: "fontSize"
+                                },
+                                value: this.settings.group.fontSize
+                            },
+                            bold: {
+                                descriptor: {
+                                    objectName: "group",
+                                    propertyName: "fontBold"
+                                },
+                                value: this.settings.group.fontBold
+                            },
+                            italic: {
+                                descriptor: {
+                                    objectName: "group",
+                                    propertyName: "fontItalic"
+                                },
+                                value: this.settings.group.fontItalic
+                            },
+                            underline: {
+                                descriptor: {
+                                    objectName: "group",
+                                    propertyName: "fontUnderline"
+                                },
+                                value: this.settings.group.fontUnderline
+                            }
+                        }
+                    }
+                },
+                {
+                    uid: "visual_datacard_group_group_showDataLabels_uid",
+                    displayName: "Show Data Labels",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: {
+                                objectName: "group",
+                                propertyName: "showDataLabels"
+                            },
+                            value: this.settings.group.showDataLabels
+                        }
+                    }
+                },
+                {
+                    uid: "visual_datacard_group_group_labelFontControl_uid",
+                    displayName: "Label Font",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.FontControl,
+                        properties: {
+                            fontFamily: {
+                                descriptor: {
+                                    objectName: "group",
+                                    propertyName: "labelFontFamily"
+                                },
+                                value: this.settings.group.labelFontFamily
+                            },
+                            fontSize: {
+                                descriptor: {
+                                    objectName: "group",
+                                    propertyName: "labelFontSize"
+                                },
+                                value: this.settings.group.labelFontSize
+                            },
+                            bold: {
+                                descriptor: {
+                                    objectName: "group",
+                                    propertyName: "labelFontBold"
+                                },
+                                value: this.settings.group.labelFontBold
+                            },
+                            italic: {
+                                descriptor: {
+                                    objectName: "group",
+                                    propertyName: "labelFontItalic"
+                                },
+                                value: this.settings.group.labelFontItalic
+                            },
+                            underline: {
+                                descriptor: {
+                                    objectName: "group",
+                                    propertyName: "labelFontUnderline"
+                                },
+                                value: this.settings.group.labelFontUnderline
+                            }
+                        }
+                    }
+                },
+            ],
+        };
+
+        const topCategories: SunburstDataPoint[] = this.data.root.children;
+        this.getSlicesForTopCategoryColorPickers(topCategories, group_group);
+
+        return group_group;
+    }
+
+    private getTooltipGroup(): powerbiVisualsApi.visuals.FormattingGroup {
+        return {
+            displayName: "Tooltip",
+            uid: "visual_datacard_tooltip_group_uid",
+            slices: [
+                {
+                    uid: "visual_datacard_tooltip_group_displayUnits_uid",
+                    displayName: "Display Units",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: {
+                                objectName: "tooltip",
+                                propertyName: "displayUnits"
+                            },
+                            value: this.settings.tooltip.displayUnits
+                        }
+                    }
+                },
+                {
+                    uid: "visual_datacard_tooltip_group_precision_uid",
+                    displayName: "Decimal Places",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.NumUpDown,
+                        properties: {
+                            descriptor: {
+                                objectName: "tooltip",
+                                propertyName: "Visual_Precision"
+                            },
+                            value: this.settings.tooltip.precision
+                        }
+                    }
+                },
+            ],
+        };
+    }
+
+    // eslint-disable-next-line max-lines-per-function
+    private getLegendGroup(): powerbiVisualsApi.visuals.FormattingGroup {
+        return {
+            displayName: "Legend",
+            uid: "visual_datacard_legend_group_uid",
+            slices: [
+                {
+                    uid: "visual_datacard_legend_group_show_uid",
+                    displayName: "Show",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: {
+                                objectName: "legend",
+                                propertyName: "show"
+                            },
+                            value: this.settings.legend.show
+                        }
+                    }
+                },
+                {
+                    uid: "visual_datacard_legend_group_position_uid",
+                    displayName: "Position",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.Dropdown,
+                        properties: {
+                            descriptor: {
+                                objectName: "legend",
+                                propertyName: "position"
+                            },
+                            value: this.settings.legend.position
+                        }
+                    }
+                },
+                {
+                    uid: "visual_datacard_legend_group_showTitle_uid",
+                    displayName: "Title",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ToggleSwitch,
+                        properties: {
+                            descriptor: {
+                                objectName: "legend",
+                                propertyName: "showTitle"
+                            },
+                            value: this.settings.legend.showTitle
+                        }
+                    }
+                },
+                {
+                    uid: "visual_datacard_legend_group_titleText_uid",
+                    displayName: "Title Text",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.TextInput,
+                        properties: {
+                            descriptor: {
+                                objectName: "legend",
+                                propertyName: "titleText"
+                            },
+                            placeholder: "Title Text",
+                            value: this.settings.legend.titleText
+                        }
+                    }
+                },
+                {
+                    uid: "visual_datacard_legend_group_labelColor_uid",
+                    displayName: "Label Color",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ColorPicker,
+                        properties: {
+                            descriptor: {
+                                objectName: "legend",
+                                propertyName: "labelColor"
+                            },
+                            value: { value: this.settings.legend.labelColor }
+                        }
+                    }
+                },
+                {
+                    uid: "visual_datacard_legend_group_fontControl_uid",
+                    displayName: "Label Font",
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.FontControl,
+                        properties: {
+                            fontFamily: {
+                                descriptor: {
+                                    objectName: "legend",
+                                    propertyName: "fontFamily"
+                                },
+                                value: this.settings.legend.fontFamily
+                            },
+                            fontSize: {
+                                descriptor: {
+                                    objectName: "legend",
+                                    propertyName: "fontSize"
+                                },
+                                value: this.settings.legend.fontSize
+                            },
+                        }
+                    }
+                },
+            ],
+        };
+    }
+
+    private getSlicesForTopCategoryColorPickers(topCategories: SunburstDataPoint[], group: powerbi.visuals.FormattingGroup, prefix: string = "visual_datacard_group_group_") {
         if (topCategories && topCategories.length > 0) {
             topCategories.forEach((category: SunburstDataPoint) => {
                 const displayName: string = category.name.toString();
                 const identity: ISelectionId = <ISelectionId>category.identity;
 
-                this.addAnInstanceToEnumeration(instanceEnumeration, {
-                    displayName,
-                    objectName: Sunburst.LegendPropertyIdentifier.objectName.toString(),
-                    selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
-                    properties: {
-                        fill: { solid: { color: category.color } }
+                group.slices.push({
+                    uid: prefix + displayName + "_uid",
+                    displayName: displayName,
+                    control: {
+                        type: powerbi.visuals.FormattingComponent.ColorPicker,
+                        properties: {
+                            descriptor: {
+                                objectName: Sunburst.LegendPropertyIdentifier.objectName.toString(),
+                                propertyName: Sunburst.LegendPropertyIdentifier.propertyName.toString(),
+                                selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
+                            },
+                            value: { value: category.color }
+                        }
                     }
                 });
 
-                this.enumerateColors(category.children, instanceEnumeration);
+                this.getSlicesForTopCategoryColorPickers(category.children, group, prefix + displayName + "_");
             });
         }
     }
-
-    private addAnInstanceToEnumeration(
-        instanceEnumeration: VisualObjectInstanceEnumeration,
-        instance: VisualObjectInstance
-    ): void {
-
-        if ((<VisualObjectInstanceEnumerationObject>instanceEnumeration).instances) {
-            (<VisualObjectInstanceEnumerationObject>instanceEnumeration)
-                .instances
-                .push(instance);
-        } else {
-            (<VisualObjectInstance[]>instanceEnumeration).push(instance);
-        }
-    }
+    
 
     private render(colorHelper: ColorHelper): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
         const root = this.partition(this.data.root).descendants().slice(1);
@@ -398,19 +662,17 @@ export class Sunburst implements IVisual {
             .attr("d", this.arc);
 
         if (this.settings.group.showDataLabels) {
-            const self = this;
-
-            pathSelectionMerged.each(function (d: HierarchyRectangularNode<SunburstDataPoint>, i: number) {
+            pathSelectionMerged.each((d: HierarchyRectangularNode<SunburstDataPoint>, i: number, groups: ArrayLike<BaseType>) => {
                 const firstArcSection: RegExp = /(^.+?)L/;
-                const currentSelection = d3Select(this);
+                const currentSelection = d3Select(groups[i]);
                 const arcRegExpArray: RegExpExecArray = firstArcSection.exec(currentSelection.attr("d"));
 
                 // if slice is section
                 if (arcRegExpArray) {
                     let newArc: string = arcRegExpArray[1];
                     newArc = newArc.replace(/,/g, " ");
-                    self.main.append("path")
-                        .classed(self.appCssConstants.sliceHidden.className, true)
+                    this.main.append("path")
+                        .classed(this.appCssConstants.sliceHidden.className, true)
                         .attr("id", "sliceLabel_" + i)
                         .attr("d", newArc);
                 } else {
@@ -419,8 +681,8 @@ export class Sunburst implements IVisual {
                 }
             });
 
-            let properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(this.main.node() as any);
-            let ellipsesWidth: number = textMeasurementService.measureSvgTextWidth(properties, "\u2026");
+            const properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(<any> this.main.node());
+            const ellipsesWidth: number = textMeasurementService.measureSvgTextWidth(properties, "\u2026");
 
             this.main
                 .selectAll(this.appCssConstants.sliceLabel.selectorName)
@@ -428,10 +690,15 @@ export class Sunburst implements IVisual {
                 .enter()
                 .append("text")
                 .style("fill", colorHelper.getHighContrastColor("foreground", null))
+                .style("font-size", PixelConverter.toString(this.settings.group.labelFontSize))
+                .style("font-family", this.settings.group.labelFontFamily)
+                .style("font-weight", this.settings.group.labelFontBold ? "bold" : "normal")
+                .style("font-style", this.settings.group.labelFontItalic ? "italic" : "normal")
+                .style("text-decoration", this.settings.group.labelFontUnderline ? "underline" : "none")
                 .classed(this.appCssConstants.sliceLabel.className, true)
                 // font size + slice padding
-                .attr("dy", (d, i) => {
-                    return Sunburst.LabelShift - d.depth * Sunburst.LabelShiftMultiplier;
+                .attr("dy", (d) => {
+                    return Sunburst.LabelShift - d.depth * Sunburst.LabelShiftMultiplier + this.settings.group.labelFontSize / 2;
                 })
                 .append("textPath")
                 .attr("startOffset", "50%")
@@ -559,14 +826,6 @@ export class Sunburst implements IVisual {
         data.total += newDataPointNode.value;
         newDataPointNode.children = [];
 
-        if (level === 1 && originParentNode.children.length > 0) {
-            const initialColor: string = this.colorPalette.getColor(name).value;
-            for (const child of originParentNode.children) {
-                const childName: string = child.value != null ? `${child.value}` : "";
-                const initialColor: string = this.colorPalette.getColor(childName).value;
-            }
-        }
-
         if (name && level === 2 && !originParentNode.objects) {
             const initialColor: string = this.colorPalette.getColor(name).value;
             const parsedColor: string = this.getColor(
@@ -664,6 +923,7 @@ export class Sunburst implements IVisual {
 
         const legendData: LegendData = {
             fontSize: settings.legend.fontSize,
+            fontFamily: settings.legend.fontFamily,
             dataPoints: [],
             title: settings.legend.showTitle ? (settings.legend.titleText) : null,
             labelColor: settings.legend.labelColor
@@ -690,14 +950,17 @@ export class Sunburst implements IVisual {
     }
 
     private setCategoryLabelPosition(width: number): void {
-        const self = this;
         if (this.settings.group.showSelected) {
             if (this.selectedCategoryLabel) {
                 const labelSize: number = this.settings.group.fontSize;
                 this.selectedCategoryLabel
                     .attr(CssConstants.transformProperty, translate(0, labelSize * -Sunburst.CategoryLineInterval))
                     .style("font-size", PixelConverter.toString(labelSize))
-                    .text((x: string) => x).each(function (d: string) { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
+                    .style("font-family", this.settings.group.fontFamily)
+                    .style("font-weight", this.settings.group.fontBold ? "bold" : "normal")
+                    .style("font-style", this.settings.group.fontItalic ? "italic" : "normal")
+                    .style("text-decoration", this.settings.group.fontUnderline ? "underline" : "none")
+                    .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
             }
         }
         else {
@@ -706,7 +969,6 @@ export class Sunburst implements IVisual {
     }
 
     private setPercentageLabelPosition(width: number): void {
-        const self = this;
         const labelSize: number = this.settings.group.fontSize * Sunburst.PercentageFontSizeMultiplier;
         const labelTransform: number = labelSize *
             (this.settings.group.showSelected ?
@@ -716,7 +978,7 @@ export class Sunburst implements IVisual {
         this.percentageLabel
             .attr(CssConstants.transformProperty, translate(0, labelTransform))
             .style("font-size", PixelConverter.toString(labelSize))
-            .text((x: string) => x).each(function (d: string) { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
+            .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
     }
 
     private renderTooltip(selection: Selection<BaseType, any, BaseType, any>): void {
@@ -733,7 +995,7 @@ export class Sunburst implements IVisual {
 
     private renderContextMenu() {
         this.svg.on('contextmenu', (event) => {
-            let dataPoint: any = d3Select(event.target).datum();
+            const dataPoint: any = d3Select(event.target).datum();
             this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.data.identity : {}, {
                 x: event.clientX,
                 y: event.clientY
@@ -777,7 +1039,7 @@ export class Sunburst implements IVisual {
         // let width = (<SVGPathElement>d3Select("#sliceLabel_" + i).node()).getTotalLength();
 
         // width = width || 0;
-        let width = (<SVGPathElement>d3Select("#sliceLabel_"+i).node()).getTotalLength() || 0;
+        const width = (<SVGPathElement>d3Select("#sliceLabel_"+i).node()).getTotalLength() || 0;
         const maxWidth = width - 2 * Sunburst.DefaultDataLabelPadding;
         let textWidth: number = textMeasurementService.measureSvgTextWidth(properties, text);
         let newText = text;
@@ -799,8 +1061,8 @@ export class Sunburst implements IVisual {
     }
 
     private wrapText(selection: Selection<BaseType, any, BaseType, any>, padding?: number, width?: number): void {
-        let node: SVGTextElement = <SVGTextElement>selection.node(),
-            textLength: number = node.getComputedTextLength(),
+        const node: SVGTextElement = <SVGTextElement>selection.node();
+        let textLength: number = node.getComputedTextLength(),
             text: string = selection.text();
         width = width || 0;
         padding = padding || 0;

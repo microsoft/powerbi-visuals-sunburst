@@ -372,13 +372,16 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const result: VisualObjectInstance[] = visualBuilder.enumerateObjectInstances({ objectName: "group" });
-                    const colorExist: boolean = result.some((instance: VisualObjectInstance) =>
-                        instance.properties &&
-                        instance.properties["fill"] &&
-                        instance.properties["fill"]["solid"] &&
-                        instance.properties["fill"]["solid"]["color"] &&
-                        instance.properties["fill"]["solid"]["color"] === color);
+                    const result: powerbi.visuals.FormattingModel = visualBuilder.instance.getFormattingModel();
+                    const visual_card: powerbi.visuals.FormattingCard = <powerbi.visuals.FormattingCard> result.cards[0];
+                    const group_group: powerbi.visuals.FormattingGroup = <powerbi.visuals.FormattingGroup> visual_card.groups[0];
+                    const group_slices: powerbi.visuals.FormattingSlice[] = <powerbi.visuals.FormattingSlice[]> group_group.slices;
+                    const colorExist: boolean = group_slices.some((slice: powerbi.visuals.FormattingSlice) =>
+                        slice["control"] &&
+                        slice["control"]["properties"] &&
+                        slice["control"]["properties"]["value"] &&
+                        slice["control"]["properties"]["value"]["value"] &&
+                        slice["control"]["properties"]["value"]["value"] === color);
                     expect(colorExist).toBeTruthy();
                     done();
                 }, 2, DefaultWaitForRender);
