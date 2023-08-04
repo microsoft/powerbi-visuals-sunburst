@@ -14,7 +14,6 @@
     "lint": "npm run lint:ts && npm run lint:less",
     "lint:ts": "npx eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:less": "stylelint less --quiet-deprecation-warnings \"style/**/*.less\"",
-    "lint:help": "stylelint --help",
     "pretest": "pbiviz package --resources --no-minify --no-pbiviz",
     "test": "karma start"
   },
