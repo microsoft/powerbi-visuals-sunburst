@@ -47,16 +47,6 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
             type: updateType
         });
     }
-
-    public updateRenderTimeout(
-        dataViews: DataView[] | DataView,
-        fn: Function,
-        updateType?: VisualUpdateType,
-        timeout?: number): number {
-        this.update(dataViews, updateType);
-        return renderTimeout(fn, timeout);
-    }
-
     protected build(options: VisualConstructorOptions): VisualClass {
         options.host["selectionManager"].registerOnSelectCallback = (callback: (ids: ISelectionId[]) => void) => {
             this.bookmarksCallback = (selectionIds: ISelectionId[]) => {

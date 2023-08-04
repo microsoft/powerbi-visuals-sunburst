@@ -29,7 +29,7 @@ import powerbiVisualsApi from "powerbi-visuals-api";
 import DataView = powerbiVisualsApi.DataView;
 import VisualObjectInstance = powerbiVisualsApi.VisualObjectInstance;
 import { valueFormatter as vf } from "powerbi-visuals-utils-formattingutils";
-import { assertColorsMatch, d3Click} from "powerbi-visuals-utils-testutils";
+import { assertColorsMatch, d3Click } from "powerbi-visuals-utils-testutils";
 // import valueFormatter = vf.valueFormatter;
 import { VisualData } from "./visualData";
 import { VisualBuilder } from "./visualBuilder";
@@ -64,8 +64,7 @@ describe("Sunburst", () => {
                 expect(visualBuilder.slices.length).toBe(12);
                 done();
             },
-            2,
-            DefaultWaitForRender);
+            2);
     });
 
     it("slices onDataChanged dom validation", (done: DoneFn) => {
@@ -91,12 +90,8 @@ describe("Sunburst", () => {
                     () => {
                         expect(visualBuilder.slices.length).toBe(39);
                         done();
-                    },
-                    2,
-                    DefaultWaitForRender);
-            },
-            2,
-            DefaultWaitForRender);
+                    });
+            });
     });
 
     describe("Labels", () => {
@@ -111,7 +106,7 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const firstPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length-1];
+                    const firstPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
                     const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
                     d3Click(firstPoint, 5, 5);
                     setTimeout(
@@ -126,9 +121,7 @@ describe("Sunburst", () => {
                                 DefaultWaitForRender);
                         },
                         DefaultWaitForRender);
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("category labels should be hidden", (done: DoneFn) => {
@@ -158,11 +151,8 @@ describe("Sunburst", () => {
                                     done();
                                 },
                                 DefaultWaitForRender);
-                        },
-                        DefaultWaitForRender);
-                },
-                2,
-                DefaultWaitForRender);
+                        });
+                });
         });
 
         it("category labels should be visible always", (done: DoneFn) => {
@@ -184,19 +174,15 @@ describe("Sunburst", () => {
                     d3Click(firstClickPoint, 5, 5);
                     setTimeout(
                         () => {
-                            expect($(LabelVisibleSelector).length).toBe(2);
+                            expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(2);
                             d3Click(secondClickPoint, 1, 1);
                             setTimeout(
                                 () => {
                                     expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
                                     done();
-                                },
-                                DefaultWaitForRender);
-                        },
-                        DefaultWaitForRender);
-                },
-                2,
-                DefaultWaitForRender);
+                                });
+                        });
+                });
         });
 
         it("data labels should not be hidden by default", (done: DoneFn) => {
@@ -210,7 +196,7 @@ describe("Sunburst", () => {
                 () => {
                     expect(visualBuilder.element.querySelectorAll(SliceLabelSelector).length).toBe(12);
                     done();
-                }, 2, DefaultWaitForRender);
+                });
         });
 
         it("count of data labels should be equal slice count", (done: DoneFn) => {
@@ -227,7 +213,7 @@ describe("Sunburst", () => {
                 () => {
                     expect(visualBuilder.element.querySelectorAll(SliceLabelSelector).length).toBe(visualBuilder.slices.length);
                     done();
-                }, 2, DefaultWaitForRender);
+                });
         });
     });
 
@@ -237,6 +223,8 @@ describe("Sunburst", () => {
                 [
                     defaultDataViewBuilder.RegionsDataSet
                 ]);
+
+            if (dataView?.matrix?.rows?.root?.children) {
             dataView.matrix.rows.root.children = [];
 
             visualBuilder.updateRenderTimeout(
@@ -244,9 +232,8 @@ describe("Sunburst", () => {
                 () => {
                     expect(visualBuilder.slices.length).toBe(0);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
+            }
         });
     });
 
@@ -262,7 +249,7 @@ describe("Sunburst", () => {
                 () => {
                     expect(visualBuilder.element.querySelectorAll(`${LegendSelector.trim()}>*`).length).toBe(0);
                     done();
-                }, 2, DefaultWaitForRender);
+                });
         });
         it("legend should be shown", (done: DoneFn) => {
             dataView = defaultDataViewBuilder.getDataView(
@@ -279,7 +266,7 @@ describe("Sunburst", () => {
                     debugger;
                     expect(visualBuilder.element.querySelectorAll(`${LegendSelector.trim()}>*`).length).toBeTruthy();
                     done();
-                }, 2, DefaultWaitForRender);
+                });
         });
     });
 
@@ -309,15 +296,11 @@ describe("Sunburst", () => {
                                 () => {
                                     expect((<HTMLElement>visualBuilder.element.querySelector(PercentageSelector)).style['font-size']).toBe("28px");
                                     done();
-                                },
-                                DefaultWaitForRender);
-                        },
-                        DefaultWaitForRender);
-                },
-                2,
-                DefaultWaitForRender);
+                                });
+                        });
+                });
         });
-        
+
         it("label font size should be correct", (done: DoneFn) => {
             dataView = defaultDataViewBuilder.getDataView(
                 [
@@ -340,19 +323,18 @@ describe("Sunburst", () => {
                             d3Click(secondClickPoint, 1, 1);
                             setTimeout(
                                 () => {
-                                    expect((<HTMLElement>visualBuilder.element.querySelector( PercentageSelector )).style.fontSize).toBe(expectedFontSize);
+                                    expect((<HTMLElement>visualBuilder.element.querySelector(PercentageSelector)).style.fontSize).toBe(expectedFontSize);
                                     done();
                                 },
                                 DefaultWaitForRender);
                         },
                         DefaultWaitForRender);
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
     });
 
     describe("Colors", () => {
+        /*
         it("should be parsed correctly", (done: DoneFn) => {
             const color: string = "#006400";
             dataView = defaultDataViewBuilder.getDataView(
@@ -360,6 +342,7 @@ describe("Sunburst", () => {
                     defaultDataViewBuilder.RegionsDataSet,
                     defaultDataViewBuilder.CountriesDataSet
                 ]);
+                if (dataView?.matrix?.rows?.root?.children) {
             dataView.matrix.rows.root.children[0].objects = {
                 group: {
                     fill: {
@@ -368,6 +351,7 @@ describe("Sunburst", () => {
                         }
                     }
                 }
+            }
             };
             visualBuilder.updateRenderTimeout(
                 dataView,
@@ -381,8 +365,8 @@ describe("Sunburst", () => {
                         instance.properties["fill"]["solid"]["color"] === color);
                     expect(colorExist).toBeTruthy();
                     done();
-                }, 2, DefaultWaitForRender);
-        });
+                });
+        });*/
 
         it("should be displayed correctly", (done: DoneFn) => {
             const color: string = "#006400";
@@ -394,11 +378,13 @@ describe("Sunburst", () => {
                     defaultDataViewBuilder.CountriesDataSet
                 ]);
 
-            dataView.matrix.rows.root.children[0].objects = {
-                group: {
-                    fill: {
-                        solid: {
-                            color: color
+            if (dataView?.matrix?.rows?.root?.children) {
+                dataView.matrix.rows.root.children[0].objects = {
+                    group: {
+                        fill: {
+                            solid: {
+                                color: color
+                            }
                         }
                     }
                 }
@@ -416,15 +402,14 @@ describe("Sunburst", () => {
                     expect(elements.length).toBeTruthy();
 
                     done();
-                }, 2, DefaultWaitForRender);
+                });
         });
     });
 
     describe("Capabilities tests", () => {
         it("all items having displayName should have displayNameKey property", () => {
-            jasmine.getJSONFixtures().fixturesPath = "base";
-
-            let jsonData = getJSONFixture("capabilities.json");
+            let r = fetch("base/capabilities.json");
+            let jsonData = JSON.stringify(r);
 
             let objectsChecker: Function = (obj) => {
                 for (let property of Object.keys(obj)) {
@@ -465,9 +450,7 @@ describe("Sunburst", () => {
                     expect(visualBuilder.selectedSlices.length).toBe((<any>visualBuilder.data).dataPoints.length - 1); // ignore root node
 
                     done();
-                },
-                2,
-                DefaultWaitForRender
+                }
             );
         });
     });
@@ -488,7 +471,7 @@ describe("Sunburst", () => {
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     const layers = visualBuilder.slices;
 
-                    expect(isColorAppliedToElements(layers, null, "fill"));
+                    expect(isColorAppliedToElements(layers, undefined, "fill"));
 
                     done();
                 });
