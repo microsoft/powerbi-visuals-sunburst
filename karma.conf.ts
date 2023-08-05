@@ -34,7 +34,9 @@ const testRecursivePath = "test/visualTest.ts";
 const srcOriginalRecursivePath = "src/**/*.ts";
 const coverageFolder = "coverage";
 
-process.env.CHROME_BIN = require("playwright").chromium.executablePath();
+process.env.CHROME_BIN = require("puppeteer").executablePath();
+
+//import { Config, ConfigOptions } from "karma";
 
 module.exports = (config) => {
     config.set({
@@ -45,7 +47,8 @@ module.exports = (config) => {
         frameworks: ["jasmine"],
         reporters: [
             "progress",
-            "junit"
+            "junit",
+            "coverage-istanbul"
         ],
         junitReporter: {
             outputDir: path.join(__dirname, coverageFolder),
@@ -61,19 +64,22 @@ module.exports = (config) => {
             "karma-sourcemap-loader",
             "karma-chrome-launcher",
             "karma-junit-reporter",
+            "karma-coverage-istanbul-reporter"
         ],
         files: [
-            {
-                pattern: './capabilities.json',
-                watched: false,
-                served: true,
-                included: false
-            },
+            "node_modules/jquery/dist/jquery.min.js",
+            "node_modules/jasmine-jquery/lib/jasmine-jquery.js",
             testRecursivePath,
             {
                 pattern: srcOriginalRecursivePath,
                 included: false,
                 served: true
+            },
+            {
+                pattern: '**/*.json',
+                watched: true,
+                served: true,
+                included: false
             }
         ],
         preprocessors: {
@@ -81,6 +87,18 @@ module.exports = (config) => {
         },
         typescriptPreprocessor: {
             options: tsconfig.compilerOptions
+        },
+        coverageIstanbulReporter: {
+            reports: ["html", "lcovonly", "text-summary", "cobertura"],
+            dir: path.join(__dirname, coverageFolder),
+            'report-config': {
+                html: {
+                    subdir: 'html-report'
+                }
+            },
+            combineBrowserReports: true,
+            fixWebpackSourcePaths: true,
+            verbose: false
         },
         coverageReporter: {
             dir: path.join(__dirname, coverageFolder),
