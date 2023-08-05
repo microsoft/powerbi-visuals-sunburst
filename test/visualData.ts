@@ -27,8 +27,6 @@
 import { getRandomNumber, testDataViewBuilder as TDVB } from "powerbi-visuals-utils-testutils";
 import powerbiVisualsApi from "powerbi-visuals-api";
 import DataView = powerbiVisualsApi.DataView;
-import DataViewMatrix = powerbiVisualsApi.DataViewMatrix;
-import DataViewMatrixNode = powerbiVisualsApi.DataViewMatrixNode;
 import TestDataViewBuilder = TDVB.TestDataViewBuilder;
 import DataViewMetadataColumn = powerbiVisualsApi.DataViewMetadataColumn;
 import { DataTable } from "powerbi-visuals-utils-testutils/lib/dataViewBuilder/matrixBuilder";

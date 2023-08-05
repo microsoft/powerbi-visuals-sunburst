@@ -39,13 +39,7 @@ import DataView = powerbiVisualsApi.DataView;
 import IViewport = powerbiVisualsApi.IViewport;
 import PrimitiveValue = powerbiVisualsApi.PrimitiveValue;
 
-import VisualObjectInstance = powerbiVisualsApi.VisualObjectInstance;
-import VisualObjectInstanceEnumeration = powerbiVisualsApi.VisualObjectInstanceEnumeration;
-import EnumerateVisualObjectInstancesOptions = powerbiVisualsApi.EnumerateVisualObjectInstancesOptions;
-import VisualObjectInstanceEnumerationObject = powerbiVisualsApi.VisualObjectInstanceEnumerationObject;
-
 import DataViewHierarchyLevel = powerbiVisualsApi.DataViewHierarchyLevel;
-import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
 import DataViewObjects = powerbiVisualsApi.DataViewObjects;
 import DataViewObjectPropertyIdentifier = powerbiVisualsApi.DataViewObjectPropertyIdentifier;
 import DataViewTreeNode = powerbiVisualsApi.DataViewTreeNode;
@@ -61,12 +55,12 @@ import IVisual = powerbiVisualsApi.extensibility.visual.IVisual;
 import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
 import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
 import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
+import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutils";
 import {
     ITooltipServiceWrapper,
     createTooltipServiceWrapper,
-    TooltipEventArgs
 } from "powerbi-visuals-utils-tooltiputils";
 
 import {
@@ -95,10 +89,11 @@ import IInteractivityService = interactivityBaseService.IInteractivityService;
 import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
 import createInteractivitySelectionService = interactivitySelectionService.createInteractivitySelectionService;
 
+import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
+
 import { Behavior, BehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
 import { SunburstSettings } from "./SunburstSettings";
-import { identity } from "lodash";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
 interface IAppCssConstants {
@@ -140,11 +135,13 @@ export class Sunburst implements IVisual {
 
         this.selectedCategoryLabel.classed(
             this.appCssConstants.labelVisible.className,
-            isShown && this.settings.group.showSelected
+            isShown && this.settings.group.showSelected.value
         );
     }
 
     private settings: SunburstSettings;
+    private formattingSettingsService: FormattingSettingsService;
+    private localizationManager: ILocalizationManager;
     private visualHost: IVisualHost;
     private selectionManager: ISelectionManager;
     private events: IVisualEventService;
@@ -185,6 +182,9 @@ export class Sunburst implements IVisual {
 
         this.visualHost = options.host;
 
+        this.localizationManager = this.visualHost.createLocalizationManager();
+        this.formattingSettingsService = new FormattingSettingsService(this.localizationManager);
+
         this.events = options.host.eventService;
 
         this.tooltipService = createTooltipServiceWrapper(
@@ -220,7 +220,10 @@ export class Sunburst implements IVisual {
         this.selectionManager = options.host.createSelectionManager();
 
         this.main = this.svg.append("g");
-        this.main.attr(CssConstants.transformProperty, translate(Sunburst.CentralPoint, Sunburst.CentralPoint));
+        this.main
+            .attr(CssConstants.transformProperty, translate(Sunburst.CentralPoint, Sunburst.CentralPoint))
+            .attr("role", "listbox")
+            .attr("aria-multiselectable", "true");
 
         this.selectedCategoryLabel = this.svg
             .append("text")
@@ -272,11 +275,11 @@ export class Sunburst implements IVisual {
 
             this.viewport = options.viewport;
 
-            this.settings = this.parseSettings(options.dataViews[0]);
+            this.settings = this.formattingSettingsService.populateFormattingSettingsModel(SunburstSettings, options.dataViews);
 
             const formatter: IValueFormatter = valueFormatter.create({
-                value: this.settings.tooltip.displayUnits,
-                precision: this.settings.tooltip.precision,
+                value: this.settings.tooltip.displayUnits.value,
+                precision: this.settings.tooltip.precision.value,
                 cultureSelector: this.visualHost.locale
             });
 
@@ -288,6 +291,7 @@ export class Sunburst implements IVisual {
                 formatter
             );
 
+            this.parseSettings();
 
             const selection = this.render(this.colorHelper);
 
@@ -327,52 +331,9 @@ export class Sunburst implements IVisual {
         }
     }
 
-    public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
-        const instanceEnumeration: VisualObjectInstanceEnumeration = SunburstSettings.enumerateObjectInstances(
-            this.settings || SunburstSettings.getDefault(),
-            options
-        );
-
-        if (options.objectName === Sunburst.LegendPropertyIdentifier.objectName) {
-            const topCategories: SunburstDataPoint[] = this.data.root.children;
-            this.enumerateColors(topCategories, instanceEnumeration);
-        }
-
-        return (<VisualObjectInstanceEnumerationObject>instanceEnumeration).instances || [];
-    }
-
-    private enumerateColors(topCategories: SunburstDataPoint[], instanceEnumeration: VisualObjectInstanceEnumeration): void {
-        if (topCategories && topCategories.length > 0) {
-            topCategories.forEach((category: SunburstDataPoint) => {
-                const displayName: string = category.name.toString();
-                const identity: ISelectionId = <ISelectionId>category.identity;
-
-                this.addAnInstanceToEnumeration(instanceEnumeration, {
-                    displayName,
-                    objectName: Sunburst.LegendPropertyIdentifier.objectName.toString(),
-                    selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
-                    properties: {
-                        fill: { solid: { color: category.color } }
-                    }
-                });
-
-                this.enumerateColors(category.children, instanceEnumeration);
-            });
-        }
-    }
-
-    private addAnInstanceToEnumeration(
-        instanceEnumeration: VisualObjectInstanceEnumeration,
-        instance: VisualObjectInstance
-    ): void {
-
-        if ((<VisualObjectInstanceEnumerationObject>instanceEnumeration).instances) {
-            (<VisualObjectInstanceEnumerationObject>instanceEnumeration)
-                .instances
-                .push(instance);
-        } else {
-            (<VisualObjectInstance[]>instanceEnumeration).push(instance);
-        }
+    public getFormattingModel(): powerbi.visuals.FormattingModel {
+        const model = this.formattingSettingsService.buildFormattingModel(this.settings);
+        return model;
     }
 
     private render(colorHelper: ColorHelper): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
@@ -395,22 +356,23 @@ export class Sunburst implements IVisual {
             .style("fill", slice => colorHelper.isHighContrast ? null : slice.data.color)
             .style("stroke", slice => colorHelper.isHighContrast ? slice.data.color : null)
             .style("stroke-width", () => colorHelper.isHighContrast ? PixelConverter.toString(2) : null)
-            .attr("d", this.arc);
+            .attr("d", this.arc)
+            .attr("role", "option")
+            .attr("tabindex", "0")
+            .attr('aria-label', (d: HierarchyRectangularNode<SunburstDataPoint>) => d.data.name);
 
         if (this.settings.group.showDataLabels) {
-            const self = this;
-
-            pathSelectionMerged.each(function (d: HierarchyRectangularNode<SunburstDataPoint>, i: number) {
+            pathSelectionMerged.each((d: HierarchyRectangularNode<SunburstDataPoint>, i: number, groups: ArrayLike<BaseType>) => {
                 const firstArcSection: RegExp = /(^.+?)L/;
-                const currentSelection = d3Select(this);
+                const currentSelection = d3Select(groups[i]);
                 const arcRegExpArray: RegExpExecArray = firstArcSection.exec(currentSelection.attr("d"));
 
                 // if slice is section
                 if (arcRegExpArray) {
                     let newArc: string = arcRegExpArray[1];
                     newArc = newArc.replace(/,/g, " ");
-                    self.main.append("path")
-                        .classed(self.appCssConstants.sliceHidden.className, true)
+                    this.main.append("path")
+                        .classed(this.appCssConstants.sliceHidden.className, true)
                         .attr("id", "sliceLabel_" + i)
                         .attr("d", newArc);
                 } else {
@@ -419,8 +381,8 @@ export class Sunburst implements IVisual {
                 }
             });
 
-            let properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(this.main.node() as any);
-            let ellipsesWidth: number = textMeasurementService.measureSvgTextWidth(properties, "\u2026");
+            const properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(<any>this.main.node());
+            const ellipsesWidth: number = textMeasurementService.measureSvgTextWidth(properties, "\u2026");
 
             this.main
                 .selectAll(this.appCssConstants.sliceLabel.selectorName)
@@ -428,11 +390,17 @@ export class Sunburst implements IVisual {
                 .enter()
                 .append("text")
                 .style("fill", colorHelper.getHighContrastColor("foreground", null))
+                .style("font-size", PixelConverter.toString(this.settings.group.labelFont.fontSize.value))
+                .style("font-family", this.settings.group.labelFont.fontFamily.value)
+                .style("font-weight", this.settings.group.labelFont.bold.value ? "bold" : "normal")
+                .style("font-style", this.settings.group.labelFont.italic.value ? "italic" : "normal")
+                .style("text-decoration", this.settings.group.labelFont.underline.value ? "underline" : "none")
                 .classed(this.appCssConstants.sliceLabel.className, true)
                 // font size + slice padding
-                .attr("dy", (d, i) => {
-                    return Sunburst.LabelShift - d.depth * Sunburst.LabelShiftMultiplier;
+                .attr("dy", (d) => {
+                    return Sunburst.LabelShift - d.depth * Sunburst.LabelShiftMultiplier + this.settings.group.labelFont.fontSize.value / 2;
                 })
+                .attr("role", "presentation")
                 .append("textPath")
                 .attr("startOffset", "50%")
                 .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
@@ -559,14 +527,6 @@ export class Sunburst implements IVisual {
         data.total += newDataPointNode.value;
         newDataPointNode.children = [];
 
-        if (level === 1 && originParentNode.children.length > 0) {
-            const initialColor: string = this.colorPalette.getColor(name).value;
-            for (const child of originParentNode.children) {
-                const childName: string = child.value != null ? `${child.value}` : "";
-                const initialColor: string = this.colorPalette.getColor(childName).value;
-            }
-        }
-
         if (name && level === 2 && !originParentNode.objects) {
             const initialColor: string = this.colorPalette.getColor(name).value;
             const parsedColor: string = this.getColor(
@@ -651,22 +611,21 @@ export class Sunburst implements IVisual {
             : formatter.format(value);
     }
 
-    private parseSettings(dataView: DataView): SunburstSettings {
-        const settings: SunburstSettings = SunburstSettings.parse<SunburstSettings>(dataView);
-
-        settings.legend.labelColor = this.colorHelper.getHighContrastColor("foreground", settings.legend.labelColor);
-
-        return settings;
+    private parseSettings(): void {
+        this.settings.legend.labelColor.value.value = this.colorHelper.getHighContrastColor("foreground", this.settings.legend.labelColor.value.value);
+        const topCategories: SunburstDataPoint[] = this.data.root.children;
+        this.settings.setSlicesForTopCategoryColorPickers(topCategories, Sunburst.LegendPropertyIdentifier, ColorHelper);
     }
 
     private static createLegend(data: SunburstData, settings: SunburstSettings): LegendData {
         const rootCategory: SunburstDataPoint[] = data.root.children;
 
         const legendData: LegendData = {
-            fontSize: settings.legend.fontSize,
+            fontSize: settings.legend.font.fontSize.value,
+            fontFamily: settings.legend.font.fontFamily.value,
             dataPoints: [],
-            title: settings.legend.showTitle ? (settings.legend.titleText) : null,
-            labelColor: settings.legend.labelColor
+            title: settings.legend.showTitle.value ? (settings.legend.titleText.value) : null,
+            labelColor: settings.legend.labelColor.value.value,
         };
 
         legendData.dataPoints = rootCategory.map((dataPoint: SunburstDataPoint) => {
@@ -690,14 +649,17 @@ export class Sunburst implements IVisual {
     }
 
     private setCategoryLabelPosition(width: number): void {
-        const self = this;
         if (this.settings.group.showSelected) {
             if (this.selectedCategoryLabel) {
-                const labelSize: number = this.settings.group.fontSize;
+                const labelSize: number = this.settings.group.selectedFont.fontSize.value;
                 this.selectedCategoryLabel
                     .attr(CssConstants.transformProperty, translate(0, labelSize * -Sunburst.CategoryLineInterval))
                     .style("font-size", PixelConverter.toString(labelSize))
-                    .text((x: string) => x).each(function (d: string) { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
+                    .style("font-family", this.settings.group.selectedFont.fontFamily.value)
+                    .style("font-weight", this.settings.group.selectedFont.bold.value ? "bold" : "normal")
+                    .style("font-style", this.settings.group.selectedFont.italic.value ? "italic" : "normal")
+                    .style("text-decoration", this.settings.group.selectedFont.underline.value ? "underline" : "none")
+                    .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
             }
         }
         else {
@@ -706,8 +668,7 @@ export class Sunburst implements IVisual {
     }
 
     private setPercentageLabelPosition(width: number): void {
-        const self = this;
-        const labelSize: number = this.settings.group.fontSize * Sunburst.PercentageFontSizeMultiplier;
+        const labelSize: number = this.settings.group.selectedFont.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
         const labelTransform: number = labelSize *
             (this.settings.group.showSelected ?
                 Sunburst.MultilinePercentageLineInterval :
@@ -716,7 +677,7 @@ export class Sunburst implements IVisual {
         this.percentageLabel
             .attr(CssConstants.transformProperty, translate(0, labelTransform))
             .style("font-size", PixelConverter.toString(labelSize))
-            .text((x: string) => x).each(function (d: string) { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
+            .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
     }
 
     private renderTooltip(selection: Selection<BaseType, any, BaseType, any>): void {
@@ -733,7 +694,7 @@ export class Sunburst implements IVisual {
 
     private renderContextMenu() {
         this.svg.on('contextmenu', (event) => {
-            let dataPoint: any = d3Select(event.target).datum();
+            const dataPoint: any = d3Select(event.target).datum();
             this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.data.identity : {}, {
                 x: event.clientX,
                 y: event.clientY
@@ -747,8 +708,8 @@ export class Sunburst implements IVisual {
             return;
         }
 
-        const position: LegendPosition = this.settings.legend.show
-            ? LegendPosition[this.settings.legend.position]
+        const position: LegendPosition = this.settings.legend.show.value
+            ? LegendPosition[this.settings.legend.position.value]
             : LegendPosition.None;
 
         this.legend.changeOrientation(position);
@@ -773,11 +734,7 @@ export class Sunburst implements IVisual {
     }
 
     private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {
-        
-        // let width = (<SVGPathElement>d3Select("#sliceLabel_" + i).node()).getTotalLength();
-
-        // width = width || 0;
-        let width = (<SVGPathElement>d3Select("#sliceLabel_"+i).node()).getTotalLength() || 0;
+        const width = (<SVGPathElement>d3Select("#sliceLabel_" + i).node()).getTotalLength() || 0;
         const maxWidth = width - 2 * Sunburst.DefaultDataLabelPadding;
         let textWidth: number = textMeasurementService.measureSvgTextWidth(properties, text);
         let newText = text;
@@ -799,8 +756,8 @@ export class Sunburst implements IVisual {
     }
 
     private wrapText(selection: Selection<BaseType, any, BaseType, any>, padding?: number, width?: number): void {
-        let node: SVGTextElement = <SVGTextElement>selection.node(),
-            textLength: number = node.getComputedTextLength(),
+        const node: SVGTextElement = <SVGTextElement>selection.node();
+        let textLength: number = node.getComputedTextLength(),
             text: string = selection.text();
         width = width || 0;
         padding = padding || 0;

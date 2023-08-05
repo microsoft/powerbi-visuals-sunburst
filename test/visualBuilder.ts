@@ -44,7 +44,7 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
         this.visual.update({
             dataViews: Array.isArray(dataView) ? dataView : [dataView],
             viewport: this.viewport,
-            type: updateType
+            type: updateType!,
         });
     }
 
@@ -54,7 +54,7 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
         updateType?: VisualUpdateType,
         timeout?: number): number {
         this.update(dataViews, updateType);
-        return renderTimeout(fn, timeout);
+        return renderTimeout(() => fn(), timeout);
     }
 
     protected build(options: VisualConstructorOptions): VisualClass {
