@@ -36,8 +36,6 @@ const coverageFolder = "coverage";
 
 process.env.CHROME_BIN = require("puppeteer").executablePath();
 
-//import { Config, ConfigOptions } from "karma";
-
 module.exports = (config) => {
     config.set({
         mode: "development",
