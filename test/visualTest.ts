@@ -119,9 +119,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         beforeEach(() => {
@@ -149,9 +147,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("category labels should be visible always", (done: DoneFn) => {
@@ -171,9 +167,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("data labels should not be hidden by default", (done: DoneFn) => {
@@ -214,9 +208,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(SliceLabelSelector)).style.fontSize).toBe(expectedFontSize);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("data label font weight should be correct", (done: DoneFn) => {
@@ -236,9 +228,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(SliceLabelSelector)).style.fontWeight).toBe(expectedWeight);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("data label text decoration should be correct", (done: DoneFn) => {
@@ -258,9 +248,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(SliceLabelSelector)).style.textDecoration).toBe(expectedDecoration);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("data label font style should be correct", (done: DoneFn) => {
@@ -280,9 +268,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(SliceLabelSelector)).style.fontStyle).toBe(expectedStyle);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("label font family should be correct", (done: DoneFn) => {
@@ -302,9 +288,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(SliceLabelSelector)).style.fontFamily).toBe(expectedFamily);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
     });
 
@@ -321,9 +305,7 @@ describe("Sunburst", () => {
                 () => {
                     expect(visualBuilder.slices.length).toBe(0);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
     });
 
@@ -374,9 +356,7 @@ describe("Sunburst", () => {
                         expect((<HTMLElement>element).style.fontFamily).toBe(expectedFamily);
                     }
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
         it("legend font size should be correct", (done: DoneFn) => {
             const fontSize: number = 22;
@@ -397,9 +377,7 @@ describe("Sunburst", () => {
                         expect((<HTMLElement>element).style.fontSize).toBe(expectedSize);
                     }
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
     });
 
@@ -429,9 +407,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(PercentageSelector)).style['font-size']).toBe("28px");
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("label font size should be correct", (done: DoneFn) => {
@@ -451,9 +427,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(PercentageSelector)).style.fontSize).toBe(expectedFontSize);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("label font weight should be correct", (done: DoneFn) => {
@@ -473,9 +447,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(CategoryLabelSelector)).style.fontWeight).toBe(expectedWeight);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("label text decoration should be correct", (done: DoneFn) => {
@@ -495,9 +467,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(CategoryLabelSelector)).style.textDecoration).toBe(expectedDecoration);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("label font style should be correct", (done: DoneFn) => {
@@ -517,9 +487,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(CategoryLabelSelector)).style.fontStyle).toBe(expectedStyle);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
 
         it("label font family should be correct", (done: DoneFn) => {
@@ -539,9 +507,7 @@ describe("Sunburst", () => {
                     await timeout(DefaultWaitForRender);
                     expect((<HTMLElement>visualBuilder.element.querySelector(CategoryLabelSelector)).style.fontFamily).toBe(expectedFamily);
                     done();
-                },
-                2,
-                DefaultWaitForRender);
+                });
         });
     });
 
@@ -611,9 +577,8 @@ describe("Sunburst", () => {
 
     describe("Capabilities tests", () => {
         it("all items having displayName should have displayNameKey property", () => {
-            jasmine.getJSONFixtures().fixturesPath = "base";
-
-            let jsonData = getJSONFixture("capabilities.json");
+            let r = fetch("base/capabilities.json");
+            let jsonData = JSON.stringify(r);
 
             let objectsChecker: Function = (obj) => {
                 for (let property of Object.keys(obj)) {
