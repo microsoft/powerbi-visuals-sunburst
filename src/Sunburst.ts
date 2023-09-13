@@ -26,9 +26,6 @@
 
 "use strict";
 
-import "core-js/stable";
-import "regenerator-runtime/runtime";
-
 import "../style/sunburst.less";
 import { BaseType, Selection, select as d3Select } from "d3-selection";
 import { Arc, arc as d3Arc } from "d3-shape";
