@@ -38,6 +38,8 @@ import { SunburstDataPoint } from "./dataInterfaces";
 
 const DimmedOpacity: number = 0.2;
 const DefaultOpacity: number = 1.0;
+const EnterCode = "Enter";
+const SpaceCode = "Space";
 
 function getFillOpacity(
     selected: boolean,
@@ -53,7 +55,6 @@ function getFillOpacity(
 }
 
 export interface BehaviorOptions extends IBehaviorOptions<SunburstDataPoint> {
-    // dataPoints: SunburstDataPoint[];
     selection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint>;
     clearCatcher: Selection<BaseType, any, BaseType, any>;
     interactivityService: IInteractivityService<SelectableDataPoint>;
@@ -62,6 +63,23 @@ export interface BehaviorOptions extends IBehaviorOptions<SunburstDataPoint> {
 
 export class Behavior implements IInteractiveBehavior {
     private options: BehaviorOptions;
+
+    private select(d:HierarchyRectangularNode<SunburstDataPoint>, selectionHandler: ISelectionHandler, onSelect: (dataPoint: SunburstDataPoint) => void, event: MouseEvent | KeyboardEvent) {
+        selectionHandler.handleSelection(d.data, event.ctrlKey);
+        event.stopPropagation();
+
+        if (onSelect) {
+            onSelect(d.data);
+        }
+    }
+
+    private clear(selectionHandler: ISelectionHandler, onSelect: (dataPoint: SunburstDataPoint) => void) {
+        selectionHandler.handleClearSelection();
+
+        if (onSelect) {
+            onSelect(null);
+        }
+    }
 
     public bindEvents(
         options: BehaviorOptions,
@@ -76,20 +94,20 @@ export class Behavior implements IInteractiveBehavior {
         } = options;
 
         selection.on("click", (event:MouseEvent, d:HierarchyRectangularNode<SunburstDataPoint>) => {
-            selectionHandler.handleSelection(d.data, event.ctrlKey);
-            event.stopPropagation();
-
-            if (onSelect) {
-                onSelect(d.data);
-            }
-
+            this.select(d, selectionHandler, onSelect, event);
         });
-        clearCatcher.on("click", () => {
-            selectionHandler.handleClearSelection();
-
-            if (onSelect) {
-                onSelect(null);
+        selection.on("keydown", (event:KeyboardEvent, d: HierarchyRectangularNode<SunburstDataPoint>) => {
+            if (event.code !== EnterCode && event.code !== SpaceCode) {
+                return;
             }
+            this.select(d, selectionHandler, onSelect, event);
+        });
+        clearCatcher.on("click", () => this.clear(selectionHandler, onSelect));
+        clearCatcher.on("keydown", (e:KeyboardEvent) => {
+            if (e.code !== EnterCode && e.code !== SpaceCode) {
+                return;
+            }
+            this.clear(selectionHandler, onSelect);
         });
     }
 
@@ -109,6 +127,10 @@ export class Behavior implements IInteractiveBehavior {
                 !highlight && hasSelection,
                 !selected && hasHighlights
             );
+        });
+
+        selection.attr("aria-selected", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
+            return dataPoint.data.selected;
         });
     }
 }
