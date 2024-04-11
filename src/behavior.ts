@@ -27,10 +27,6 @@
 import { BaseType, Selection } from "d3-selection";
 import { HierarchyRectangularNode } from "d3-hierarchy";
 
-import powerbiVisualsApi from "powerbi-visuals-api";
-import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
-import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
-
 import { interactivitySelectionService, interactivityBaseService } from "powerbi-visuals-utils-interactivityutils";
 import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
 import IInteractivityService = interactivityBaseService.IInteractivityService;
