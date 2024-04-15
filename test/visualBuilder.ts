@@ -33,6 +33,7 @@ import { VisualBuilderBase, renderTimeout } from "powerbi-visuals-utils-testutil
 import { Sunburst as VisualClass } from "../src/Sunburst";
 import { VisualData } from "./visualData";
 import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
+import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
 
 export class VisualBuilder extends VisualBuilderBase<VisualClass> {
     bookmarksCallback: (ids: ISelectionId[]) => void;
@@ -41,16 +42,18 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
     }
 
     public update(dataView: DataView[] | DataView, updateType?: VisualUpdateType): void {
-        this.visual.update({
+        let options: VisualUpdateOptions = {
             dataViews: Array.isArray(dataView) ? dataView : [dataView],
             viewport: this.viewport,
-            type: updateType
-        });
+            type: updateType!
+        };
+
+        this.visual.update(options);
     }
 
     public updateRenderTimeout(
         dataViews: DataView[] | DataView,
-        fn: Function,
+        fn: () => any,
         updateType?: VisualUpdateType,
         timeout?: number): number {
         this.update(dataViews, updateType);
