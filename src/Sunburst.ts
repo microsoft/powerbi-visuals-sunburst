@@ -45,7 +45,6 @@ import EnumerateVisualObjectInstancesOptions = powerbiVisualsApi.EnumerateVisual
 import VisualObjectInstanceEnumerationObject = powerbiVisualsApi.VisualObjectInstanceEnumerationObject;
 
 import DataViewHierarchyLevel = powerbiVisualsApi.DataViewHierarchyLevel;
-import DataViewCategoryColumn = powerbiVisualsApi.DataViewCategoryColumn;
 import DataViewObjects = powerbiVisualsApi.DataViewObjects;
 import DataViewObjectPropertyIdentifier = powerbiVisualsApi.DataViewObjectPropertyIdentifier;
 import DataViewTreeNode = powerbiVisualsApi.DataViewTreeNode;
@@ -65,8 +64,7 @@ import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutils";
 import {
     ITooltipServiceWrapper,
-    createTooltipServiceWrapper,
-    TooltipEventArgs
+    createTooltipServiceWrapper
 } from "powerbi-visuals-utils-tooltiputils";
 
 import {
@@ -98,7 +96,6 @@ import createInteractivitySelectionService = interactivitySelectionService.creat
 import { Behavior, BehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
 import { SunburstSettings } from "./SunburstSettings";
-import { identity } from "lodash";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
 interface IAppCssConstants {
@@ -398,6 +395,7 @@ export class Sunburst implements IVisual {
             .attr("d", this.arc);
 
         if (this.settings.group.showDataLabels) {
+            // eslint-disable-next-line
             const self = this;
 
             pathSelectionMerged.each(function (d: HierarchyRectangularNode<SunburstDataPoint>, i: number) {
@@ -419,8 +417,8 @@ export class Sunburst implements IVisual {
                 }
             });
 
-            let properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(this.main.node() as any);
-            let ellipsesWidth: number = textMeasurementService.measureSvgTextWidth(properties, "\u2026");
+            const properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(this.main.node() as any);
+            const ellipsesWidth: number = textMeasurementService.measureSvgTextWidth(properties, "\u2026");
 
             this.main
                 .selectAll(this.appCssConstants.sliceLabel.selectorName)
@@ -430,7 +428,7 @@ export class Sunburst implements IVisual {
                 .style("fill", colorHelper.getHighContrastColor("foreground", null))
                 .classed(this.appCssConstants.sliceLabel.className, true)
                 // font size + slice padding
-                .attr("dy", (d, i) => {
+                .attr("dy", (d) => {
                     return Sunburst.LabelShift - d.depth * Sunburst.LabelShiftMultiplier;
                 })
                 .append("textPath")
@@ -690,6 +688,7 @@ export class Sunburst implements IVisual {
     }
 
     private setCategoryLabelPosition(width: number): void {
+        // eslint-disable-next-line
         const self = this;
         if (this.settings.group.showSelected) {
             if (this.selectedCategoryLabel) {
@@ -697,7 +696,7 @@ export class Sunburst implements IVisual {
                 this.selectedCategoryLabel
                     .attr(CssConstants.transformProperty, translate(0, labelSize * -Sunburst.CategoryLineInterval))
                     .style("font-size", PixelConverter.toString(labelSize))
-                    .text((x: string) => x).each(function (d: string) { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
+                    .text((x: string) => x).each(function () { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
             }
         }
         else {
@@ -706,6 +705,7 @@ export class Sunburst implements IVisual {
     }
 
     private setPercentageLabelPosition(width: number): void {
+        // eslint-disable-next-line
         const self = this;
         const labelSize: number = this.settings.group.fontSize * Sunburst.PercentageFontSizeMultiplier;
         const labelTransform: number = labelSize *
@@ -716,7 +716,7 @@ export class Sunburst implements IVisual {
         this.percentageLabel
             .attr(CssConstants.transformProperty, translate(0, labelTransform))
             .style("font-size", PixelConverter.toString(labelSize))
-            .text((x: string) => x).each(function (d: string) { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
+            .text((x: string) => x).each(function () { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
     }
 
     private renderTooltip(selection: Selection<BaseType, any, BaseType, any>): void {
@@ -733,7 +733,7 @@ export class Sunburst implements IVisual {
 
     private renderContextMenu() {
         this.svg.on('contextmenu', (event) => {
-            let dataPoint: any = d3Select(event.target).datum();
+            const dataPoint: any = d3Select(event.target).datum();
             this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.data.identity : {}, {
                 x: event.clientX,
                 y: event.clientY
@@ -777,7 +777,7 @@ export class Sunburst implements IVisual {
         // let width = (<SVGPathElement>d3Select("#sliceLabel_" + i).node()).getTotalLength();
 
         // width = width || 0;
-        let width = (<SVGPathElement>d3Select("#sliceLabel_"+i).node()).getTotalLength() || 0;
+        const width = (<SVGPathElement>d3Select("#sliceLabel_"+i).node()).getTotalLength() || 0;
         const maxWidth = width - 2 * Sunburst.DefaultDataLabelPadding;
         let textWidth: number = textMeasurementService.measureSvgTextWidth(properties, text);
         let newText = text;
@@ -799,8 +799,8 @@ export class Sunburst implements IVisual {
     }
 
     private wrapText(selection: Selection<BaseType, any, BaseType, any>, padding?: number, width?: number): void {
-        let node: SVGTextElement = <SVGTextElement>selection.node(),
-            textLength: number = node.getComputedTextLength(),
+        const node: SVGTextElement = <SVGTextElement>selection.node();
+        let textLength: number = node.getComputedTextLength(),
             text: string = selection.text();
         width = width || 0;
         padding = padding || 0;
