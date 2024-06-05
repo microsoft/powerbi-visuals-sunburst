@@ -132,7 +132,7 @@ export class Sunburst implements IVisual {
 
         this.selectedCategoryLabel.classed(
             this.appCssConstants.labelVisible.className,
-            isShown && this.settings.group.showSelected.value
+            isShown && this.settings.group.selectedCategory.showSelected.value
         );
     }
 
@@ -272,7 +272,7 @@ export class Sunburst implements IVisual {
 
             this.viewport = options.viewport;
 
-            this.settings = this.formattingSettingsService.populateFormattingSettingsModel(SunburstSettings, options.dataViews);
+            this.settings = this.formattingSettingsService.populateFormattingSettingsModel(SunburstSettings, options.dataViews[0]);
 
             const formatter: IValueFormatter = valueFormatter.create({
                 value: this.settings.tooltip.displayUnits.value,
@@ -358,7 +358,7 @@ export class Sunburst implements IVisual {
             .attr("tabindex", "0")
             .attr('aria-label', (d: HierarchyRectangularNode<SunburstDataPoint>) => d.data.name);
 
-        if (this.settings.group.showDataLabels) {
+        if (this.settings.group.labels.showDataLabels.value) {
             pathSelectionMerged.each((d: HierarchyRectangularNode<SunburstDataPoint>, i: number, groups: ArrayLike<BaseType>) => {
                 const firstArcSection: RegExp = /(^.+?)L/;
                 const currentSelection = d3Select(groups[i]);
@@ -387,15 +387,15 @@ export class Sunburst implements IVisual {
                 .enter()
                 .append("text")
                 .style("fill", colorHelper.getHighContrastColor("foreground", null))
-                .style("font-size", PixelConverter.toString(this.settings.group.labelFont.fontSize.value))
-                .style("font-family", this.settings.group.labelFont.fontFamily.value)
-                .style("font-weight", this.settings.group.labelFont.bold.value ? "bold" : "normal")
-                .style("font-style", this.settings.group.labelFont.italic.value ? "italic" : "normal")
-                .style("text-decoration", this.settings.group.labelFont.underline.value ? "underline" : "none")
+                .style("font-size", PixelConverter.fromPoint(this.settings.group.labels.font.fontSize.value))
+                .style("font-family", this.settings.group.labels.font.fontFamily.value)
+                .style("font-weight", this.settings.group.labels.font.bold.value ? "bold" : "normal")
+                .style("font-style", this.settings.group.labels.font.italic.value ? "italic" : "normal")
+                .style("text-decoration", this.settings.group.labels.font.underline.value ? "underline" : "none")
                 .classed(this.appCssConstants.sliceLabel.className, true)
                 // font size + slice padding
                 .attr("dy", (d) => {
-                    return Sunburst.LabelShift - d.depth * Sunburst.LabelShiftMultiplier + this.settings.group.labelFont.fontSize.value / 2;
+                    return Sunburst.LabelShift - d.depth * Sunburst.LabelShiftMultiplier;
                 })
                 .attr("role", "presentation")
                 .append("textPath")
@@ -609,7 +609,7 @@ export class Sunburst implements IVisual {
     }
 
     private parseSettings(): void {
-        this.settings.legend.labelColor.value.value = this.colorHelper.getHighContrastColor("foreground", this.settings.legend.labelColor.value.value);
+        this.settings.legend.text.labelColor.value.value = this.colorHelper.getHighContrastColor("foreground", this.settings.legend.text.labelColor.value.value);
         const topCategories: SunburstDataPoint[] = this.data.root.children;
         this.settings.setSlicesForTopCategoryColorPickers(topCategories, Sunburst.LegendPropertyIdentifier, ColorHelper);
     }
@@ -618,11 +618,11 @@ export class Sunburst implements IVisual {
         const rootCategory: SunburstDataPoint[] = data.root.children;
 
         const legendData: LegendData = {
-            fontSize: settings.legend.font.fontSize.value,
-            fontFamily: settings.legend.font.fontFamily.value,
+            fontSize: settings.legend.text.font.fontSize.value,
+            fontFamily: settings.legend.text.font.fontFamily.value,
             dataPoints: [],
-            title: settings.legend.showTitle.value ? (settings.legend.titleText.value) : null,
-            labelColor: settings.legend.labelColor.value.value,
+            title: settings.legend.title.showTitle.value ? (settings.legend.title.titleText.value) : null,
+            labelColor: settings.legend.text.labelColor.value.value,
         };
 
         legendData.dataPoints = rootCategory.map((dataPoint: SunburstDataPoint) => {
@@ -646,16 +646,16 @@ export class Sunburst implements IVisual {
     }
 
     private setCategoryLabelPosition(width: number): void {
-        if (this.settings.group.showSelected) {
+        if (this.settings.group.selectedCategory.showSelected.value) {
             if (this.selectedCategoryLabel) {
-                const labelSize: number = this.settings.group.selectedFont.fontSize.value;
+                const labelSize: number = this.settings.group.selectedCategory.font.fontSize.value;
                 this.selectedCategoryLabel
                     .attr(CssConstants.transformProperty, translate(0, labelSize * -Sunburst.CategoryLineInterval))
                     .style("font-size", PixelConverter.toString(labelSize))
-                    .style("font-family", this.settings.group.selectedFont.fontFamily.value)
-                    .style("font-weight", this.settings.group.selectedFont.bold.value ? "bold" : "normal")
-                    .style("font-style", this.settings.group.selectedFont.italic.value ? "italic" : "normal")
-                    .style("text-decoration", this.settings.group.selectedFont.underline.value ? "underline" : "none")
+                    .style("font-family", this.settings.group.selectedCategory.font.fontFamily.value)
+                    .style("font-weight", this.settings.group.selectedCategory.font.bold.value ? "bold" : "normal")
+                    .style("font-style", this.settings.group.selectedCategory.font.italic.value ? "italic" : "normal")
+                    .style("text-decoration", this.settings.group.selectedCategory.font.underline.value ? "underline" : "none")
                     .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
             }
         }
@@ -665,9 +665,9 @@ export class Sunburst implements IVisual {
     }
 
     private setPercentageLabelPosition(width: number): void {
-        const labelSize: number = this.settings.group.selectedFont.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
+        const labelSize: number = this.settings.group.selectedCategory.font.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
         const labelTransform: number = labelSize *
-            (this.settings.group.showSelected ?
+            (this.settings.group.selectedCategory.showSelected.value ?
                 Sunburst.MultilinePercentageLineInterval :
                 Sunburst.DefaultPercentageLineInterval);
 
@@ -706,7 +706,7 @@ export class Sunburst implements IVisual {
         }
 
         const position: LegendPosition = this.settings.legend.show.value
-            ? LegendPosition[this.settings.legend.position.value]
+            ? LegendPosition[this.settings.legend.options.position.value]
             : LegendPosition.None;
 
         this.legend.changeOrientation(position);

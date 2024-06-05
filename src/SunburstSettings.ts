@@ -26,126 +26,115 @@
 
 import { formattingSettings } from "powerbi-visuals-utils-formattingmodel";
 
-import FormattingSettingsCard = formattingSettings.Card;
+import FormattingSettingsCard = formattingSettings.SimpleCard;
+import FormattingSettingsCompositeCard = formattingSettings.CompositeCard;
 import FormattingSettingsSlice = formattingSettings.Slice;
 import FormattingSettingsModel = formattingSettings.Model;
+import FormattingSettingsGroup = formattingSettings.Group;
 
 import { SunburstDataPoint } from "./dataInterfaces";
 import powerbiVisualsApi from "powerbi-visuals-api";
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
-class SunburstGroupSettings extends FormattingSettingsCard {
+class BaseFontCardSettings extends formattingSettings.FontControl {
+    private static fontFamilyName: string = "fontFamily";
+    private static fontSizeName: string = "fontSize";
+    private static boldName: string = "fontBold";
+    private static italicName: string = "fontItalic";
+    private static underlineName: string = "fontUnderline";
+    public static defaultFontFamily: string = "wf_standard-font, helvetica, arial, sans-serif";
+    public static minFontSize: number = 8;
+    public static maxFontSize: number = 60;
+    constructor(defaultFontSize: number, font?: string, fontfamily?: string, fontSize?: string, bold?: string, italic?: string, underline?: string){
+        super(
+            new formattingSettings.FontControl({
+                name: font ?? "font",
+                displayNameKey: "Visual_FontControl",
+                fontFamily: new formattingSettings.FontPicker({
+                    name: fontfamily ?? BaseFontCardSettings.fontFamilyName,
+                    value: BaseFontCardSettings.defaultFontFamily
+                }),
+                fontSize: new formattingSettings.NumUpDown({
+                    name: fontSize ?? BaseFontCardSettings.fontSizeName,
+                    displayNameKey: "Visual_FontSize",
+                    value: defaultFontSize,
+                    options: {
+                        minValue: {
+                            type: powerbi.visuals.ValidatorType.Min,
+                            value: BaseFontCardSettings.minFontSize
+                        },
+                        maxValue: {
+                            type: powerbi.visuals.ValidatorType.Max,
+                            value: BaseFontCardSettings.maxFontSize
+                        }
+                    }
+                }),
+                bold: new formattingSettings.ToggleSwitch({
+                    name: bold ?? BaseFontCardSettings.boldName,
+                    value: false
+                }),
+                italic: new formattingSettings.ToggleSwitch({
+                    name: italic ?? BaseFontCardSettings.italicName,
+                    value: false
+                }),
+                underline: new formattingSettings.ToggleSwitch({
+                    name: underline ?? BaseFontCardSettings.underlineName,
+                    value: false
+                })
+            })
+        );
+    }
+}
+
+class SelectedCategoryGroup extends FormattingSettingsCard {
     public defaultShowSelected: boolean = true;
     public defaultFontSize: number = 14;
-    public defaultFontFamily: string = "wf_standard-font, helvetica, arial, sans-serif";
-    public defaultFontBold: boolean = false;
-    public defaultFontItalic: boolean = false;
-    public defaultFontUnderline: boolean = false;
-
-    public defaultShowDataLabels: boolean = true;
-    public defaultLabelFontSize: number = 14;
-    public defaultLabelFontFamily: string = "wf_standard-font, helvetica, arial, sans-serif";
-    public defaultLabelFontBold: boolean = false;
-    public defaultLabelFontItalic: boolean = false;
-    public defaultLabelFontUnderline: boolean = false;
-
-    public name: string = "group";
-    public displayNameKey: string = "Visual_Groups";
-    public analyticsPane: boolean = false;
 
     public showSelected = new formattingSettings.ToggleSwitch({
         name: "showSelected",
         displayNameKey: "Visual_ShowCategoryLabel",
         value: this.defaultShowSelected,
     });
+    public font = new BaseFontCardSettings(this.defaultFontSize);
 
-    public selectedFont = new formattingSettings.FontControl({
-        name: "fontControl",
-        displayNameKey: "Visual_CategoryFontControl",
-        fontFamily: new formattingSettings.FontPicker({
-            name: "fontFamily",
-            displayNameKey: "Visual_FontFamily",
-            value: this.defaultFontFamily,
-        }),
-        fontSize: new formattingSettings.NumUpDown({
-            name: "fontSize",
-            displayNameKey: "Visual_FontSize",
-            value: this.defaultFontSize,
-            options: {
-                minValue: {
-                    type: powerbi.visuals.ValidatorType.Min,
-                    value: 1
-                },
-                maxValue: {
-                    type: powerbi.visuals.ValidatorType.Max,
-                    value: 100
-                },
-            }
-        }),
-        bold: new formattingSettings.ToggleSwitch({
-            name: "fontBold",
-            displayNameKey: "Visual_Bold",
-            value: this.defaultFontBold,
-        }),
-        italic: new formattingSettings.ToggleSwitch({
-            name: "fontItalic",
-            displayNameKey: "Visual_Italic",
-            value: this.defaultFontItalic,
-        }),
-        underline: new formattingSettings.ToggleSwitch({
-            name: "fontUnderline",
-            displayNameKey: "Visual_Underline",
-            value: this.defaultFontUnderline,
-        }),
-    });
+    topLevelSlice: formattingSettings.ToggleSwitch = this.showSelected;
+    name: string = "selectedCategoryGroup";
+    displayNameKey: string = "Visual_ShowCategoryLabel";
+    slices: FormattingSettingsSlice[] = [this.font];
+}
+
+class LabelsGroup extends FormattingSettingsCard {
+    public defaultShowDataLabels: boolean = true;
+    public defaultLabelFontSize: number = 12;
 
     public showDataLabels = new formattingSettings.ToggleSwitch({
         name: "showDataLabels",
         displayNameKey: "Visual_ShowDataLabels",
         value: this.defaultShowDataLabels,
     });
+    public font = new BaseFontCardSettings(this.defaultLabelFontSize,"labelFont", "labelFontFamily", "labelFontSize", "labelFontBold", "labelFontItalic", "labelFontUnderline");
 
-    public labelFont = new formattingSettings.FontControl({
-        name: "labelFontControl",
-        displayNameKey: "Visual_LabelFontControl",
-        fontFamily: new formattingSettings.FontPicker({
-            name: "labelFontFamily",
-            displayNameKey: "Visual_FontFamily",
-            value: this.defaultLabelFontFamily,
-        }),
-        fontSize: new formattingSettings.NumUpDown({
-            name: "labelFontSize",
-            displayNameKey: "Visual_FontSize",
-            value: this.defaultLabelFontSize,
-            options: {
-                minValue: {
-                    type: powerbi.visuals.ValidatorType.Min,
-                    value: 1
-                },
-                maxValue: {
-                    type: powerbi.visuals.ValidatorType.Max,
-                    value: 100
-                },
-            }
-        }),
-        bold: new formattingSettings.ToggleSwitch({
-            name: "labelFontBold",
-            displayNameKey: "Visual_Bold",
-            value: this.defaultLabelFontBold,
-        }),
-        italic: new formattingSettings.ToggleSwitch({
-            name: "labelFontItalic",
-            displayNameKey: "Visual_Italic",
-            value: this.defaultLabelFontItalic,
-        }),
-        underline: new formattingSettings.ToggleSwitch({
-            name: "labelFontUnderline",
-            displayNameKey: "Visual_Underline",
-            value: this.defaultLabelFontUnderline,
-        }),
-    });
+    topLevelSlice: formattingSettings.ToggleSwitch = this.showDataLabels;
+    name: string = "labelsGroup";
+    displayNameKey: string = "Visual_ShowDataLabels";
+    slices: FormattingSettingsSlice[] = [this.font];
+}
 
-    public slices: Array<FormattingSettingsSlice> = [this.showSelected, this.selectedFont, this.showDataLabels, this.labelFont];
+class ColorsGroup extends FormattingSettingsCard {
+    name: string = "colorsGroup";
+    displayNameKey: string = "Visual_Colors";
+    slices: FormattingSettingsSlice[] = [];
+}
+
+class SunburstGroupSettings extends FormattingSettingsCompositeCard {
+    public selectedCategory = new SelectedCategoryGroup();
+    public labels = new LabelsGroup();
+    public colors = new ColorsGroup();
+
+    public groups: FormattingSettingsGroup[] = [this.selectedCategory, this.labels, this.colors];
+    public name: string = "group";
+    public displayNameKey: string = "Visual_Groups";
+    public analyticsPane: boolean = false;
 }
 
 class SunburstTooltipSettings extends FormattingSettingsCard {
@@ -181,14 +170,66 @@ class SunburstTooltipSettings extends FormattingSettingsCard {
     public slices: Array<FormattingSettingsSlice> = [this.displayUnits, this.precision];
 }
 
-class LegendSettings extends FormattingSettingsCard {
-    public defaultShow: boolean = false;
+class LegendOptionsGroup extends FormattingSettingsCard {
     public defaultPosition: string = "Top";
-    public defaultShowTitle: boolean = true;
-    public defaultTitleText: string = "Legend";
+
+    public position = new formattingSettings.AutoDropdown({
+        name: "position",
+        displayNameKey: "Visual_Position",
+        value: this.defaultPosition,
+    });
+
+    name: string = "legendOptions";
+    displayName: string = "Options";
+    displayNameKey: string = "Visual_Options";
+    slices: FormattingSettingsSlice[] = [this.position];
+}
+
+class LegendTextGroup extends FormattingSettingsCard {
     public defaultLabelColor: string = "#000000";
     public defaultFontSize: number = 8;
-    public defaultFontFamily: string = "wf_standard-font, helvetica, arial, sans-serif";
+
+    public labelColor = new formattingSettings.ColorPicker({
+        name: "labelColor",
+        displayNameKey: "Visual_LegendLabelColor",
+        value: { value: this.defaultLabelColor },
+    });
+
+    public font = new BaseFontCardSettings(this.defaultFontSize);
+
+    name: string = "legendText";
+    displayName: string = "Text";
+    displayNameKey: string = "Visual_Text";
+    slices: FormattingSettingsSlice[] = [this.font, this.labelColor];
+}
+
+class LegendTitleGroup extends FormattingSettingsCard {
+    public defaultShowTitle: boolean = true;
+    public defaultTitleText: string = "Legend";
+
+    public showTitle = new formattingSettings.ToggleSwitch({
+        name: "showTitle",
+        displayNameKey: "Visual_ShowTitle",
+        value: this.defaultShowTitle,
+    });
+
+    topLevelSlice = this.showTitle;
+
+    public titleText = new formattingSettings.TextInput({
+        name: "titleText",
+        displayNameKey: "Visual_Title",
+        value: this.defaultTitleText,
+        placeholder: "Title Text",
+    });
+
+    name: string = "legendTitle";
+    displayName: string = "Title";
+    displayNameKey: string = "Visual_Title";
+    slices: FormattingSettingsSlice[] = [this.titleText];
+}
+
+class LegendSettings extends FormattingSettingsCompositeCard {
+    public defaultShow: boolean = false;
 
     public name: string = "legend";
     public displayNameKey: string = "Visual_Legend";
@@ -200,57 +241,13 @@ class LegendSettings extends FormattingSettingsCard {
         value: this.defaultShow,
     });
 
-    public position = new formattingSettings.AutoDropdown({
-        name: "position",
-        displayNameKey: "Visual_Position",
-        value: this.defaultPosition,
-    });
+    public topLevelSlice: formattingSettings.ToggleSwitch = this.show;
 
-    public showTitle = new formattingSettings.ToggleSwitch({
-        name: "showTitle",
-        displayNameKey: "Visual_ShowTitle",
-        value: this.defaultShowTitle,
-    });
+    public options: LegendOptionsGroup = new LegendOptionsGroup();
+    public text: LegendTextGroup = new LegendTextGroup();
+    public title: LegendTitleGroup = new LegendTitleGroup();
 
-    public titleText = new formattingSettings.TextInput({
-        name: "titleText",
-        displayNameKey: "Visual_Title",
-        value: this.defaultTitleText,
-        placeholder: "Title Text",
-    });
-
-    public labelColor = new formattingSettings.ColorPicker({
-        name: "labelColor",
-        displayNameKey: "Visual_LegendLabelColor",
-        value: { value: this.defaultLabelColor },
-    });
-
-    public font = new formattingSettings.FontControl({
-        name: "fontControl",
-        displayNameKey: "Visual_FontControl",
-        fontFamily: new formattingSettings.FontPicker({
-            name: "fontFamily",
-            displayNameKey: "Visual_FontFamily",
-            value: this.defaultFontFamily,
-        }),
-        fontSize: new formattingSettings.NumUpDown({
-            name: "fontSize",
-            displayNameKey: "Visual_FontSize",
-            value: this.defaultFontSize,
-            options: {
-                minValue: {
-                    type: powerbi.visuals.ValidatorType.Min,
-                    value: 1
-                },
-                maxValue: {
-                    type: powerbi.visuals.ValidatorType.Max,
-                    value: 100
-                },
-            }
-        }),
-    });
-
-    public slices: Array<FormattingSettingsSlice> = [this.show, this.position, this.showTitle, this.titleText, this.labelColor, this.font];
+    public groups: FormattingSettingsGroup[] = [this.options, this.text, this.title];
 }
 
 export class SunburstSettings extends FormattingSettingsModel {
@@ -258,15 +255,14 @@ export class SunburstSettings extends FormattingSettingsModel {
     public legend: LegendSettings = new LegendSettings();
     public tooltip: SunburstTooltipSettings = new SunburstTooltipSettings();
 
-    public cards: Array<FormattingSettingsCard> = [this.group, this.legend, this.tooltip];
+    public cards: Array<FormattingSettingsCard> = [this.group, this.tooltip, this.legend];
 
     public setSlicesForTopCategoryColorPickers(topCategories: SunburstDataPoint[], LegendPropertyIdentifier: powerbiVisualsApi.DataViewObjectPropertyIdentifier, ColorHelper) {
         if (topCategories && topCategories.length > 0) {
             topCategories.forEach((category: SunburstDataPoint) => {
                 const displayName: string = category.name.toString();
                 const identity: ISelectionId = <ISelectionId>category.identity;
-
-                this.group.slices.push(
+                this.group.colors.slices.push(
                     new formattingSettings.ColorPicker({
                         name: LegendPropertyIdentifier.propertyName.toString(),
                         selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
