@@ -524,6 +524,14 @@ export class Sunburst implements IVisual {
         data.total += newDataPointNode.value;
         newDataPointNode.children = [];
 
+        if (level === 1 && originParentNode.children.length > 0) {
+            this.colorPalette.getColor(name).value;
+            for (const child of originParentNode.children) {
+                const childName: string = child.value != null ? `${child.value}` : "";
+                this.colorPalette.getColor(childName).value;
+            }
+        }
+
         if (name && level === 2 && !originParentNode.objects) {
             const initialColor: string = this.colorPalette.getColor(name).value;
             const parsedColor: string = this.getColor(
