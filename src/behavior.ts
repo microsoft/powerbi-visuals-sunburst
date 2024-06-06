@@ -27,12 +27,8 @@
 import { BaseType, Selection } from "d3-selection";
 import { HierarchyRectangularNode } from "d3-hierarchy";
 
-import { interactivitySelectionService, interactivityBaseService } from "powerbi-visuals-utils-interactivityutils";
-import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
-import IInteractivityService = interactivityBaseService.IInteractivityService;
-import ISelectionHandler = interactivityBaseService.ISelectionHandler;
-import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
-import IBehaviorOptions = interactivityBaseService.IBehaviorOptions;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
 import { SunburstDataPoint } from "./dataInterfaces";
 
@@ -54,70 +50,152 @@ function getFillOpacity(
     return DefaultOpacity;
 }
 
-export interface BehaviorOptions extends IBehaviorOptions<SunburstDataPoint> {
+export interface SunburstBehaviorOptions {
     selection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint>;
     clearCatcher: Selection<BaseType, any, BaseType, any>;
-    interactivityService: IInteractivityService<SelectableDataPoint>;
+    legend: Selection<BaseType, any, BaseType, any>;
     onSelect?: (dataPoint: SunburstDataPoint) => void;
+    dataPoints: SunburstDataPoint[];
 }
 
-export class Behavior implements IInteractiveBehavior {
-    private options: BehaviorOptions;
+export class SunburstBehavior {
+    private options: SunburstBehaviorOptions;
+    private selectionManager: ISelectionManager;
 
-    private select(d:HierarchyRectangularNode<SunburstDataPoint>, selectionHandler: ISelectionHandler, onSelect: (dataPoint: SunburstDataPoint) => void, event: MouseEvent | KeyboardEvent) {
-        selectionHandler.handleSelection(d.data, event.ctrlKey);
-        event.stopPropagation();
+    constructor(selectionManager: ISelectionManager){
+        this.selectionManager = selectionManager;
 
-        if (onSelect) {
-            onSelect(d.data);
-        }
-    }
+        this.selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
+            this.options.dataPoints.forEach(dataPoint => {
+                ids.forEach(bookmarkSelection => {
+                    if (bookmarkSelection.includes(dataPoint.identity)) {
+                        dataPoint.selected = true;
+                    }
+                });
+            });
 
-    private clear(selectionHandler: ISelectionHandler, onSelect: (dataPoint: SunburstDataPoint) => void) {
-        selectionHandler.handleClearSelection();
-
-        if (onSelect) {
-            onSelect(null);
-        }
+            this.renderSelection();
+        });
     }
 
     public bindEvents(
-        options: BehaviorOptions,
-        selectionHandler: ISelectionHandler
+        options: SunburstBehaviorOptions
     ): void {
         this.options = options;
 
         const {
             selection,
             clearCatcher,
+            legend,
             onSelect
         } = options;
 
-        selection.on("click", (event:MouseEvent, d:HierarchyRectangularNode<SunburstDataPoint>) => {
-            this.select(d, selectionHandler, onSelect, event);
-        });
-        selection.on("keydown", (event:KeyboardEvent, d: HierarchyRectangularNode<SunburstDataPoint>) => {
-            if (event.code !== EnterCode && event.code !== SpaceCode) {
-                return;
+        this.bindMouseEventsToDataPoints(selection, onSelect);
+        this.bindMouseEventsToClearCatcher(clearCatcher);
+        this.bindMouseEventsToLegend(legend);
+
+        this.bindKeyboardEventsToDataPoints(selection, onSelect);
+    }
+
+    private bindMouseEventsToDataPoints(selection, onSelect: (dataPoint: SunburstDataPoint) => void): void {
+        selection.on("click", (event: PointerEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
+            const isMultiSelection: boolean = event.ctrlKey || event.metaKey || event.shiftKey;
+
+            if (isMultiSelection){
+                this.selectionManager.select(dataPoint.data.identity, true);
             }
-            this.select(d, selectionHandler, onSelect, event);
-        });
-        clearCatcher.on("click", () => this.clear(selectionHandler, onSelect));
-        clearCatcher.on("keydown", (e:KeyboardEvent) => {
-            if (e.code !== EnterCode && e.code !== SpaceCode) {
-                return;
+            else {
+                const isSelection: boolean = this.isSelection(dataPoint.data);
+                this.selectionManager.select(dataPoint.data.identity, !isSelection);
             }
-            this.clear(selectionHandler, onSelect);
+
+            this.renderSelection();
+            event.stopPropagation();
+    
+            if (onSelect) {
+                onSelect(dataPoint.data);
+            }
+        });
+
+        selection.on("contextmenu", (event: PointerEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
+            this.selectionManager.showContextMenu(dataPoint.data.identity, {
+                x: event.clientX,
+                y: event.clientY
+            });
+            event.preventDefault();
+            event.stopPropagation();
         });
     }
 
-    public renderSelection(hasSelection: boolean): void {
-        const {
-            selection,
-            interactivityService,
-        } = this.options;
+    private bindMouseEventsToClearCatcher(clearCatcher): void{
+        clearCatcher.on("click", () => {
+            this.selectionManager.clear();
+            this.renderSelection();
+        });
 
-        const hasHighlights: boolean = interactivityService.hasSelection();
+        clearCatcher.on("contextmenu", (event: PointerEvent) => {
+            this.selectionManager.showContextMenu({}, {
+                x: event.clientX,
+                y: event.clientY
+            });
+            event.preventDefault();
+        });
+    }
+
+    private bindMouseEventsToLegend(legend): void {
+        legend.on("contextmenu", (event: PointerEvent) => {
+            this.selectionManager.showContextMenu({}, {
+                x: event.clientX,
+                y: event.clientY
+            });
+            event.preventDefault();
+        });
+    }
+
+    private bindKeyboardEventsToDataPoints(selection, onSelect: (dataPoint: SunburstDataPoint) => void): void {
+        selection.on("keydown", (event: KeyboardEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
+            if (event.code !== EnterCode && event.code !== SpaceCode) {
+                return;
+            }
+
+            const isMultiSelection: boolean = event.ctrlKey || event.metaKey || event.shiftKey;
+
+            if (isMultiSelection){
+                this.selectionManager.select(dataPoint.data.identity, true);
+            }
+            else {
+                const isSelection: boolean = this.isSelection(dataPoint.data);
+                this.selectionManager.select(dataPoint.data.identity, !isSelection);
+            }
+
+            this.renderSelection();
+    
+            if (onSelect) {
+                onSelect(dataPoint.data);
+            }
+        });
+    }
+
+    private isSelection(dataPoint: SunburstDataPoint): boolean {
+        const ids = this.selectionManager.getSelectionIds();
+        const isSelectedInSelectionManager: boolean = ids.some((id: ISelectionId) => id.equals(dataPoint.identity));
+        return ((isSelectedInSelectionManager && ids.length > 1) || !isSelectedInSelectionManager);
+    }
+
+    private setSelectedDataPoints(dataPoints: SunburstDataPoint[]): void{
+        const selectedIds: powerbi.extensibility.ISelectionId[] = this.selectionManager.getSelectionIds();
+        dataPoints.forEach((dp: SunburstDataPoint) => {
+            dp.selected = selectedIds.some((id: ISelectionId) => id.includes(dp.identity));
+        });
+    }
+
+    public renderSelection(): void {
+        const selection = this.options.selection;
+
+        const hasHighlights: boolean = this.selectionManager.hasSelection();
+        const hasSelection: boolean = this.selectionManager.hasSelection();
+
+        this.setSelectedDataPoints(this.options.dataPoints);
 
         selection.style("opacity", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
             const { selected, highlight } = dataPoint.data;

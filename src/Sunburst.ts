@@ -47,7 +47,6 @@ import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
 import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
 import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
-import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
 import IVisual = powerbiVisualsApi.extensibility.visual.IVisual;
 import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
 import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
@@ -81,14 +80,9 @@ import LegendData = LI.LegendData;
 import MarkerShape = LI.MarkerShape;
 import LegendPosition = LI.LegendPosition;
 
-import { interactivityBaseService, interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
-import IInteractivityService = interactivityBaseService.IInteractivityService;
-import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
-import createInteractivitySelectionService = interactivitySelectionService.createInteractivitySelectionService;
-
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 
-import { Behavior, BehaviorOptions } from "./behavior";
+import { SunburstBehavior, SunburstBehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
 import { SunburstSettings } from "./SunburstSettings";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
@@ -104,6 +98,7 @@ interface IAppCssConstants {
     categoryLabel: ClassAndSelector;
     percentageLabel: ClassAndSelector;
     sliceLabel: ClassAndSelector;
+    legend: ClassAndSelector;
 }
 
 export class Sunburst implements IVisual {
@@ -140,7 +135,6 @@ export class Sunburst implements IVisual {
     private formattingSettingsService: FormattingSettingsService;
     private localizationManager: ILocalizationManager;
     private visualHost: IVisualHost;
-    private selectionManager: ISelectionManager;
     private events: IVisualEventService;
     private data: SunburstData;
     private arc: Arc<any, any>;
@@ -150,6 +144,7 @@ export class Sunburst implements IVisual {
     private percentageLabel: Selection<BaseType, string, BaseType, string>;
     private percentageFormatter: IValueFormatter;
     private selectedCategoryLabel: Selection<BaseType, string, BaseType, string>;
+    private legendSelection: Selection<BaseType, any, BaseType, any>;
 
     private appCssConstants: IAppCssConstants = {
         main: createClassAndSelector("sunburst"),
@@ -161,14 +156,14 @@ export class Sunburst implements IVisual {
         labelVisible: createClassAndSelector("sunburst__label--visible"),
         categoryLabel: createClassAndSelector("sunburst__category-label"),
         percentageLabel: createClassAndSelector("sunburst__percentage-label"),
-        sliceLabel: createClassAndSelector("sunburst__slice-label")
+        sliceLabel: createClassAndSelector("sunburst__slice-label"),
+        legend: createClassAndSelector("legend")
     };
 
     private colorPalette: IColorPalette;
     private colorHelper: ColorHelper;
 
-    private interactivityService: IInteractivityService<any>;
-    private behavior: IInteractiveBehavior = new Behavior();
+    private behavior: SunburstBehavior;
 
     private tooltipService: ITooltipServiceWrapper;
     private viewport: IViewport;
@@ -201,8 +196,6 @@ export class Sunburst implements IVisual {
 
         this.colorPalette = options.host.colorPalette;
 
-        this.interactivityService = createInteractivitySelectionService(options.host);
-
         this.chartWrapper = d3Select(options.element)
             .append("div")
             .classed(this.appCssConstants.main.className, true);
@@ -214,7 +207,8 @@ export class Sunburst implements IVisual {
             .attr("height", "100%")
             .attr("preserveAspectRatio", "xMidYMid meet");
 
-        this.selectionManager = options.host.createSelectionManager();
+        const selectionManager = options.host.createSelectionManager();
+        this.behavior = new SunburstBehavior(selectionManager);
 
         this.main = this.svg.append("g");
         this.main
@@ -245,7 +239,8 @@ export class Sunburst implements IVisual {
             LegendPosition.Top
         );
 
-        this.renderContextMenu();
+        this.legendSelection = d3Select(options.element)
+            .selectAll(this.appCssConstants.legend.selectorName);
     }
 
     public update(options: VisualUpdateOptions): void {
@@ -305,20 +300,16 @@ export class Sunburst implements IVisual {
                 this.chartWrapper.attr("style", null);
             }
 
-            if (this.interactivityService) {
-                const behaviorOptions: BehaviorOptions = {
-                    selection,
-                    clearCatcher: this.svg,
-                    interactivityService: this.interactivityService,
-                    onSelect: this.onVisualSelection.bind(this),
-                    dataPoints: this.data.dataPoints,
-                    behavior: this.behavior
-                };
+            const behaviorOptions: SunburstBehaviorOptions = {
+                selection,
+                clearCatcher: this.svg,
+                legend: this.legendSelection,
+                onSelect: this.onVisualSelection.bind(this),
+                dataPoints: this.data.dataPoints
+            };
 
-                this.interactivityService.bind(behaviorOptions);
-
-                this.behavior.renderSelection(false);
-            }
+            this.behavior.bindEvents(behaviorOptions);
+            this.behavior.renderSelection();
 
             this.events && this.events.renderingFinished(options);
         }
@@ -695,17 +686,6 @@ export class Sunburst implements IVisual {
             (data: HierarchyRectangularNode<SunburstDataPoint>) => data.data.tooltipInfo,
             (data: HierarchyRectangularNode<SunburstDataPoint>) => data.data.identity
         );
-    }
-
-    private renderContextMenu() {
-        this.svg.on('contextmenu', (event) => {
-            const dataPoint: any = d3Select(event.target).datum();
-            this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.data.identity : {}, {
-                x: event.clientX,
-                y: event.clientY
-            });
-            event.preventDefault();
-        });
     }
 
     private renderLegend(): void {
