@@ -716,6 +716,11 @@ export class Sunburst implements IVisual {
                 this.viewport.height -= this.legend.getMargins().height;
                 break;
         }
+
+        this.legendSelection.selectAll("text")
+        .style("font-weight",  () => this.settings.legend.text.font.bold.value ? "bold" : "normal")
+        .style("font-style",  () => this.settings.legend.text.font.italic.value ? "italic" : "normal")
+        .style("text-decoration", () => this.settings.legend.text.font.underline.value ? "underline" : "none");
     }
 
     private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {
