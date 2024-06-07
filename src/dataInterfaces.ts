@@ -27,6 +27,12 @@
 import { TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
 import ISelectionId = powerbi.visuals.ISelectionId;
 
+export interface SunburstLabel {
+    text: string;
+    total: number;
+    color: string;
+}
+
 export interface SunburstData {
     root: SunburstDataPoint; // Tree data points
     dataPoints: SunburstDataPoint[]; // Flat data points

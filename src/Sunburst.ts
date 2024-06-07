@@ -83,7 +83,7 @@ import LegendPosition = LI.LegendPosition;
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 
 import { SunburstBehavior, SunburstBehaviorOptions } from "./behavior";
-import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
+import { SunburstData, SunburstDataPoint, SunburstLabel } from "./dataInterfaces";
 import { SunburstSettings } from "./SunburstSettings";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
@@ -119,7 +119,7 @@ export class Sunburst implements IVisual {
         propertyName: "fill"
     };
 
-    private toggleLabels(isShown: boolean = true) {
+    private toggleLabels(isShown: boolean, canDisplayCategory: boolean) {
         this.percentageLabel.classed(
             this.appCssConstants.labelVisible.className,
             isShown
@@ -127,7 +127,7 @@ export class Sunburst implements IVisual {
 
         this.selectedCategoryLabel.classed(
             this.appCssConstants.labelVisible.className,
-            isShown && this.settings.group.selectedCategory.showSelected.value
+            isShown && canDisplayCategory && this.settings.group.selectedCategory.showSelected.value
         );
     }
 
@@ -305,7 +305,8 @@ export class Sunburst implements IVisual {
                 clearCatcher: this.svg,
                 legend: this.legendSelection,
                 onSelect: this.onVisualSelection.bind(this),
-                dataPoints: this.data.dataPoints
+                dataPoints: this.data.dataPoints,
+                dataPointsTree: this.data.root
             };
 
             this.behavior.bindEvents(behaviorOptions);
@@ -396,8 +397,6 @@ export class Sunburst implements IVisual {
         }
 
         this.renderTooltip(pathSelectionMerged);
-        this.setCategoryLabelPosition(this.viewport.width);
-        this.setPercentageLabelPosition(this.viewport.width);
 
         return pathSelectionMerged;
     }
@@ -419,21 +418,22 @@ export class Sunburst implements IVisual {
             });
     }
 
-    private onVisualSelection(dataPoint: SunburstDataPoint): void {
-        const isSelected: boolean = !!(dataPoint && dataPoint.selected);
-
-        this.toggleLabels(isSelected);
-
-        if (!isSelected) {
+    private onVisualSelection(dataPointLabel: SunburstLabel, hasSelection: boolean, canDisplayCategory: boolean): void {
+        this.toggleLabels(hasSelection, canDisplayCategory);
+    
+        if (!hasSelection){
             return;
         }
 
-        const percentage: string = this.getFormattedValue(dataPoint.total / this.data.total, this.percentageFormatter);
+        const color: string = this.colorHelper.getHighContrastColor("foreground", dataPointLabel.color);
+        const percentage: string = this.getFormattedValue(dataPointLabel.total / this.data.total, this.percentageFormatter);
         this.percentageLabel.data([percentage]);
-        this.percentageLabel.style("fill", dataPoint.color);
-        this.selectedCategoryLabel.data([dataPoint ? dataPoint.tooltipInfo[0].displayName : ""]);
-        this.selectedCategoryLabel.style("fill", dataPoint.color);
-        this.calculateLabelPosition();
+        this.percentageLabel.style("fill", color);
+
+        this.selectedCategoryLabel.data([dataPointLabel.text]);
+        this.selectedCategoryLabel.style("fill", color);
+
+        this.calculateLabelPosition(canDisplayCategory);
     }
 
     private convert(
@@ -636,16 +636,16 @@ export class Sunburst implements IVisual {
         return legendData;
     }
 
-    private calculateLabelPosition(): void {
+    private calculateLabelPosition(canDisplayCategory: boolean): void {
         const innerRadius: number = Math.min(
             ...this.data.root.children.map((x: SunburstDataPoint) => Math.sqrt(x.coords.y0))
         );
-        this.setPercentageLabelPosition(innerRadius);
-        this.setCategoryLabelPosition(innerRadius);
+        this.setPercentageLabelPosition(innerRadius, canDisplayCategory);
+        this.setCategoryLabelPosition(innerRadius, canDisplayCategory);
     }
 
-    private setCategoryLabelPosition(width: number): void {
-        if (this.settings.group.selectedCategory.showSelected.value) {
+    private setCategoryLabelPosition(width: number, canDisplayCategory: boolean): void {
+        if (this.settings.group.selectedCategory.showSelected.value && canDisplayCategory) {
             if (this.selectedCategoryLabel) {
                 const labelSize: number = this.settings.group.selectedCategory.font.fontSize.value;
                 this.selectedCategoryLabel
@@ -663,10 +663,10 @@ export class Sunburst implements IVisual {
         }
     }
 
-    private setPercentageLabelPosition(width: number): void {
+    private setPercentageLabelPosition(width: number, canDisplayCategory: boolean): void {
         const labelSize: number = this.settings.group.selectedCategory.font.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
         const labelTransform: number = labelSize *
-            (this.settings.group.selectedCategory.showSelected.value ?
+            (this.settings.group.selectedCategory.showSelected.value && canDisplayCategory ?
                 Sunburst.MultilinePercentageLineInterval :
                 Sunburst.DefaultPercentageLineInterval);
 

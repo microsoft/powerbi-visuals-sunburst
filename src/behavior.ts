@@ -30,7 +30,7 @@ import { HierarchyRectangularNode } from "d3-hierarchy";
 import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { SunburstDataPoint } from "./dataInterfaces";
+import { SunburstDataPoint, SunburstLabel } from "./dataInterfaces";
 
 const DimmedOpacity: number = 0.2;
 const DefaultOpacity: number = 1.0;
@@ -54,8 +54,9 @@ export interface SunburstBehaviorOptions {
     selection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint>;
     clearCatcher: Selection<BaseType, any, BaseType, any>;
     legend: Selection<BaseType, any, BaseType, any>;
-    onSelect?: (dataPoint: SunburstDataPoint) => void;
+    onSelect?: (label: SunburstLabel, hasSelection: boolean, canDisplayCategory: boolean) => void;
     dataPoints: SunburstDataPoint[];
+    dataPointsTree: SunburstDataPoint;
 }
 
 export class SunburstBehavior {
@@ -86,18 +87,17 @@ export class SunburstBehavior {
         const {
             selection,
             clearCatcher,
-            legend,
-            onSelect
+            legend
         } = options;
 
-        this.bindMouseEventsToDataPoints(selection, onSelect);
+        this.bindMouseEventsToDataPoints(selection);
         this.bindMouseEventsToClearCatcher(clearCatcher);
         this.bindMouseEventsToLegend(legend);
 
-        this.bindKeyboardEventsToDataPoints(selection, onSelect);
+        this.bindKeyboardEventsToDataPoints(selection);
     }
 
-    private bindMouseEventsToDataPoints(selection, onSelect: (dataPoint: SunburstDataPoint) => void): void {
+    private bindMouseEventsToDataPoints(selection): void {
         selection.on("click", (event: PointerEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
             const isMultiSelection: boolean = event.ctrlKey || event.metaKey || event.shiftKey;
 
@@ -111,10 +111,6 @@ export class SunburstBehavior {
 
             this.renderSelection();
             event.stopPropagation();
-    
-            if (onSelect) {
-                onSelect(dataPoint.data);
-            }
         });
 
         selection.on("contextmenu", (event: PointerEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
@@ -152,7 +148,7 @@ export class SunburstBehavior {
         });
     }
 
-    private bindKeyboardEventsToDataPoints(selection, onSelect: (dataPoint: SunburstDataPoint) => void): void {
+    private bindKeyboardEventsToDataPoints(selection): void {
         selection.on("keydown", (event: KeyboardEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
             if (event.code !== EnterCode && event.code !== SpaceCode) {
                 return;
@@ -169,10 +165,6 @@ export class SunburstBehavior {
             }
 
             this.renderSelection();
-    
-            if (onSelect) {
-                onSelect(dataPoint.data);
-            }
         });
     }
 
@@ -210,5 +202,49 @@ export class SunburstBehavior {
         selection.attr("aria-selected", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
             return dataPoint.data.selected;
         });
+
+        if (this.options.onSelect){
+            const canDisplayCategory: boolean = this.selectionManager.getSelectionIds().length === 1;
+            const label: SunburstLabel = this.createCategoryLabel(canDisplayCategory);
+
+            this.options.onSelect(label, hasSelection, canDisplayCategory);
+        }
+    }
+
+    private createCategoryLabel(canDisplayCategory: boolean): SunburstLabel {
+        if (canDisplayCategory){
+            const selectedId = <ISelectionId>this.selectionManager.getSelectionIds()[0];
+            const selectedDataPoint: SunburstDataPoint = this.options.dataPoints.find((el: SunburstDataPoint) => el.identity.equals(selectedId));
+            const label: SunburstLabel = {
+                text: selectedDataPoint.tooltipInfo[0].displayName,
+                total: selectedDataPoint.total,
+                color: selectedDataPoint.color
+            };
+            return label;
+        }
+        else {
+            const total: number = this.calculateTotalForLabel(this.options.dataPointsTree, 0);
+            const label: SunburstLabel = {
+                text: "",
+                total: total,
+                color: "black"
+            };
+            return label;
+        }
+    }
+
+    private calculateTotalForLabel(dataPoint: SunburstDataPoint, total: number): number {
+        if (dataPoint.selected){
+            return dataPoint.total;
+        }
+
+        if (!dataPoint?.children.length){
+            return 0;
+        }
+
+        dataPoint.children.forEach((child) => {
+            total += this.calculateTotalForLabel(child, 0);
+        });
+        return total;
     }
 }
