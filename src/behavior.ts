@@ -39,11 +39,9 @@ const SpaceCode = "Space";
 
 function getFillOpacity(
     selected: boolean,
-    highlight: boolean,
-    hasSelection: boolean,
-    hasPartialHighlights: boolean
-): number {
-    if ((hasPartialHighlights && !highlight) || (hasSelection && !selected)) {
+    hasSelection: boolean
+    ): number {
+    if ((hasSelection && !selected)) {
         return DimmedOpacity;
     }
 
@@ -100,14 +98,7 @@ export class SunburstBehavior {
     private bindMouseEventsToDataPoints(selection): void {
         selection.on("click", (event: PointerEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
             const isMultiSelection: boolean = event.ctrlKey || event.metaKey || event.shiftKey;
-
-            if (isMultiSelection){
-                this.selectionManager.select(dataPoint.data.identity, true);
-            }
-            else {
-                const isSelection: boolean = this.isSelection(dataPoint.data);
-                this.selectionManager.select(dataPoint.data.identity, !isSelection);
-            }
+            this.selectionManager.select(dataPoint.data.identity, isMultiSelection);
 
             this.renderSelection();
             event.stopPropagation();
@@ -155,23 +146,10 @@ export class SunburstBehavior {
             }
 
             const isMultiSelection: boolean = event.ctrlKey || event.metaKey || event.shiftKey;
-
-            if (isMultiSelection){
-                this.selectionManager.select(dataPoint.data.identity, true);
-            }
-            else {
-                const isSelection: boolean = this.isSelection(dataPoint.data);
-                this.selectionManager.select(dataPoint.data.identity, !isSelection);
-            }
+            this.selectionManager.select(dataPoint.data.identity, isMultiSelection);
 
             this.renderSelection();
         });
-    }
-
-    private isSelection(dataPoint: SunburstDataPoint): boolean {
-        const ids = this.selectionManager.getSelectionIds();
-        const isSelectedInSelectionManager: boolean = ids.some((id: ISelectionId) => id.equals(dataPoint.identity));
-        return ((isSelectedInSelectionManager && ids.length > 1) || !isSelectedInSelectionManager);
     }
 
     private setSelectedDataPoints(dataPoints: SunburstDataPoint[]): void{
@@ -183,20 +161,12 @@ export class SunburstBehavior {
 
     public renderSelection(): void {
         const selection = this.options.selection;
-
-        const hasHighlights: boolean = this.selectionManager.hasSelection();
         const hasSelection: boolean = this.selectionManager.hasSelection();
 
         this.setSelectedDataPoints(this.options.dataPoints);
 
         selection.style("opacity", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
-            const { selected, highlight } = dataPoint.data;
-            return getFillOpacity(
-                selected,
-                highlight,
-                !highlight && hasSelection,
-                !selected && hasHighlights
-            );
+            return getFillOpacity(dataPoint.data.selected, hasSelection);
         });
 
         selection.attr("aria-selected", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
