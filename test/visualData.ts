@@ -365,13 +365,18 @@ export class VisualData extends TestDataViewBuilder {
         return new DataTable(result);
     }
 
-    public getDataView(columnNames?: string[]): DataView {
+    public getDataView(columnNames?: string[], randomValues: boolean = true): DataView {
         if (!columnNames) {
             return;
         }
         const testData: INamed[][] = [];
         columnNames.forEach((columnName: string, index: number) => {
-            testData.push(this.getRandomArrayElements<INamed>(this.allData[columnName], this.countElements));
+            if (randomValues){
+                testData.push(this.getRandomArrayElements<INamed>(this.allData[columnName], this.countElements));
+            }
+            else{
+                testData.push(this.allData[columnName].slice(0, 2));
+            }
         });
 
         const data: DataTable = this.getMatrixDataTable(testData);

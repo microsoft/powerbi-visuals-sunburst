@@ -131,7 +131,7 @@ export class Sunburst implements IVisual {
         );
     }
 
-    private settings: SunburstSettings;
+    public settings: SunburstSettings;
     private formattingSettingsService: FormattingSettingsService;
     private localizationManager: ILocalizationManager;
     private visualHost: IVisualHost;

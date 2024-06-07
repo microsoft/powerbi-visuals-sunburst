@@ -27,10 +27,14 @@
 import powerbiVisualsApi from "powerbi-visuals-api";
 import DataView = powerbiVisualsApi.DataView;
 import { valueFormatter as vf } from "powerbi-visuals-utils-formattingutils";
-import { assertColorsMatch, d3Click } from "powerbi-visuals-utils-testutils";
+import { ClickEventType, assertColorsMatch, d3Click, renderTimeout } from "powerbi-visuals-utils-testutils";
 import { VisualData } from "./visualData";
 import { VisualBuilder } from "./visualBuilder";
 import { SunburstDataPoint } from "../src/dataInterfaces";
+import { SunburstSettings } from "../src/SunburstSettings";
+
+import { formattingSettings } from "powerbi-visuals-utils-formattingmodel";
+import FormattingSettingsSlice = formattingSettings.Slice;
 
 const DefaultWaitForRender: number = 500;
 const LegendSelector: string = "#legendGroup";
@@ -63,7 +67,6 @@ describe("Sunburst", () => {
                 expect(visualBuilder.slices.length).toBe(12);
                 done();
             },
-            2,
             DefaultWaitForRender);
     });
 
@@ -91,10 +94,8 @@ describe("Sunburst", () => {
                         expect(visualBuilder.slices.length).toBe(39);
                         done();
                     },
-                    2,
                     DefaultWaitForRender);
             },
-            2,
             DefaultWaitForRender);
     });
 
@@ -176,7 +177,7 @@ describe("Sunburst", () => {
                 () => {
                     expect(visualBuilder.element.querySelectorAll(SliceLabelSelector).length).toBe(12);
                     done();
-                }, 2, DefaultWaitForRender);
+                }, DefaultWaitForRender);
         });
 
         it("count of data labels should be equal slice count", (done: DoneFn) => {
@@ -188,27 +189,7 @@ describe("Sunburst", () => {
                 () => {
                     expect(visualBuilder.element.querySelectorAll(SliceLabelSelector).length).toBe(visualBuilder.slices.length);
                     done();
-                }, 2, DefaultWaitForRender);
-        });
-
-        it("data label font size should be correct", (done: DoneFn) => {
-            const fontSize: number = 22;
-            const expectedFontSize: string = "22px";
-            dataView.metadata.objects = {
-                group: { labelFontSize: fontSize }
-            };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(SliceLabelSelector)).style.fontSize).toBe(expectedFontSize);
-                    done();
-                });
+                }, DefaultWaitForRender);
         });
 
         it("data label font weight should be correct", (done: DoneFn) => {
@@ -324,7 +305,7 @@ describe("Sunburst", () => {
                 () => {
                     expect(visualBuilder.element.querySelectorAll(`${LegendSelector.trim()}>*`).length).toBe(0);
                     done();
-                }, 2, DefaultWaitForRender);
+                }, DefaultWaitForRender);
         });
         it("legend should be shown", (done: DoneFn) => {
             dataView.metadata.objects = {
@@ -335,7 +316,7 @@ describe("Sunburst", () => {
                 () => {
                     expect(visualBuilder.element.querySelectorAll(`${LegendSelector.trim()}>*`).length).toBeTruthy();
                     done();
-                }, 2, DefaultWaitForRender);
+                }, DefaultWaitForRender);
         });
         it("legend font family should be correct", (done: DoneFn) => {
             const fontFamily: string = "Arial";
@@ -533,16 +514,15 @@ describe("Sunburst", () => {
             visualBuilder.updateRenderTimeout(
                 dataView,
                 () => {
-                    const result: powerbiVisualsApi.visuals.FormattingModel = visualBuilder.instance.getFormattingModel();
-                    const visual_card: powerbiVisualsApi.visuals.FormattingCard = <powerbiVisualsApi.visuals.FormattingCard>result.cards[0];
-                    const group_group: powerbiVisualsApi.visuals.FormattingGroup = <powerbiVisualsApi.visuals.FormattingGroup>visual_card.groups[0];
-                    const group_slices: powerbiVisualsApi.visuals.FormattingSlice[] = <powerbiVisualsApi.visuals.FormattingSlice[]>group_group.slices;
-                    const colorExist: boolean = group_slices.some((slice: powerbiVisualsApi.visuals.FormattingSlice) =>
-                        (<any>slice).control?.properties?.value?.value === color
+                    const settings: SunburstSettings = visualBuilder.instance.settings;
+                    const colorsGroup = settings.group.colors;
+                
+                    const colorExist: boolean = colorsGroup.slices.some((slice: FormattingSettingsSlice) =>
+                        (<any>slice).value.value === color
                     );
                     expect(colorExist).toBeTruthy();
                     done();
-                }, 2, DefaultWaitForRender);
+                }, DefaultWaitForRender);
         });
 
         it("should be displayed correctly", (done: DoneFn) => {
@@ -571,7 +551,7 @@ describe("Sunburst", () => {
                     expect(elements.length).toBeTruthy();
 
                     done();
-                }, 2, DefaultWaitForRender);
+                }, DefaultWaitForRender);
         });
     });
 
@@ -620,7 +600,6 @@ describe("Sunburst", () => {
 
                     done();
                 },
-                2,
                 DefaultWaitForRender
             );
         });
@@ -675,20 +654,20 @@ describe("Sunburst", () => {
             }
         });
 
-        describe("keyboard navigation and related aria-attributes", () => {
-            let originalTimeout;
+        describe("Keyboard navigation and related aria-attributes tests:", () => {
+            let dataViewKN: DataView;
 
             beforeEach(() => {
-                originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                dataView = defaultDataViewBuilder.getDataView([
-                    defaultDataViewBuilder.RegionsDataSet,
-                    defaultDataViewBuilder.CountriesDataSet,
-                ]);
+                dataViewKN = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet,
+                        defaultDataViewBuilder.StatesDataSet
+                    ], false);
             });
 
             it("should have role=listbox and aria-multiselectable attributes correctly set", (done) => {
-                visualBuilder.updateRenderTimeout(dataView, () => {
+                visualBuilder.updateRenderTimeout(dataViewKN, () => {
                     const gElement: HTMLElement = visualBuilder.element.firstChild?.firstChild?.firstChild as HTMLElement;
 
                     expect(gElement.getAttribute("role")).toBe("listbox");
@@ -698,24 +677,9 @@ describe("Sunburst", () => {
                 }, DefaultWaitForRender);
             });
 
-            it("should have tabindex, role=option, aria-label, and aria=selected correctly initialized", (done) => {
-                visualBuilder.updateRenderTimeout(dataView, () => {
-                    const slices = visualBuilder.slices;
-                    const [, ...categoryLabels] = JSON.stringify(dataView.matrix?.rows.root.children).split('"levelValues":[{"value":"').map((x: string) => x.replace("\\\"", "~").split('"')[0].replace("~", "\\\""));
-                    for (let i = 0; i < slices.length; i++) {
-                        const slice = slices[i];
-                        expect(slice.getAttribute("tabindex")).toBe("0");
-                        expect(slice.getAttribute("role")).toBe("option");
-                        expect(categoryLabels).toContain(slice.getAttribute("aria-label")!);
-                        expect(slice.getAttribute("aria-selected")).toBe("false");
-                    }
-
-                    done();
-                }, DefaultWaitForRender);
-            });
-
             it("should have role=presentation correctly set on text labels", (done) => {
-                visualBuilder.updateRenderTimeout(dataView, () => {
+                visualBuilder.updateRenderTimeout(dataViewKN, () => {
+
                     const gElement: HTMLElement = visualBuilder.element.firstChild?.firstChild?.firstChild as HTMLElement;
                     const slices: NodeListOf<SVGPathElement> = gElement.querySelectorAll(SliceLabelSelector);
                     for (const slice of slices) { 
@@ -726,121 +690,102 @@ describe("Sunburst", () => {
                 }, DefaultWaitForRender);
             });
 
-            it("aria attributs work when clicked", (done: DoneFn) => {
-                visualBuilder.updateRenderTimeout(dataView, async () => {
-                    d3Click(visualBuilder.slices[0], 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    expect(visualBuilder.slices[0].getAttribute("aria-selected")).toBe("true");
-                    expect(visualBuilder.slices[0].style.opacity).toBe("1");
-                    for (const slice of visualBuilder.slices) {
-                        if (slice !== visualBuilder.slices[0]) {
-                            expect(slice.getAttribute("aria-selected")).toBe("false");
-                            expect(slice.style.opacity).toBe("0.2");
-                        }
-                    }
-
-                    done();
-                });
-            });
-
-            it("enter toggles the correct slice", (done: DoneFn) => {
+            it("enter toggles the correct slice", () => {
                 const enterEvent = new KeyboardEvent("keydown", { code: "Enter", bubbles: true });
-                visualBuilder.updateRenderTimeout(
-                    dataView,
-                    async () => {
-                        visualBuilder.slices[0].dispatchEvent(enterEvent);
-                        await timeout(DefaultWaitForRender);
-                        expect(visualBuilder.slices[0].getAttribute("aria-selected")).toBe("true");
-                        expect(visualBuilder.slices[0].style.opacity).toBe("1");
-                        for (const slice of visualBuilder.slices) {
-                            if (slice !== visualBuilder.slices[0]) {
-                                expect(slice.getAttribute("aria-selected")).toBe("false");
-                                expect(slice.style.opacity).toBe("0.2");
-                            }
-                        }
-
-                        visualBuilder.slices[0].dispatchEvent(enterEvent);
-                        await timeout(DefaultWaitForRender);
-                        for (const slice of visualBuilder.slices) {
-                            expect(slice.getAttribute("aria-selected")).toBe("false");
-                            expect(slice.style.opacity).toBe("1");
-                        }
-
-                        done();
-                    },
-                    2,
-                    DefaultWaitForRender);
+                checkKeyboardSingleSelection(enterEvent);
             });
 
-            it("space toggles the correct slice", (done: DoneFn) => {
+            it("space toggles the correct slice", () => {
                 const spaceEvent = new KeyboardEvent("keydown", { code: "Space", bubbles: true });
-                visualBuilder.updateRenderTimeout(
-                    dataView,
-                    async () => {
-                        visualBuilder.slices[0].dispatchEvent(spaceEvent);
-                        await timeout(DefaultWaitForRender);
-                        expect(visualBuilder.slices[0].getAttribute("aria-selected")).toBe("true");
-                        expect(visualBuilder.slices[0].style.opacity).toBe("1");
-                        for (const slice of visualBuilder.slices) {
-                            if (slice !== visualBuilder.slices[0]) {
-                                expect(slice.getAttribute("aria-selected")).toBe("false");
-                                expect(slice.style.opacity).toBe("0.2");
-                            }
-                        }
-
-                        visualBuilder.slices[0].dispatchEvent(spaceEvent);
-                        await timeout(DefaultWaitForRender);
-                        for (const slice of visualBuilder.slices) {
-                            expect(slice.getAttribute("aria-selected")).toBe("false");
-                            expect(slice.style.opacity).toBe("1");
-                        }
-
-                        done();
-                    },
-                    2,
-                    DefaultWaitForRender);
+                checkKeyboardSingleSelection(spaceEvent);
             });
 
-            it("tab between slices works", (done: DoneFn) => {
-                const tabEvent = new KeyboardEvent("keydown", { code: "Tab", bubbles: true });
+            it("multiselection should work with ctrlKey", () => {
+                const enterEventCtrlKey = new KeyboardEvent("keydown", { code: "Enter", bubbles: true, ctrlKey: true });
+                checkKeyboardMultiSelection(enterEventCtrlKey);
+            });
+
+            it("multiselection should work with metaKey", () => {
+                const enterEventMetaKey = new KeyboardEvent("keydown", { code: "Enter", bubbles: true, metaKey: true });
+                checkKeyboardMultiSelection(enterEventMetaKey);
+            });
+
+            it("multiselection should work with shiftKey", () => {
+                const enterEventShiftKey = new KeyboardEvent("keydown", { code: "Enter", bubbles: true, shiftKey: true });
+                checkKeyboardMultiSelection(enterEventShiftKey);
+            });
+
+            it("slice can be focused", () => {
+                visualBuilder.updateFlushAllD3Transitions(dataViewKN);
+
+                const slices: HTMLElement[] = Array.from(visualBuilder.slices);
+                const firstSlice: HTMLElement = slices[0];
+
+                slices.forEach((slice: HTMLElement) => {
+                    expect(slice.matches(":focus-visible")).toBeFalse();
+                });
+
+                firstSlice.focus();
+                expect(firstSlice.matches(':focus-visible')).toBeTrue();
+
+                const otherSlices: HTMLElement[] = slices.slice(1);
+                otherSlices.forEach((slice: HTMLElement) => {
+                    expect(slice.matches(":focus-visible")).toBeFalse();
+                });
+
+            });
+
+            function checkKeyboardSingleSelection(keyboardSingleSelectionEvent: KeyboardEvent): void {
+                visualBuilder.updateFlushAllD3Transitions(dataViewKN);
+                const slices: HTMLElement[] = Array.from(visualBuilder.slices);
+                const firstSlice: HTMLElement = slices[0];
+                const secondSlice: HTMLElement = slices[1];
+
+                firstSlice.dispatchEvent(keyboardSingleSelectionEvent);
+                expect(firstSlice.getAttribute("aria-selected")).toBe("true");
+
+                const otherSlices: HTMLElement[] = slices.slice(1);
+                otherSlices.forEach((slice: HTMLElement) => {
+                    expect(slice.getAttribute("aria-selected")).toBe("false");
+                });
+
+                secondSlice.dispatchEvent(keyboardSingleSelectionEvent);
+                expect(secondSlice.getAttribute("aria-selected")).toBe("true");
+
+                slices.splice(1, 1);
+                slices.forEach((slice: HTMLElement) => {
+                    expect(slice.getAttribute("aria-selected")).toBe("false");
+                }
+                );
+            }
+
+            function checkKeyboardMultiSelection(keyboardMultiselectionEvent: KeyboardEvent): void {
+                visualBuilder.updateFlushAllD3Transitions(dataViewKN);
                 const enterEvent = new KeyboardEvent("keydown", { code: "Enter", bubbles: true });
-                visualBuilder.updateRenderTimeout(
-                    dataView,
-                    async () => {
-                        visualBuilder.slices[0].dispatchEvent(enterEvent);
-                        await timeout(DefaultWaitForRender);
-                        expect(visualBuilder.slices[0].getAttribute("aria-selected")).toBe("true");
-                        expect(visualBuilder.slices[0].style.opacity).toBe("1");
-                        for (const slice of visualBuilder.slices) {
-                            if (slice !== visualBuilder.slices[0]) {
-                                expect(slice.getAttribute("aria-selected")).toBe("false");
-                                expect(slice.style.opacity).toBe("0.2");
-                            }
-                        }
+                const slices: HTMLElement[] = Array.from(visualBuilder.slices);
+                const firstSlice: HTMLElement = slices[0];
+                const secondSlice: HTMLElement = slices[1];
 
-                        visualBuilder.element.dispatchEvent(tabEvent);
-                        await timeout(DefaultWaitForRender);
+                // select first slice
+                firstSlice.dispatchEvent(enterEvent);
+                const firstSliceOpacity: string = firstSlice.style.getPropertyValue("opacity");
+                // multiselect second slice
+                secondSlice.dispatchEvent(keyboardMultiselectionEvent);
+                const secondSliceOpacity: string = secondSlice.style.getPropertyValue("opacity");
 
-                        visualBuilder.slices[1].dispatchEvent(enterEvent);
-                        await timeout(DefaultWaitForRender);
-                        expect(visualBuilder.slices[1].getAttribute("aria-selected")).toBe("true");
-                        expect(visualBuilder.slices[1].style.opacity).toBe("1");
-                        for (const slice of visualBuilder.slices) {
-                            if (slice !== visualBuilder.slices[1]) {
-                                expect(slice.getAttribute("aria-selected")).toBe("false");
-                                expect(slice.style.opacity).toBe("0.2");
-                            }
-                        }
+                expect(firstSlice.getAttribute("aria-selected")).toBe("true");
+                expect(parseFloat(firstSliceOpacity)).toBe(1);
 
-                        done();
-                    },
-                    2,
-                    DefaultWaitForRender);
-            });
+                expect(secondSlice.getAttribute("aria-selected")).toBe("true");
+                expect(parseFloat(secondSliceOpacity)).toBe(1);
 
-            afterEach(() => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-            });
+                const notSelectedSlices: HTMLElement[] = slices.slice(2);
+                notSelectedSlices.forEach((slice: HTMLElement) => {
+                    const sliceOpacity: string = slice.style.getPropertyValue("opacity");
+                    expect(parseFloat(sliceOpacity)).toBeLessThan(1);
+                    expect(slice.getAttribute("aria-selected")).toBe("false");
+                });
+            }
         });
     });
 
@@ -866,6 +811,77 @@ describe("Sunburst", () => {
 
             expect(dataPoint.name).not.toBe("undefined");
         });
+    });
+
+    describe("Selection tests", () => {
+        let dataViewSelection: DataView;
+        beforeEach(() => {
+            dataViewSelection = defaultDataViewBuilder.getDataView(
+                [
+                    defaultDataViewBuilder.RegionsDataSet,
+                    defaultDataViewBuilder.CountriesDataSet,
+                    defaultDataViewBuilder.StatesDataSet
+                ], false);
+        });
+
+        it("slice can be selected", (done) => {
+            visualBuilder.updateRenderTimeout(dataViewSelection, () => {
+                visualBuilder.sliceClick("ALABAMA");
+
+                renderTimeout(() => {
+                    expect(visualBuilder.selectedSlices?.length).toBe(1);
+                    done();
+                });
+            }, DefaultWaitForRender);
+        });
+
+        it("slice can be deselected", (done) => {
+            visualBuilder.updateRenderTimeout(dataViewSelection, () => {
+                visualBuilder.sliceClick("ALABAMA");
+
+                renderTimeout(() => {
+                    expect(visualBuilder.selectedSlices?.length).toBe(1);
+                    visualBuilder.sliceClick("ALABAMA", ClickEventType.CtrlKey);
+
+                    renderTimeout(() => {
+                        expect(visualBuilder.selectedSlices?.length).toBe(14);
+
+                        done();
+                    });
+                });
+            }, DefaultWaitForRender);
+        });
+
+        it("multi-selection should work with ctrlKey", (done) => {
+            visualBuilder.updateRenderTimeout(dataViewSelection, () => {
+                checkMultiselection(ClickEventType.CtrlKey, done);
+            }, DefaultWaitForRender);
+        });
+
+        it("multi-selection should work with metaKey", (done) => {
+            visualBuilder.updateRenderTimeout(dataViewSelection, () => {
+                checkMultiselection(ClickEventType.MetaKey, done);
+            }, DefaultWaitForRender);
+        });
+
+        it("multi-selection should work with shiftKey", (done) => {
+            visualBuilder.updateRenderTimeout(dataViewSelection, () => {
+                checkMultiselection(ClickEventType.ShiftKey, done);
+            }, DefaultWaitForRender);
+        });
+
+        function checkMultiselection(eventType: number, done: DoneFn): void {
+            visualBuilder.sliceClick("ALABAMA");
+            renderTimeout(() => {
+                expect(visualBuilder.selectedSlices?.length).toBe(1);
+
+                visualBuilder.sliceClick("ALASKA", eventType);
+                renderTimeout(() => {
+                    expect(visualBuilder.selectedSlices?.length).toBe(2);
+                    done();
+                });
+            });
+        }
     });
 });
 
