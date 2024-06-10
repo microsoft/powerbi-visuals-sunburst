@@ -1,3 +1,7 @@
+## 2.5.1.0
+* Replaced interactivity utils with selection manager
+* API 5.9.1
+
 ## 2.5.0
 * keyboard navigation (feature)
 * focus outline (styles)
