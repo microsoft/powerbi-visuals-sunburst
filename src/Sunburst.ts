@@ -640,8 +640,8 @@ export class Sunburst implements IVisual {
         const innerRadius: number = Math.min(
             ...this.data.root.children.map((x: SunburstDataPoint) => Math.sqrt(x.coords.y0))
         );
-        this.setPercentageLabelPosition(innerRadius, canDisplayCategory);
-        this.setCategoryLabelPosition(innerRadius, canDisplayCategory);
+        this.setPercentageLabelPosition(innerRadius * 2, canDisplayCategory);
+        this.setCategoryLabelPosition(innerRadius * 2, canDisplayCategory);
     }
 
     private setCategoryLabelPosition(width: number, canDisplayCategory: boolean): void {
