@@ -11,8 +11,7 @@
     "start": "pbiviz start",
     "package": "pbiviz package",
     "cert": "pbiviz --install-cert",
-    "lint": "npm run eslint && npm run lint:less",
-    "lint:less": "stylelint \"style/**/*.less\"",
+    "lint": "npm run eslint",
     "eslint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
     "pretest": "pbiviz package --resources --no-minify --no-pbiviz",
     "test": "karma start"
@@ -54,7 +53,6 @@
     "powerbi-visuals-tools": "^5.4.3",
     "powerbi-visuals-utils-testutils": "^6.1.1",
     "style-loader": "^4.0.0",
-    "stylelint": "^16.6.0",
     "ts-loader": "^9.5.1",
     "typescript": "^4.9.5"
   },
