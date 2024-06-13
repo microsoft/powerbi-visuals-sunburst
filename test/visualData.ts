@@ -329,7 +329,7 @@ export class VisualData extends TestDataViewBuilder {
         this.countElements = count;
     }
 
-    public getMatrixDataTable(testData: INamed[][], useValues: boolean = true): DataTable {
+    public getMatrixDataTable(testData: INamed[][], useValues: boolean = true, useRandomValues: boolean = true): DataTable {
         let result: (string | number)[][] = [];
 
 
@@ -359,7 +359,12 @@ export class VisualData extends TestDataViewBuilder {
         if (useValues) {
             result[0].push("Values");
             for (let i = 1; i < result.length; i++) {
-                result[i].push(getRandomNumber(0, 1000));
+                if (useRandomValues){
+                    result[i].push(getRandomNumber(0, 1000));
+                }
+                else {
+                    result[i].push(i);
+                }
             }
         }
         return new DataTable(result);
@@ -379,7 +384,7 @@ export class VisualData extends TestDataViewBuilder {
             }
         });
 
-        const data: DataTable = this.getMatrixDataTable(testData);
+        const data: DataTable = this.getMatrixDataTable(testData, true, randomValues);
         let matrixBuilder = VisualData.createMatrixDataViewBuilder(data);
 
         columnNames.forEach((col, i) => {

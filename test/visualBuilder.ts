@@ -115,4 +115,20 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
             return appliedOpacity === 1;
         });
     }
+
+    public get categoryLabel(): HTMLElement {
+        return this.element.querySelector(".sunburst__category-label");
+    }
+
+    public get percentageLabel(): HTMLElement {
+        return this.element.querySelector(".sunburst__percentage-label");
+    }
+
+    public get visibleCategoryLabels(): HTMLElement[] {
+        return Array.from(this.element.querySelectorAll(".sunburst__label--visible"));
+    }
+
+    public get dataLabels(): HTMLElement[] {
+        return Array.from(this.element.querySelectorAll(".sunburst__slice-label"));
+    }
 }

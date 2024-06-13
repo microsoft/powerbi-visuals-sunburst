@@ -38,11 +38,7 @@ import FormattingSettingsSlice = formattingSettings.Slice;
 
 const DefaultWaitForRender: number = 500;
 const LegendSelector: string = "#legendGroup";
-const SliceSelector: string = ".sunburst__slice";
-const SliceLabelSelector: string = ".sunburst__slice-label";
-const LabelVisibleSelector: string = ".sunburst__label--visible";
-const PercentageSelector: string = ".sunburst__percentage-label";
-const CategoryLabelSelector: string = ".sunburst__category-label";
+const LabelVisibleClass: string = "sunburst__label--visible";
 
 describe("Sunburst", () => {
     let visualBuilder: VisualBuilder;
@@ -100,176 +96,192 @@ describe("Sunburst", () => {
     });
 
     describe("Labels", () => {
-        it("category labels should be visible by default", (done: DoneFn) => {
-            dataView = defaultDataViewBuilder.getDataView(
-                [
-                    defaultDataViewBuilder.RegionsDataSet,
-                    defaultDataViewBuilder.CountriesDataSet,
-                    defaultDataViewBuilder.StatesDataSet
-                ]);
+        describe("category and percentage labels", () => {
+            beforeEach(() => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet,
+                        defaultDataViewBuilder.StatesDataSet
+                    ], false);
+            });
 
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(2);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
+            it("should NOT be visible when no element is selected", (done: DoneFn) => {
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    expect(visualBuilder.visibleCategoryLabels?.length).toBe(0);
+                    expect(visualBuilder.categoryLabel.classList.contains(LabelVisibleClass)).toBeFalse();
+                    expect(visualBuilder.percentageLabel.classList.contains(LabelVisibleClass)).toBeFalse();
                     done();
                 });
-        });
+            });
 
-        beforeEach(() => {
-            dataView = defaultDataViewBuilder.getDataView(
-                [
-                    defaultDataViewBuilder.RegionsDataSet,
-                    defaultDataViewBuilder.CountriesDataSet
-                ]);
-        });
+            it("should be visible when 1 element is selected", (done: DoneFn) => {    
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    visualBuilder.sliceClick("ALABAMA");
+                        renderTimeout(() => {
+                            expect(visualBuilder.visibleCategoryLabels?.length).toBe(2);
+                            expect(visualBuilder.categoryLabel.classList.contains(LabelVisibleClass)).toBeTrue();
+                            expect(visualBuilder.percentageLabel.classList.contains(LabelVisibleClass)).toBeTrue();
+                            done();
 
-        it("category labels should be hidden", (done: DoneFn) => {
-            dataView.metadata.objects = {
-                group: { showSelected: false }
-            };
-
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(1);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
-                    done();
+                    }, DefaultWaitForRender);
                 });
-        });
+            });
 
-        it("category labels should be visible always", (done: DoneFn) => {
-            dataView.metadata.objects = {
-                group: { showSelected: true }
-            };
+            it("should NOT be visible when 1 element is selected and showSelected settings = false", (done: DoneFn) => {    
+                dataView.metadata.objects = {
+                    group: { showSelected: false }
+                };
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    visualBuilder.sliceClick("ALABAMA");
+                        renderTimeout(() => {
+                            expect(visualBuilder.visibleCategoryLabels?.length).toBe(1);
+                            expect(visualBuilder.categoryLabel.classList.contains(LabelVisibleClass)).toBeFalse();
+                            expect(visualBuilder.percentageLabel.classList.contains(LabelVisibleClass)).toBeTrue();
+                            done();
 
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(2);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(0);
-                    done();
+                    }, DefaultWaitForRender);
                 });
+            });
+
+            it("should not be visible when >1 elements are selected", (done: DoneFn) => {    
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    visualBuilder.sliceClick("ALABAMA");
+                    visualBuilder.sliceClick("ALASKA", ClickEventType.CtrlKey);
+                        renderTimeout(() => {
+                            const percent: string | null = visualBuilder.percentageLabel.textContent;
+
+                            expect(percent).toBe("41.67%");
+                            expect(visualBuilder.visibleCategoryLabels?.length).toBe(1);
+                            expect(visualBuilder.categoryLabel.classList.contains(LabelVisibleClass)).toBeFalse();
+                            expect(visualBuilder.percentageLabel.classList.contains(LabelVisibleClass)).toBeTrue();
+
+                            done();
+                    }, DefaultWaitForRender);
+                });
+            });
+
+            describe("percentage label", () => {
+                it("should display percent of selected slice", (done: DoneFn) => {    
+                    visualBuilder.updateRenderTimeout(dataView, () => {
+                        visualBuilder.sliceClick("ALABAMA");
+                            renderTimeout(() => {
+                                const percent: string | null = visualBuilder.percentageLabel.textContent;
+                                expect(percent).toBe("19.44%");
+                                done();
+                        }, DefaultWaitForRender);
+                    });
+                });
+
+                it("should display sum of percentage of all selected slices", (done: DoneFn) => {    
+                    visualBuilder.updateRenderTimeout(dataView, () => {
+                        visualBuilder.sliceClick("ALABAMA");
+                        visualBuilder.sliceClick("ALASKA", ClickEventType.CtrlKey);
+                            renderTimeout(() => {
+                                const percent: string | null = visualBuilder.percentageLabel.textContent;
+                                expect(percent).toBe("41.67%");
+                                done();
+                        }, DefaultWaitForRender);
+                    });
+                });
+
+                it("should display percentage of selected parent slice", (done: DoneFn) => {    
+                    visualBuilder.updateRenderTimeout(dataView, () => {
+                        visualBuilder.sliceClick("ALABAMA");
+                        visualBuilder.sliceClick("Europe", ClickEventType.CtrlKey);
+                        visualBuilder.sliceClick("ALASKA", ClickEventType.CtrlKey);
+                            renderTimeout(() => {
+                                const percent: string | null = visualBuilder.percentageLabel.textContent;
+                                expect(percent).toBe("72.22%");
+                                done();
+                        }, DefaultWaitForRender);
+                    });
+                });
+            })
         });
 
-        it("data labels should not be hidden by default", (done: DoneFn) => {
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                () => {
-                    expect(visualBuilder.element.querySelectorAll(SliceLabelSelector).length).toBe(12);
+        describe("Data labels", () => {
+            beforeEach(() => {
+                dataView = defaultDataViewBuilder.getDataView(
+                    [
+                        defaultDataViewBuilder.RegionsDataSet,
+                        defaultDataViewBuilder.CountriesDataSet
+                    ]);
+            });
+
+            it("should be visible by default", (done: DoneFn) => {
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    expect(visualBuilder.dataLabels.length).toBe(12);
                     done();
                 }, DefaultWaitForRender);
-        });
-
-        it("count of data labels should be equal slice count", (done: DoneFn) => {
-            dataView.metadata.objects = {
-                group: { showDataLabels: true }
-            };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                () => {
-                    expect(visualBuilder.element.querySelectorAll(SliceLabelSelector).length).toBe(visualBuilder.slices.length);
+            });
+    
+            it("count should be equal slice count", (done: DoneFn) => {
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    expect(visualBuilder.dataLabels.length).toBe(visualBuilder.slices.length);
                     done();
                 }, DefaultWaitForRender);
-        });
-
-        it("data label font weight should be correct", (done: DoneFn) => {
-            const fontWeight: boolean = true;
-            const expectedWeight: string = "bold";
-            dataView.metadata.objects = {
-                group: { labelFontBold: fontWeight }
-            };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(SliceLabelSelector)).style.fontWeight).toBe(expectedWeight);
+            });
+    
+            it("font weight should be correct", (done: DoneFn) => {
+                const fontWeight: boolean = true;
+                const expectedWeight: string = "bold";
+                dataView.metadata.objects = {
+                    group: { labelFontBold: fontWeight }
+                };
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
+                    dataLabels.forEach((element: HTMLElement) => {
+                        expect(element.style.fontWeight).toBe(expectedWeight);
+                    });
                     done();
                 });
-        });
-
-        it("data label text decoration should be correct", (done: DoneFn) => {
-            const textDecoration: boolean = true;
-            const expectedDecoration: string = "underline";
-            dataView.metadata.objects = {
-                group: { labelFontUnderline: textDecoration }
-            };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(SliceLabelSelector)).style.textDecoration).toBe(expectedDecoration);
+            });
+    
+            it("text decoration should be correct", (done: DoneFn) => {
+                const textDecoration: boolean = true;
+                const expectedDecoration: string = "underline";
+                dataView.metadata.objects = {
+                    group: { labelFontUnderline: textDecoration }
+                };
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
+                    dataLabels.forEach((element: HTMLElement) => {
+                        expect(element.style.textDecoration).toBe(expectedDecoration);
+                    });
                     done();
                 });
-        });
-
-        it("data label font style should be correct", (done: DoneFn) => {
-            const fontItalic: boolean = true;
-            const expectedStyle: string = "italic";
-            dataView.metadata.objects = {
-                group: { labelFontItalic: fontItalic }
-            };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(SliceLabelSelector)).style.fontStyle).toBe(expectedStyle);
+            });
+    
+            it("font style should be correct", (done: DoneFn) => {
+                const fontItalic: boolean = true;
+                const expectedStyle: string = "italic";
+                dataView.metadata.objects = {
+                    group: { labelFontItalic: fontItalic }
+                };
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
+                    dataLabels.forEach((element: HTMLElement) => {
+                        expect(element.style.fontStyle).toBe(expectedStyle);
+                    });
                     done();
                 });
-        });
-
-        it("label font family should be correct", (done: DoneFn) => {
-            const fontFamily: string = "Arial";
-            const expectedFamily: string = "Arial";
-            dataView.metadata.objects = {
-                group: { labelFontFamily: fontFamily }
-            };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(SliceLabelSelector)).style.fontFamily).toBe(expectedFamily);
+            });
+    
+            it("font family should be correct", (done: DoneFn) => {
+                const fontFamily: string = "Arial";
+                const expectedFamily: string = "Arial";
+                dataView.metadata.objects = {
+                    group: { labelFontFamily: fontFamily }
+                };
+                visualBuilder.updateRenderTimeout(dataView, () => {
+                    const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
+                    dataLabels.forEach((element: HTMLElement) => {
+                        expect(element.style.fontFamily).toBe(expectedFamily);
+                    });
                     done();
                 });
+            });
         });
     });
 
@@ -376,39 +388,35 @@ describe("Sunburst", () => {
                 group: { showSelected: false }
             };
 
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    expect(visualBuilder.element.querySelectorAll(LabelVisibleSelector).length).toBe(1);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(PercentageSelector)).style['font-size']).toBe("28px");
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                const firstSlice: HTMLElement = visualBuilder.slices[0];
+                d3Click(firstSlice, 5, 5);
+
+                renderTimeout(() => {
+                    expect(visualBuilder.visibleCategoryLabels.length).toBe(1);
+                    expect(visualBuilder.percentageLabel.classList.contains(LabelVisibleClass)).toBeTrue();
+
+                    expect(visualBuilder.percentageLabel.style.fontSize).toBe("28px");
                     done();
                 });
+            });
         });
 
-        it("label font size should be correct", (done: DoneFn) => {
+        it("percentage label font size should be correct", (done: DoneFn) => {
             const fontSize: number = 22;
             const expectedFontSize: string = "44px";
             dataView.metadata.objects = {
                 group: { fontSize: fontSize }
             };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(PercentageSelector)).style.fontSize).toBe(expectedFontSize);
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                const firstSlice: HTMLElement = visualBuilder.slices[0];
+                d3Click(firstSlice, 5, 5);
+
+                renderTimeout(() => {
+                    expect(visualBuilder.percentageLabel.style.fontSize).toBe(expectedFontSize);
                     done();
                 });
+            });
         });
 
         it("label font weight should be correct", (done: DoneFn) => {
@@ -417,18 +425,15 @@ describe("Sunburst", () => {
             dataView.metadata.objects = {
                 group: { fontBold: fontWeight }
             };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(CategoryLabelSelector)).style.fontWeight).toBe(expectedWeight);
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                const firstSlice: HTMLElement = visualBuilder.slices[0];
+                d3Click(firstSlice, 5, 5);
+
+                renderTimeout(() => {
+                    expect(visualBuilder.categoryLabel.style.fontWeight).toBe(expectedWeight);
                     done();
                 });
+            });
         });
 
         it("label text decoration should be correct", (done: DoneFn) => {
@@ -437,18 +442,15 @@ describe("Sunburst", () => {
             dataView.metadata.objects = {
                 group: { fontUnderline: textDecoration }
             };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(CategoryLabelSelector)).style.textDecoration).toBe(expectedDecoration);
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                const firstSlice: HTMLElement = visualBuilder.slices[0];
+                d3Click(firstSlice, 5, 5);
+
+                renderTimeout(() => {
+                    expect(visualBuilder.categoryLabel.style.textDecoration).toBe(expectedDecoration);
                     done();
                 });
+            });
         });
 
         it("label font style should be correct", (done: DoneFn) => {
@@ -457,18 +459,15 @@ describe("Sunburst", () => {
             dataView.metadata.objects = {
                 group: { fontItalic: fontItalic }
             };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(CategoryLabelSelector)).style.fontStyle).toBe(expectedStyle);
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                const firstSlice: HTMLElement = visualBuilder.slices[0];
+                d3Click(firstSlice, 5, 5);
+
+                renderTimeout(() => {
+                    expect(visualBuilder.categoryLabel.style.fontStyle).toBe(expectedStyle);
                     done();
                 });
+            });
         });
 
         it("label font family should be correct", (done: DoneFn) => {
@@ -477,18 +476,15 @@ describe("Sunburst", () => {
             dataView.metadata.objects = {
                 group: { fontFamily: fontFamily }
             };
-            visualBuilder.updateRenderTimeout(
-                dataView,
-                async () => {
-                    const firstClickPoint: HTMLElement = visualBuilder.slices[visualBuilder.slices.length - 1];
-                    const secondClickPoint: HTMLElement = visualBuilder.mainElement[0];
-                    d3Click(firstClickPoint, 5, 5);
-                    await timeout(DefaultWaitForRender);
-                    d3Click(secondClickPoint, 1, 1);
-                    await timeout(DefaultWaitForRender);
-                    expect((<HTMLElement>visualBuilder.element.querySelector(CategoryLabelSelector)).style.fontFamily).toBe(expectedFamily);
+            visualBuilder.updateRenderTimeout(dataView, () => {
+                const firstSlice: HTMLElement = visualBuilder.slices[0];
+                d3Click(firstSlice, 5, 5);
+
+                renderTimeout(() => {
+                    expect(visualBuilder.categoryLabel.style.fontFamily).toBe(expectedFamily);
                     done();
                 });
+            });
         });
     });
 
@@ -680,10 +676,9 @@ describe("Sunburst", () => {
             it("should have role=presentation correctly set on text labels", (done) => {
                 visualBuilder.updateRenderTimeout(dataViewKN, () => {
 
-                    const gElement: HTMLElement = visualBuilder.element.firstChild?.firstChild?.firstChild as HTMLElement;
-                    const slices: NodeListOf<SVGPathElement> = gElement.querySelectorAll(SliceLabelSelector);
-                    for (const slice of slices) { 
-                        expect(slice.getAttribute("role")).toBe("presentation");
+                    const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
+                    for (const label of dataLabels) { 
+                        expect(label.getAttribute("role")).toBe("presentation");
                     }
 
                     done();
