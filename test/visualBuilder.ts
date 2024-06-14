@@ -29,7 +29,7 @@ import DataView = powerbiVisualsApi.DataView;
 import VisualUpdateType = powerbiVisualsApi.VisualUpdateType;
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
-import { VisualBuilderBase, renderTimeout } from "powerbi-visuals-utils-testutils";
+import { ClickEventType, VisualBuilderBase, d3Click, renderTimeout } from "powerbi-visuals-utils-testutils";
 import { Sunburst as VisualClass } from "../src/Sunburst";
 import { VisualData } from "./visualData";
 import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
@@ -51,10 +51,29 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
     public updateRenderTimeout(
         dataViews: DataView[] | DataView,
         fn: Function,
-        updateType?: VisualUpdateType,
-        timeout?: number): number {
+        timeout?: number,
+        updateType: VisualUpdateType = VisualUpdateType.Data
+        ): number {
         this.update(dataViews, updateType);
         return renderTimeout(() => fn(), timeout);
+    }
+
+    public sliceClick(text: string, eventType: ClickEventType = ClickEventType.Default) {
+        const slice: HTMLElement | undefined = this.slices && Array.from(this.slices)
+            .find((element: HTMLElement) => {
+                return element.ariaLabel === text;
+            });
+
+        if (!slice) {
+            return;
+        }
+
+        d3Click(
+            slice,
+            parseFloat(<string>slice?.getAttribute("x")),
+            parseFloat(<string>slice?.getAttribute("y")),
+            eventType
+        );
     }
 
     protected build(options: VisualConstructorOptions): VisualClass {
@@ -95,5 +114,21 @@ export class VisualBuilder extends VisualBuilderBase<VisualClass> {
 
             return appliedOpacity === 1;
         });
+    }
+
+    public get categoryLabel(): HTMLElement {
+        return this.element.querySelector(".sunburst__category-label");
+    }
+
+    public get percentageLabel(): HTMLElement {
+        return this.element.querySelector(".sunburst__percentage-label");
+    }
+
+    public get visibleCategoryLabels(): HTMLElement[] {
+        return Array.from(this.element.querySelectorAll(".sunburst__label--visible"));
+    }
+
+    public get dataLabels(): HTMLElement[] {
+        return Array.from(this.element.querySelectorAll(".sunburst__slice-label"));
     }
 }
