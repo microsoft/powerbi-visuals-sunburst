@@ -664,15 +664,20 @@ export class Sunburst implements IVisual {
     }
 
     private setPercentageLabelPosition(width: number, canDisplayCategory: boolean): void {
-        const labelSize: number = this.settings.group.selectedCategory.font.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
+        const percentageLabelSettings = this.settings.group.selectedCategory;
+        const labelSize: number = percentageLabelSettings.font.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
         const labelTransform: number = labelSize *
-            (this.settings.group.selectedCategory.showSelected.value && canDisplayCategory ?
+            (percentageLabelSettings.showSelected.value && canDisplayCategory ?
                 Sunburst.MultilinePercentageLineInterval :
                 Sunburst.DefaultPercentageLineInterval);
 
         this.percentageLabel
             .attr(CssConstants.transformProperty, translate(0, labelTransform))
             .style("font-size", PixelConverter.toString(labelSize))
+            .style("font-family", percentageLabelSettings.font.fontFamily.value)
+            .style("font-weight", percentageLabelSettings.font.bold.value ? "bold" : "normal")
+            .style("font-style", percentageLabelSettings.font.italic.value ? "italic" : "normal")
+            .style("text-decoration", this.settings.group.selectedCategory.font.underline.value ? "underline" : "none")
             .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
     }
 
