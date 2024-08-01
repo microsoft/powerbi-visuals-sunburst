@@ -26,174 +26,193 @@
 
 import { BaseType, Selection } from "d3-selection";
 import { HierarchyRectangularNode } from "d3-hierarchy";
-
+type d3Selection<T> = Selection<any, T, any, any>;
 import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { SunburstDataPoint, SunburstLabel } from "./dataInterfaces";
+import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 
-const DimmedOpacity: number = 0.2;
-const DefaultOpacity: number = 1.0;
+import { legendInterfaces } from "powerbi-visuals-utils-chartutils";
+import LegendDataPoint = legendInterfaces.LegendDataPoint;
+
+import { SunburstDataPoint, SunburstLabel } from "./dataInterfaces";
+import { SunburstUtils } from "./SunburstUtils";
+
 const EnterCode = "Enter";
 const SpaceCode = "Space";
 
-function getFillOpacity(
-    selected: boolean,
-    hasSelection: boolean
-    ): number {
-    if ((hasSelection && !selected)) {
-        return DimmedOpacity;
-    }
-
-    return DefaultOpacity;
-}
-
 export interface SunburstBehaviorOptions {
-    selection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint>;
-    clearCatcher: Selection<BaseType, any, BaseType, any>;
-    legend: Selection<BaseType, any, BaseType, any>;
+    elements: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint>;
+    clearCatcher: d3Selection<any>;
+    legend: d3Selection<LegendDataPoint>;
+    legendClearCatcher: d3Selection<any>;
     onSelect?: (label: SunburstLabel, hasSelection: boolean, canDisplayCategory: boolean) => void;
-    dataPoints: SunburstDataPoint[];
     dataPointsTree: SunburstDataPoint;
 }
 
 export class SunburstBehavior {
-    private options: SunburstBehaviorOptions;
+    private elements: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint>;
+    private clearCatcher: d3Selection<any>;
+    private legendItems: d3Selection<LegendDataPoint>;
+    private legendIcons: d3Selection<LegendDataPoint>;
+    private legendClearCatcher: d3Selection<any>;
+    private dataPoints: HierarchyRectangularNode<SunburstDataPoint>[];
+    private dataPointsTree: SunburstDataPoint;
+    private legendDataPoints: LegendDataPoint[];
     private selectionManager: ISelectionManager;
+    private colorHelper: ColorHelper;
+    private onSelect: (label: SunburstLabel, hasSelection: boolean, canDisplayCategory: boolean) => void;
 
-    constructor(selectionManager: ISelectionManager){
+    constructor(selectionManager: ISelectionManager, colorHelper: ColorHelper){
+        this.colorHelper = colorHelper;
         this.selectionManager = selectionManager;
+        this.selectionManager.registerOnSelectCallback(this.onSelectCallback.bind(this));
+    }
 
-        this.selectionManager.registerOnSelectCallback((ids: ISelectionId[]) => {
-            this.options.dataPoints.forEach(dataPoint => {
-                ids.forEach(bookmarkSelection => {
-                    if (bookmarkSelection.includes(dataPoint.identity)) {
-                        dataPoint.selected = true;
-                    }
-                });
+    private onSelectCallback(selectionIds?: ISelectionId[]){
+        this.applySelectionStateToData(selectionIds);
+        this.renderSelection();
+    }
+
+    private applySelectionStateToData(selectionIds?: ISelectionId[]): void{
+        const selectedIds: ISelectionId[] = <ISelectionId[]>this.selectionManager.getSelectionIds();
+        this.setSelectedToDataPoints(this.dataPoints, selectionIds || selectedIds);
+        this.setSelectedToDataPoints(this.legendDataPoints, selectionIds || selectedIds);
+    }
+
+    private setSelectedToDataPoints(dataPoints: LegendDataPoint[] | HierarchyRectangularNode<SunburstDataPoint>[], ids: ISelectionId[]): void{
+        dataPoints.forEach((dataPoint: LegendDataPoint| HierarchyRectangularNode<SunburstDataPoint>) => {
+            const data : SunburstDataPoint | LegendDataPoint = (dataPoint as HierarchyRectangularNode<SunburstDataPoint>)?.data || (dataPoint as LegendDataPoint);
+            data.selected = false;
+            ids.forEach((selectedId: ISelectionId) => {
+                if (selectedId.includes(<ISelectionId>data.identity)) {
+                    data.selected = true;
+                }
             });
-
-            this.renderSelection();
         });
     }
 
-    public bindEvents(
-        options: SunburstBehaviorOptions
-    ): void {
-        this.options = options;
-
-        const {
-            selection,
-            clearCatcher,
-            legend
-        } = options;
-
-        this.bindMouseEventsToDataPoints(selection);
-        this.bindMouseEventsToClearCatcher(clearCatcher);
-        this.bindMouseEventsToLegend(legend);
-
-        this.bindKeyboardEventsToDataPoints(selection);
+    private bindContextMenuEvent(elements: d3Selection<any>): void {
+        elements.on("contextmenu", (event: PointerEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint> | LegendDataPoint | undefined) => {
+            const data : SunburstDataPoint | LegendDataPoint = (dataPoint as HierarchyRectangularNode<SunburstDataPoint>)?.data || (dataPoint as LegendDataPoint);
+            this.selectionManager.showContextMenu(data ? data.identity : {},
+                {
+                    x: event.clientX,
+                    y: event.clientY
+                }
+            );
+            event.preventDefault();
+            event.stopPropagation();
+        });
     }
 
-    private bindMouseEventsToDataPoints(selection): void {
-        selection.on("click", (event: PointerEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
+    private bindClickEvent(elements: d3Selection<any>): void {
+        elements.on("click", (event: PointerEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint> | LegendDataPoint | undefined) => {
             const isMultiSelection: boolean = event.ctrlKey || event.metaKey || event.shiftKey;
-            this.selectionManager.select(dataPoint.data.identity, isMultiSelection);
-
-            this.renderSelection();
-            event.stopPropagation();
-        });
-
-        selection.on("contextmenu", (event: PointerEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
-            this.selectionManager.showContextMenu(dataPoint.data.identity, {
-                x: event.clientX,
-                y: event.clientY
-            });
-            event.preventDefault();
-            event.stopPropagation();
-        });
+            const data: SunburstDataPoint | LegendDataPoint = (dataPoint as HierarchyRectangularNode<SunburstDataPoint>)?.data || (dataPoint as LegendDataPoint);
+            if (data){
+                this.selectionManager.select(data.identity, isMultiSelection);
+                event.stopPropagation();
+            }
+            else {
+                this.selectionManager.clear();
+            }
+            this.onSelectCallback();
+        })
     }
 
-    private bindMouseEventsToClearCatcher(clearCatcher): void{
-        clearCatcher.on("click", () => {
-            this.selectionManager.clear();
-            this.renderSelection();
-        });
-
-        clearCatcher.on("contextmenu", (event: PointerEvent) => {
-            this.selectionManager.showContextMenu({}, {
-                x: event.clientX,
-                y: event.clientY
-            });
-            event.preventDefault();
-        });
-    }
-
-    private bindMouseEventsToLegend(legend): void {
-        legend.on("contextmenu", (event: PointerEvent) => {
-            this.selectionManager.showContextMenu({}, {
-                x: event.clientX,
-                y: event.clientY
-            });
-            event.preventDefault();
-        });
-    }
-
-    private bindKeyboardEventsToDataPoints(selection): void {
-        selection.on("keydown", (event: KeyboardEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
+    private bindKeyboardEvent(elements: d3Selection<any>): void {
+        elements.on("keydown", (event : KeyboardEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint> | LegendDataPoint) => {
             if (event.code !== EnterCode && event.code !== SpaceCode) {
                 return;
             }
-
+            
             const isMultiSelection: boolean = event.ctrlKey || event.metaKey || event.shiftKey;
-            this.selectionManager.select(dataPoint.data.identity, isMultiSelection);
+            const data: SunburstDataPoint | LegendDataPoint = (dataPoint as HierarchyRectangularNode<SunburstDataPoint>)?.data || (dataPoint as LegendDataPoint);
 
-            this.renderSelection();
+            this.selectionManager.select(data.identity, isMultiSelection);
+
+            event.stopPropagation();
+            this.onSelectCallback();
         });
     }
 
-    private setSelectedDataPoints(dataPoints: SunburstDataPoint[]): void{
-        const selectedIds: powerbi.extensibility.ISelectionId[] = this.selectionManager.getSelectionIds();
-        dataPoints.forEach((dp: SunburstDataPoint) => {
-            dp.selected = selectedIds.some((id: ISelectionId) => id.includes(dp.identity));
-        });
-    }
+    public renderSelection(){
+        const legendHasSelection: boolean = this.legendDataPoints.some((dataPoint: LegendDataPoint) => dataPoint.selected);
+        const dataPointHasSelection: boolean = this.dataPoints.some((dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => dataPoint.data.selected);
 
-    public renderSelection(): void {
-        const selection = this.options.selection;
-        const hasSelection: boolean = this.selectionManager.hasSelection();
-
-        this.setSelectedDataPoints(this.options.dataPoints);
-
-        selection.style("opacity", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
-            return getFillOpacity(dataPoint.data.selected, hasSelection);
+        this.elements.style("opacity", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
+            return SunburstUtils.getFillOpacity(dataPoint.data.selected, dataPointHasSelection);
         });
 
-        selection.attr("aria-selected", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
+        this.elements.attr("aria-selected", (dataPoint: HierarchyRectangularNode<SunburstDataPoint>) => {
             return dataPoint.data.selected;
         });
 
-        if (this.options.onSelect){
+        this.legendIcons.style("fill-opacity", (legendDataPoint: LegendDataPoint) => {
+            return SunburstUtils.getLegendFillOpacity(
+                legendDataPoint.selected,
+                legendHasSelection,
+                this.colorHelper.isHighContrast
+            );
+        });
+
+        this.legendIcons.style("fill", (legendDataPoint: LegendDataPoint) => {
+            return SunburstUtils.getLegendFill(
+                legendDataPoint.selected,
+                legendHasSelection,
+                legendDataPoint.color,
+                this.colorHelper.isHighContrast
+            );
+        });
+
+        if (this.onSelect){
             const canDisplayCategory: boolean = this.selectionManager.getSelectionIds().length === 1;
             const label: SunburstLabel = this.createCategoryLabel(canDisplayCategory);
 
-            this.options.onSelect(label, hasSelection, canDisplayCategory);
+            this.onSelect(label, dataPointHasSelection, canDisplayCategory);
         }
+    }
+
+    public bindEvents(options: SunburstBehaviorOptions) {
+        this.elements = options.elements;
+        this.dataPoints = options.elements.data();
+        this.dataPointsTree = options.dataPointsTree;
+        this.legendItems = options.legend;
+        this.legendDataPoints = options.legend.data();
+        this.clearCatcher = options.clearCatcher;
+        this.legendClearCatcher = options.legendClearCatcher;
+        this.legendIcons = options.legend.selectAll(".legendIcon");
+        this.onSelect = options.onSelect;
+
+        this.applySelectionStateToData();
+
+        this.bindContextMenuEvent(this.elements);
+        this.bindContextMenuEvent(this.legendItems);
+        this.bindContextMenuEvent(this.clearCatcher);
+        this.bindContextMenuEvent(this.legendClearCatcher);
+
+        this.bindClickEvent(this.elements);
+        this.bindClickEvent(this.legendItems);
+        this.bindClickEvent(this.clearCatcher);
+        this.bindClickEvent(this.legendClearCatcher);
+        
+        this.bindKeyboardEvent(this.elements);
     }
 
     private createCategoryLabel(canDisplayCategory: boolean): SunburstLabel {
         if (canDisplayCategory){
             const selectedId = <ISelectionId>this.selectionManager.getSelectionIds()[0];
-            const selectedDataPoint: SunburstDataPoint = this.options.dataPoints.find((el: SunburstDataPoint) => el.identity.equals(selectedId));
+            const selectedDataPoint: HierarchyRectangularNode<SunburstDataPoint> = this.dataPoints.find((el: HierarchyRectangularNode<SunburstDataPoint>) => el.data.identity.equals(selectedId));
             const label: SunburstLabel = {
-                text: selectedDataPoint.tooltipInfo[0].displayName,
-                total: selectedDataPoint.total,
-                color: selectedDataPoint.color
+                text: selectedDataPoint.data.tooltipInfo[0].displayName,
+                total: selectedDataPoint.data.total,
+                color: selectedDataPoint.data.color
             };
             return label;
         }
         else {
-            const total: number = this.calculateTotalForLabel(this.options.dataPointsTree, 0);
+            const total: number = this.calculateTotalForLabel(this.dataPointsTree, 0);
             const label: SunburstLabel = {
                 text: "",
                 total: total,

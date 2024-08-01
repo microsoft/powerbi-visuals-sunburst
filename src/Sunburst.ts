@@ -79,6 +79,7 @@ import ILegend = LI.ILegend;
 import LegendData = LI.LegendData;
 import MarkerShape = LI.MarkerShape;
 import LegendPosition = LI.LegendPosition;
+import LegendDataPoint = LI.LegendDataPoint;
 
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 
@@ -99,6 +100,7 @@ interface IAppCssConstants {
     percentageLabel: ClassAndSelector;
     sliceLabel: ClassAndSelector;
     legend: ClassAndSelector;
+    legendItem: ClassAndSelector;
 }
 
 export class Sunburst implements IVisual {
@@ -145,6 +147,7 @@ export class Sunburst implements IVisual {
     private percentageFormatter: IValueFormatter;
     private selectedCategoryLabel: Selection<BaseType, string, BaseType, string>;
     private legendSelection: Selection<BaseType, any, BaseType, any>;
+    private legendItems: Selection<BaseType, LegendDataPoint, BaseType, any>;
 
     private appCssConstants: IAppCssConstants = {
         main: createClassAndSelector("sunburst"),
@@ -157,7 +160,8 @@ export class Sunburst implements IVisual {
         categoryLabel: createClassAndSelector("sunburst__category-label"),
         percentageLabel: createClassAndSelector("sunburst__percentage-label"),
         sliceLabel: createClassAndSelector("sunburst__slice-label"),
-        legend: createClassAndSelector("legend")
+        legend: createClassAndSelector("legend"),
+        legendItem: createClassAndSelector("legendItem")
     };
 
     private colorPalette: IColorPalette;
@@ -208,7 +212,7 @@ export class Sunburst implements IVisual {
             .attr("preserveAspectRatio", "xMidYMid meet");
 
         const selectionManager = options.host.createSelectionManager();
-        this.behavior = new SunburstBehavior(selectionManager);
+        this.behavior = new SunburstBehavior(selectionManager, this.colorHelper);
 
         this.main = this.svg.append("g");
         this.main
@@ -301,11 +305,11 @@ export class Sunburst implements IVisual {
             }
 
             const behaviorOptions: SunburstBehaviorOptions = {
-                selection,
+                elements: selection,
                 clearCatcher: this.svg,
-                legend: this.legendSelection,
+                legend: this.legendItems,
+                legendClearCatcher: this.legendSelection,
                 onSelect: this.onVisualSelection.bind(this),
-                dataPoints: this.data.dataPoints,
                 dataPointsTree: this.data.root
             };
 
@@ -722,10 +726,13 @@ export class Sunburst implements IVisual {
                 break;
         }
 
+        this.legendItems = this.legendSelection
+            .selectAll(this.appCssConstants.legendItem.selectorName);
+
         this.legendSelection.selectAll("text")
-        .style("font-weight",  () => this.settings.legend.text.font.bold.value ? "bold" : "normal")
-        .style("font-style",  () => this.settings.legend.text.font.italic.value ? "italic" : "normal")
-        .style("text-decoration", () => this.settings.legend.text.font.underline.value ? "underline" : "none");
+            .style("font-weight",  () => this.settings.legend.text.font.bold.value ? "bold" : "normal")
+            .style("font-style",  () => this.settings.legend.text.font.italic.value ? "italic" : "normal")
+            .style("text-decoration", () => this.settings.legend.text.font.underline.value ? "underline" : "none");
     }
 
     private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {
