@@ -1,3 +1,7 @@
+## 2.5.2.0
+* Added interactivity to the legend items
+* API 5.11.0
+
 ## 2.5.1.0
 * Replaced interactivity utils with selection manager
 * API 5.9.1
