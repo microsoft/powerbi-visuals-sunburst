@@ -1,4 +1,4 @@
-## 2.5.2.0
+## 2.6.0.0
 * Added interactivity to the legend items
 * API 5.11.0
 
