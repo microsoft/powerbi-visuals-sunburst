@@ -3,8 +3,8 @@ export class SunburstUtils {
     static DefaultOpacity: number = 1.0;
     static DimmedColor: string = "#A6A6A6";
 
-    static getOpacity(selected: boolean, highlight: boolean, hasSelection: boolean, isHCM: boolean): number {
-        if (!highlight && hasSelection && !selected && isHCM) {
+    static getOpacity(selected: boolean, highlight: boolean, hasSelection: boolean, isHighContrast: boolean): number {
+        if (!highlight && hasSelection && !selected && isHighContrast) {
             return SunburstUtils.DimmedOpacity;
         }
         return SunburstUtils.DefaultOpacity;
@@ -24,9 +24,9 @@ export class SunburstUtils {
     static getLegendFillOpacity(
         selected: boolean,
         hasSelection: boolean,
-        isHCM: boolean): number {
+        isHighContrast: boolean): number {
     
-        if ((hasSelection && !selected) && isHCM) {
+        if ((hasSelection && !selected) && isHighContrast) {
             return SunburstUtils.DimmedOpacity;
         }
     
@@ -37,9 +37,9 @@ export class SunburstUtils {
         selected: boolean,
         hasSelection: boolean,
         defaultColor: string,
-        isHCM: boolean): string {
+        isHighContrast: boolean): string {
     
-        if ((hasSelection && !selected) && !isHCM) {
+        if ((hasSelection && !selected) && !isHighContrast) {
             return SunburstUtils.DimmedColor;
         }
     
