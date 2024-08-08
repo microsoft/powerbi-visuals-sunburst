@@ -130,7 +130,7 @@ describe("Sunburst", () => {
 
             it("should NOT be visible when 1 element is selected and showSelected settings = false", (done: DoneFn) => {    
                 dataView.metadata.objects = {
-                    group: { showSelected: false }
+                    centralLabel: { showSelected: false }
                 };
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     visualBuilder.sliceClick("ALABAMA");
@@ -385,7 +385,7 @@ describe("Sunburst", () => {
 
         it("percentage font size should be correct", (done: DoneFn) => {
             dataView.metadata.objects = {
-                group: { showSelected: false }
+                centralLabel: { showSelected: false }
             };
 
             visualBuilder.updateRenderTimeout(dataView, () => {
@@ -406,7 +406,7 @@ describe("Sunburst", () => {
             const fontSize: number = 22;
             const expectedFontSize: string = "44px";
             dataView.metadata.objects = {
-                group: { fontSize: fontSize }
+                centralLabel: { fontSize: fontSize }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -423,7 +423,7 @@ describe("Sunburst", () => {
             const fontWeight: boolean = true;
             const expectedWeight: string = "bold";
             dataView.metadata.objects = {
-                group: { fontBold: fontWeight }
+                centralLabel: { fontBold: fontWeight }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -440,7 +440,7 @@ describe("Sunburst", () => {
             const textDecoration: boolean = true;
             const expectedDecoration: string = "underline";
             dataView.metadata.objects = {
-                group: { fontUnderline: textDecoration }
+                centralLabel: { fontUnderline: textDecoration }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -457,7 +457,7 @@ describe("Sunburst", () => {
             const fontItalic: boolean = true;
             const expectedStyle: string = "italic";
             dataView.metadata.objects = {
-                group: { fontItalic: fontItalic }
+                centralLabel: { fontItalic: fontItalic }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -474,7 +474,7 @@ describe("Sunburst", () => {
             const fontFamily: string = "Arial";
             const expectedFamily: string = "Arial";
             dataView.metadata.objects = {
-                group: { fontFamily: fontFamily }
+                centralLabel: { fontFamily: fontFamily }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
