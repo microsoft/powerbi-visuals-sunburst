@@ -42,9 +42,48 @@
     }
   ],
   "objects": {
-    "group": {
+    "centralLabel": {
       "properties": {
+        "indentation": {
+          "type": {
+            "numeric": true
+          }
+        },
+        "categoryFontSize": {
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "categoryFontFamily": {
+            "type": {
+              "formatting": {
+                "fontFamily": true
+              }
+            }
+        },
+        "categoryFontBold": {
+          "type": {
+            "bool": true
+          }
+        },
+        "categoryFontUnderline": {
+          "type": {
+            "bool": true
+          }
+        },
+        "categoryFontItalic": {
+          "type": {
+             "bool": true
+          }
+        },
         "showSelected": {
+          "type": {
+            "bool": true
+          }
+        },
+        "customizeStyle": {
           "type": {
             "bool": true
           }
@@ -82,7 +121,11 @@
           "type": {
             "bool": true
           }
-        },
+        }
+      }
+    },
+    "group": {
+      "properties": {
         "labelFontSize": {
           "type": {
             "formatting": {

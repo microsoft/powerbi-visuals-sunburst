@@ -129,7 +129,7 @@ export class Sunburst implements IVisual {
 
         this.selectedCategoryLabel.classed(
             this.appCssConstants.labelVisible.className,
-            isShown && canDisplayCategory && this.settings.group.selectedCategory.showSelected.value
+            isShown && canDisplayCategory && this.settings.centralLabel.categoryLabel.showSelected.value
         );
     }
 
@@ -615,6 +615,7 @@ export class Sunburst implements IVisual {
         this.settings.legend.text.labelColor.value.value = this.colorHelper.getHighContrastColor("foreground", this.settings.legend.text.labelColor.value.value);
         const topCategories: SunburstDataPoint[] = this.data.root.children;
         this.settings.setSlicesForTopCategoryColorPickers(topCategories, Sunburst.LegendPropertyIdentifier, ColorHelper);
+        this.settings.centralLabel.categoryLabel.font.visible = this.settings.centralLabel.categoryLabel.customizeStyle.value;
     }
 
     private static createLegend(data: SunburstData, settings: SunburstSettings): LegendData {
@@ -649,16 +650,22 @@ export class Sunburst implements IVisual {
     }
 
     private setCategoryLabelPosition(width: number, canDisplayCategory: boolean): void {
-        if (this.settings.group.selectedCategory.showSelected.value && canDisplayCategory) {
+        if (this.settings.centralLabel.categoryLabel.showSelected.value && canDisplayCategory) {
             if (this.selectedCategoryLabel) {
-                const labelSize: number = this.settings.group.selectedCategory.font.fontSize.value;
+                const settings = this.settings.centralLabel.categoryLabel.customizeStyle.value
+                    ? this.settings.centralLabel.categoryLabel.font
+                    : this.settings.centralLabel.percentageLabel.font;
+
+                const labelVerticalIndentation: number = this.settings.centralLabel.categoryLabel.indentation.value / 2;
+                const labelTransform: number = (settings.fontSize.value * -Sunburst.CategoryLineInterval) - labelVerticalIndentation;
+
                 this.selectedCategoryLabel
-                    .attr(CssConstants.transformProperty, translate(0, labelSize * -Sunburst.CategoryLineInterval))
-                    .style("font-size", PixelConverter.toString(labelSize))
-                    .style("font-family", this.settings.group.selectedCategory.font.fontFamily.value)
-                    .style("font-weight", this.settings.group.selectedCategory.font.bold.value ? "bold" : "normal")
-                    .style("font-style", this.settings.group.selectedCategory.font.italic.value ? "italic" : "normal")
-                    .style("text-decoration", this.settings.group.selectedCategory.font.underline.value ? "underline" : "none")
+                    .attr(CssConstants.transformProperty, translate(0, labelTransform))
+                    .style("font-size", PixelConverter.toString(settings.fontSize.value))
+                    .style("font-family", settings.fontFamily.value)
+                    .style("font-weight", settings.bold.value ? "bold" : "normal")
+                    .style("font-style", settings.italic.value ? "italic" : "normal")
+                    .style("text-decoration", settings.underline.value ? "underline" : "none")
                     .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
             }
         }
@@ -668,12 +675,16 @@ export class Sunburst implements IVisual {
     }
 
     private setPercentageLabelPosition(width: number, canDisplayCategory: boolean): void {
-        const percentageLabelSettings = this.settings.group.selectedCategory;
+        const percentageLabelSettings = this.settings.centralLabel.percentageLabel;
         const labelSize: number = percentageLabelSettings.font.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
+        const labelVerticalIndentation: number = this.settings.centralLabel.categoryLabel.showSelected.value && this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className)
+            ? this.settings.centralLabel.categoryLabel.indentation.value / 2
+            : 0;
         const labelTransform: number = labelSize *
-            (percentageLabelSettings.showSelected.value && canDisplayCategory ?
+            (this.settings.centralLabel.categoryLabel.showSelected.value && canDisplayCategory ?
                 Sunburst.MultilinePercentageLineInterval :
-                Sunburst.DefaultPercentageLineInterval);
+                Sunburst.DefaultPercentageLineInterval)
+            + labelVerticalIndentation;
 
         this.percentageLabel
             .attr(CssConstants.transformProperty, translate(0, labelTransform))
@@ -681,7 +692,7 @@ export class Sunburst implements IVisual {
             .style("font-family", percentageLabelSettings.font.fontFamily.value)
             .style("font-weight", percentageLabelSettings.font.bold.value ? "bold" : "normal")
             .style("font-style", percentageLabelSettings.font.italic.value ? "italic" : "normal")
-            .style("text-decoration", this.settings.group.selectedCategory.font.underline.value ? "underline" : "none")
+            .style("text-decoration", percentageLabelSettings.font.underline.value ? "underline" : "none")
             .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
     }
 

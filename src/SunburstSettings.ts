@@ -88,19 +88,53 @@ class BaseFontCardSettings extends formattingSettings.FontControl {
 
 class SelectedCategoryGroup extends FormattingSettingsCard {
     public defaultShowSelected: boolean = true;
+    public defaultCustomizeStyle: boolean = false;
     public defaultFontSize: number = 14;
+    public defaultIndentation: number = 0;
 
     public showSelected = new formattingSettings.ToggleSwitch({
         name: "showSelected",
         displayNameKey: "Visual_ShowCategoryLabel",
         value: this.defaultShowSelected,
     });
-    public font = new BaseFontCardSettings(this.defaultFontSize);
+
+    public indentation = new formattingSettings.Slider({
+        name: "indentation",
+        displayNameKey: "Visual_Indentation",
+        value: this.defaultIndentation
+    });
+
+    public customizeStyle = new formattingSettings.ToggleSwitch({
+        name: "customizeStyle",
+        displayNameKey: "Visual_CustomizeStyle",
+        value: this.defaultCustomizeStyle,
+    });
+
+    public font = new BaseFontCardSettings(this.defaultFontSize, "categoryFont", "categoryFontFamily", "categoryFontSize", "categoryFontBold", "categoryFontItalic", "categoryFontUnderline");
 
     topLevelSlice: formattingSettings.ToggleSwitch = this.showSelected;
     name: string = "selectedCategoryGroup";
     displayNameKey: string = "Visual_ShowCategoryLabel";
+    slices: FormattingSettingsSlice[] = [ this.indentation, this.customizeStyle, this.font];
+}
+
+class PercentageLabelGroup extends FormattingSettingsCard {
+    public defaultFontSize: number = 14;
+
+    public font = new BaseFontCardSettings(this.defaultFontSize);
+
+    name: string = "percentageLabelGroup";
+    displayNameKey: string = "Visual_PercentageLabel";
     slices: FormattingSettingsSlice[] = [this.font];
+}
+
+class SunburstCentralLabelSettings extends FormattingSettingsCompositeCard {
+    public percentageLabel = new PercentageLabelGroup();
+    public categoryLabel = new SelectedCategoryGroup();
+
+    public groups: FormattingSettingsGroup[] = [this.percentageLabel, this.categoryLabel];
+    public name: string = "centralLabel";
+    public displayNameKey: string = "Visual_CentralLabel";
 }
 
 class LabelsGroup extends FormattingSettingsCard {
@@ -127,11 +161,10 @@ class ColorsGroup extends FormattingSettingsCard {
 }
 
 class SunburstGroupSettings extends FormattingSettingsCompositeCard {
-    public selectedCategory = new SelectedCategoryGroup();
     public labels = new LabelsGroup();
     public colors = new ColorsGroup();
 
-    public groups: FormattingSettingsGroup[] = [this.selectedCategory, this.labels, this.colors];
+    public groups: FormattingSettingsGroup[] = [this.labels, this.colors];
     public name: string = "group";
     public displayNameKey: string = "Visual_Groups";
     public analyticsPane: boolean = false;
@@ -251,11 +284,12 @@ class LegendSettings extends FormattingSettingsCompositeCard {
 }
 
 export class SunburstSettings extends FormattingSettingsModel {
+    public centralLabel: SunburstCentralLabelSettings = new SunburstCentralLabelSettings();
     public group: SunburstGroupSettings = new SunburstGroupSettings();
     public legend: LegendSettings = new LegendSettings();
     public tooltip: SunburstTooltipSettings = new SunburstTooltipSettings();
 
-    public cards: Array<FormattingSettingsCard> = [this.group, this.tooltip, this.legend];
+    public cards: Array<FormattingSettingsCard> = [this.centralLabel, this.group, this.tooltip, this.legend];
 
     public setSlicesForTopCategoryColorPickers(topCategories: SunburstDataPoint[], LegendPropertyIdentifier: powerbiVisualsApi.DataViewObjectPropertyIdentifier, ColorHelper) {
         if (topCategories && topCategories.length > 0) {
