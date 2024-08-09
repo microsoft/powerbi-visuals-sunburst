@@ -116,16 +116,16 @@
           "type": {
              "bool": true
           }
-        },
-        "showDataLabels": {
-          "type": {
-            "bool": true
-          }
         }
       }
     },
     "group": {
       "properties": {
+        "showDataLabels": {
+          "type": {
+            "bool": true
+          }
+        },
         "labelFontSize": {
           "type": {
             "formatting": {
