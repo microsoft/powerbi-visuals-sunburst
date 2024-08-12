@@ -407,8 +407,8 @@ export class Sunburst implements IVisual {
 
     private partition(data: SunburstDataPoint) {
         const root = d3Hierarchy<SunburstDataPoint>(data)
-            .sum(d => d.value)
-            .sort((a, b) => b.value - a.value);
+            .sum(d => d.value);
+            
         return d3Partition<SunburstDataPoint>()
             .size([2 * Math.PI, Sunburst.OuterRadius * Sunburst.OuterRadius])(root)
             .each(d => {
@@ -520,7 +520,6 @@ export class Sunburst implements IVisual {
         newDataPointNode.children = [];
 
         if (level === 1 && originParentNode.children.length > 0) {
-            this.colorPalette.getColor(name).value;
             for (const child of originParentNode.children) {
                 const childName: string = child.value != null ? `${child.value}` : "";
                 this.colorPalette.getColor(childName).value;
