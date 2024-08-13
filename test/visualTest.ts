@@ -151,7 +151,7 @@ describe("Sunburst", () => {
                         renderTimeout(() => {
                             const percent: string | null = visualBuilder.percentageLabel.textContent;
 
-                            expect(percent).toBe("41.67%");
+                            expect(percent).toBe("8.33%");
                             expect(visualBuilder.visibleCategoryLabels?.length).toBe(1);
                             expect(visualBuilder.categoryLabel.classList.contains(LabelVisibleClass)).toBeFalse();
                             expect(visualBuilder.percentageLabel.classList.contains(LabelVisibleClass)).toBeTrue();
@@ -167,7 +167,7 @@ describe("Sunburst", () => {
                         visualBuilder.sliceClick("ALABAMA");
                             renderTimeout(() => {
                                 const percent: string | null = visualBuilder.percentageLabel.textContent;
-                                expect(percent).toBe("19.44%");
+                                expect(percent).toBe("2.78%");
                                 done();
                         }, DefaultWaitForRender);
                     });
@@ -179,7 +179,7 @@ describe("Sunburst", () => {
                         visualBuilder.sliceClick("ALASKA", ClickEventType.CtrlKey);
                             renderTimeout(() => {
                                 const percent: string | null = visualBuilder.percentageLabel.textContent;
-                                expect(percent).toBe("41.67%");
+                                expect(percent).toBe("8.33%");
                                 done();
                         }, DefaultWaitForRender);
                     });
@@ -188,11 +188,11 @@ describe("Sunburst", () => {
                 it("should display percentage of selected parent slice", (done: DoneFn) => {    
                     visualBuilder.updateRenderTimeout(dataView, () => {
                         visualBuilder.sliceClick("ALABAMA");
-                        visualBuilder.sliceClick("Europe", ClickEventType.CtrlKey);
+                        visualBuilder.sliceClick("Asia", ClickEventType.CtrlKey);
                         visualBuilder.sliceClick("ALASKA", ClickEventType.CtrlKey);
                             renderTimeout(() => {
                                 const percent: string | null = visualBuilder.percentageLabel.textContent;
-                                expect(percent).toBe("72.22%");
+                                expect(percent).toBe("27.78%");
                                 done();
                         }, DefaultWaitForRender);
                     });
