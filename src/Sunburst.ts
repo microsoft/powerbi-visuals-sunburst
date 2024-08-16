@@ -237,8 +237,6 @@ export class Sunburst implements IVisual {
 
         // create legend container
         this.legend = createLegend(options.element,
-            false,
-            null,
             true,
             LegendPosition.Top
         );
