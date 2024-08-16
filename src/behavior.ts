@@ -82,19 +82,14 @@ export class SunburstBehavior {
 
     private setSelectedToDataPoints(dataPoints: LegendDataPoint[] | HierarchyRectangularNode<SunburstDataPoint>[], ids: ISelectionId[]): void{
         dataPoints.forEach((dataPoint: LegendDataPoint| HierarchyRectangularNode<SunburstDataPoint>) => {
-            const data : SunburstDataPoint | LegendDataPoint = (dataPoint as HierarchyRectangularNode<SunburstDataPoint>)?.data || (dataPoint as LegendDataPoint);
-            data.selected = false;
-            ids.forEach((selectedId: ISelectionId) => {
-                if (selectedId.includes(<ISelectionId>data.identity)) {
-                    data.selected = true;
-                }
-            });
+            const data : SunburstDataPoint | LegendDataPoint = this.castDataFromPoint(dataPoint);
+            data.selected = ids.some((selectedId: ISelectionId) => selectedId.includes(data.identity));
         });
     }
 
     private bindContextMenuEvent(elements: d3Selection<any>): void {
         elements.on("contextmenu", (event: PointerEvent, dataPoint: HierarchyRectangularNode<SunburstDataPoint> | LegendDataPoint | undefined) => {
-            const data : SunburstDataPoint | LegendDataPoint = (dataPoint as HierarchyRectangularNode<SunburstDataPoint>)?.data || (dataPoint as LegendDataPoint);
+            const data : SunburstDataPoint | LegendDataPoint = this.castDataFromPoint(dataPoint);
             this.selectionManager.showContextMenu(data ? data.identity : {},
                 {
                     x: event.clientX,
@@ -104,6 +99,10 @@ export class SunburstBehavior {
             event.preventDefault();
             event.stopPropagation();
         });
+    }
+
+    private castDataFromPoint(dataPoint: HierarchyRectangularNode<SunburstDataPoint> | LegendDataPoint | undefined): SunburstDataPoint | LegendDataPoint {
+        return (dataPoint as HierarchyRectangularNode<SunburstDataPoint>)?.data || (dataPoint as LegendDataPoint);
     }
 
     private bindClickEvent(elements: d3Selection<any>): void {
