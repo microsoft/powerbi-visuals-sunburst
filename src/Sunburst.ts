@@ -672,8 +672,8 @@ export class Sunburst implements IVisual {
     }
 
     private setPercentageLabelPosition(width: number, canDisplayCategory: boolean): void {
-        const percentageLabelSettings = this.settings.centralLabel.percentageLabel;
-        const labelSize: number = percentageLabelSettings.font.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
+        const labelFontSettings = this.settings.centralLabel.percentageLabel.font;
+        const labelSize: number = labelFontSettings.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
         const labelVerticalIndentation: number = this.settings.centralLabel.categoryLabel.showSelected.value && this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className)
             ? this.settings.centralLabel.categoryLabel.indentation.value / 2
             : 0;
@@ -686,10 +686,10 @@ export class Sunburst implements IVisual {
         this.percentageLabel
             .attr(CssConstants.transformProperty, translate(0, labelTransform))
             .style("font-size", PixelConverter.toString(labelSize))
-            .style("font-family", percentageLabelSettings.font.fontFamily.value)
-            .style("font-weight", percentageLabelSettings.font.bold.value ? "bold" : "normal")
-            .style("font-style", percentageLabelSettings.font.italic.value ? "italic" : "normal")
-            .style("text-decoration", percentageLabelSettings.font.underline.value ? "underline" : "none")
+            .style("font-family", labelFontSettings.fontFamily.value)
+            .style("font-weight", labelFontSettings.bold.value ? "bold" : "normal")
+            .style("font-style", labelFontSettings.italic.value ? "italic" : "normal")
+            .style("text-decoration", labelFontSettings.underline.value ? "underline" : "none")
             .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
     }
 

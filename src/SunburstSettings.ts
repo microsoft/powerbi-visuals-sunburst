@@ -101,7 +101,17 @@ class SelectedCategoryGroup extends FormattingSettingsCard {
     public indentation = new formattingSettings.Slider({
         name: "indentation",
         displayNameKey: "Visual_Indentation",
-        value: this.defaultIndentation
+        value: this.defaultIndentation,
+        options: {
+            maxValue: {
+                type: powerbi.visuals.ValidatorType.Max,
+                value: 100
+            },
+            minValue: {
+                type: powerbi.visuals.ValidatorType.Min,
+                value: 0
+            }
+        }
     });
 
     public customizeStyle = new formattingSettings.ToggleSwitch({
