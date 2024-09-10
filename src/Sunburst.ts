@@ -653,12 +653,16 @@ export class Sunburst implements IVisual {
                     ? this.settings.centralLabel.categoryLabel.font
                     : this.settings.centralLabel.percentageLabel.font;
 
+                const labelSize: number = PixelConverter.fromPointToPixel(this.settings.centralLabel.categoryLabel.customizeStyle.value
+                    ? this.settings.centralLabel.categoryLabel.font.fontSize.value
+                    : this.settings.centralLabel.percentageLabel.font.fontSize.value / Sunburst.PercentageFontSizeMultiplier);
+
                 const labelVerticalIndentation: number = this.settings.centralLabel.categoryLabel.indentation.value / 2;
-                const labelTransform: number = (settings.fontSize.value * -Sunburst.CategoryLineInterval) - labelVerticalIndentation;
+                const labelTransform: number = (labelSize * -Sunburst.CategoryLineInterval) - labelVerticalIndentation;
 
                 this.selectedCategoryLabel
                     .attr(CssConstants.transformProperty, translate(0, labelTransform))
-                    .style("font-size", PixelConverter.toString(settings.fontSize.value))
+                    .style("font-size", PixelConverter.toString(labelSize))
                     .style("font-family", settings.fontFamily.value)
                     .style("font-weight", settings.bold.value ? "bold" : "normal")
                     .style("font-style", settings.italic.value ? "italic" : "normal")
@@ -673,7 +677,7 @@ export class Sunburst implements IVisual {
 
     private setPercentageLabelPosition(width: number, canDisplayCategory: boolean): void {
         const labelFontSettings = this.settings.centralLabel.percentageLabel.font;
-        const labelSize: number = labelFontSettings.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
+        const labelSize: number = PixelConverter.fromPointToPixel(labelFontSettings.fontSize.value);
         const labelVerticalIndentation: number = this.settings.centralLabel.categoryLabel.showSelected.value && this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className)
             ? this.settings.centralLabel.categoryLabel.indentation.value / 2
             : 0;

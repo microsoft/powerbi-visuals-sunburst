@@ -49,31 +49,31 @@
             "numeric": true
           }
         },
-        "categoryFontSize": {
+        "fontSizeCategory": {
           "type": {
             "formatting": {
               "fontSize": true
             }
           }
         },
-        "categoryFontFamily": {
+        "fontFamilyCategory": {
             "type": {
               "formatting": {
                 "fontFamily": true
               }
             }
         },
-        "categoryFontBold": {
+        "fontBoldCategory": {
           "type": {
             "bool": true
           }
         },
-        "categoryFontUnderline": {
+        "fontUnderlineCategory": {
           "type": {
             "bool": true
           }
         },
-        "categoryFontItalic": {
+        "fontItalicCategory": {
           "type": {
              "bool": true
           }
@@ -88,31 +88,31 @@
             "bool": true
           }
         },
-        "fontSize": {
+        "fontSizePercentage": {
           "type": {
             "formatting": {
               "fontSize": true
             }
           }
         },
-        "fontFamily": {
+        "fontFamilyPercentage": {
             "type": {
               "formatting": {
                 "fontFamily": true
               }
             }
         },
-        "fontBold": {
+        "fontBoldPercentage": {
           "type": {
             "bool": true
           }
         },
-        "fontUnderline": {
+        "fontUnderlinePercentage": {
           "type": {
             "bool": true
           }
         },
-        "fontItalic": {
+        "fontItalicPercentage": {
           "type": {
              "bool": true
           }
@@ -126,31 +126,31 @@
             "bool": true
           }
         },
-        "labelFontSize": {
+        "fontSizeLabel": {
           "type": {
             "formatting": {
               "fontSize": true
             }
           }
         },
-        "labelFontFamily": {
+        "fontFamilyLabel": {
           "type": {
             "formatting": {
               "fontFamily": true
             }
           }
         },
-        "labelFontBold": {
+        "fontBoldLabel": {
           "type": {
             "bool": true
           }
         },
-        "labelFontUnderline": {
+        "fontUnderlineLabel": {
           "type": {
             "bool": true
           }
         },
-        "labelFontItalic": {
+        "fontItalicLabel": {
           "type": {
             "bool": true
           }

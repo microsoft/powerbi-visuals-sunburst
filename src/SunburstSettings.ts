@@ -42,20 +42,21 @@ class BaseFontCardSettings extends formattingSettings.FontControl {
     private static boldName: string = "fontBold";
     private static italicName: string = "fontItalic";
     private static underlineName: string = "fontUnderline";
+    private static fontName: string = "font";
     public static defaultFontFamily: string = "wf_standard-font, helvetica, arial, sans-serif";
     public static minFontSize: number = 8;
     public static maxFontSize: number = 60;
-    constructor(defaultFontSize: number, font?: string, fontfamily?: string, fontSize?: string, bold?: string, italic?: string, underline?: string){
+    constructor(defaultFontSize: number, settingName: string = ""){
         super(
             new formattingSettings.FontControl({
-                name: font ?? "font",
+                name: BaseFontCardSettings.fontName + settingName,
                 displayNameKey: "Visual_FontControl",
                 fontFamily: new formattingSettings.FontPicker({
-                    name: fontfamily ?? BaseFontCardSettings.fontFamilyName,
+                    name: BaseFontCardSettings.fontFamilyName + settingName,
                     value: BaseFontCardSettings.defaultFontFamily
                 }),
                 fontSize: new formattingSettings.NumUpDown({
-                    name: fontSize ?? BaseFontCardSettings.fontSizeName,
+                    name: BaseFontCardSettings.fontSizeName + settingName,
                     displayNameKey: "Visual_FontSize",
                     value: defaultFontSize,
                     options: {
@@ -70,15 +71,15 @@ class BaseFontCardSettings extends formattingSettings.FontControl {
                     }
                 }),
                 bold: new formattingSettings.ToggleSwitch({
-                    name: bold ?? BaseFontCardSettings.boldName,
+                    name: BaseFontCardSettings.boldName + settingName,
                     value: false
                 }),
                 italic: new formattingSettings.ToggleSwitch({
-                    name: italic ?? BaseFontCardSettings.italicName,
+                    name: BaseFontCardSettings.italicName + settingName,
                     value: false
                 }),
                 underline: new formattingSettings.ToggleSwitch({
-                    name: underline ?? BaseFontCardSettings.underlineName,
+                    name: BaseFontCardSettings.underlineName + settingName,
                     value: false
                 })
             })
@@ -120,7 +121,7 @@ class SelectedCategoryGroup extends FormattingSettingsCard {
         value: this.defaultCustomizeStyle,
     });
 
-    public font = new BaseFontCardSettings(this.defaultFontSize, "categoryFont", "categoryFontFamily", "categoryFontSize", "categoryFontBold", "categoryFontItalic", "categoryFontUnderline");
+    public font = new BaseFontCardSettings(this.defaultFontSize, "Category");
 
     topLevelSlice: formattingSettings.ToggleSwitch = this.showSelected;
     name: string = "selectedCategoryGroup";
@@ -129,9 +130,9 @@ class SelectedCategoryGroup extends FormattingSettingsCard {
 }
 
 class PercentageLabelGroup extends FormattingSettingsCard {
-    public defaultFontSize: number = 14;
+    public defaultFontSize: number = 21;
 
-    public font = new BaseFontCardSettings(this.defaultFontSize);
+    public font = new BaseFontCardSettings(this.defaultFontSize, "Percentage");
 
     name: string = "percentageLabelGroup";
     displayNameKey: string = "Visual_PercentageLabel";
@@ -156,7 +157,7 @@ class LabelsGroup extends FormattingSettingsCard {
         displayNameKey: "Visual_ShowDataLabels",
         value: this.defaultShowDataLabels,
     });
-    public font = new BaseFontCardSettings(this.defaultLabelFontSize,"labelFont", "labelFontFamily", "labelFontSize", "labelFontBold", "labelFontItalic", "labelFontUnderline");
+    public font = new BaseFontCardSettings(this.defaultLabelFontSize, "Label");
 
     topLevelSlice: formattingSettings.ToggleSwitch = this.showDataLabels;
     name: string = "labelsGroup";
