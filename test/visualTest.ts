@@ -227,7 +227,7 @@ describe("Sunburst", () => {
                 const fontWeight: boolean = true;
                 const expectedWeight: string = "bold";
                 dataView.metadata.objects = {
-                    group: { labelFontBold: fontWeight }
+                    group: { fontBoldLabel: fontWeight }
                 };
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
@@ -242,7 +242,7 @@ describe("Sunburst", () => {
                 const textDecoration: boolean = true;
                 const expectedDecoration: string = "underline";
                 dataView.metadata.objects = {
-                    group: { labelFontUnderline: textDecoration }
+                    group: { fontUnderlineLabel: textDecoration }
                 };
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
@@ -257,7 +257,7 @@ describe("Sunburst", () => {
                 const fontItalic: boolean = true;
                 const expectedStyle: string = "italic";
                 dataView.metadata.objects = {
-                    group: { labelFontItalic: fontItalic }
+                    group: { fontItalicLabel: fontItalic }
                 };
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
@@ -272,7 +272,7 @@ describe("Sunburst", () => {
                 const fontFamily: string = "Arial";
                 const expectedFamily: string = "Arial";
                 dataView.metadata.objects = {
-                    group: { labelFontFamily: fontFamily }
+                    group: { fontFamilyLabel: fontFamily }
                 };
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
@@ -403,10 +403,10 @@ describe("Sunburst", () => {
         });
 
         it("percentage label font size should be correct", (done: DoneFn) => {
-            const fontSize: number = 22;
-            const expectedFontSize: string = "44px";
+            const fontSize: number = 21;
+            const expectedFontSize: string = "28px";
             dataView.metadata.objects = {
-                centralLabel: { fontSize: fontSize }
+                centralLabel: { fontSizePercentage: fontSize }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -423,7 +423,7 @@ describe("Sunburst", () => {
             const fontWeight: boolean = true;
             const expectedWeight: string = "bold";
             dataView.metadata.objects = {
-                centralLabel: { fontBold: fontWeight }
+                centralLabel: { fontBoldPercentage: fontWeight }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -440,7 +440,7 @@ describe("Sunburst", () => {
             const textDecoration: boolean = true;
             const expectedDecoration: string = "underline";
             dataView.metadata.objects = {
-                centralLabel: { fontUnderline: textDecoration }
+                centralLabel: { fontUnderlinePercentage: textDecoration }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -457,7 +457,7 @@ describe("Sunburst", () => {
             const fontItalic: boolean = true;
             const expectedStyle: string = "italic";
             dataView.metadata.objects = {
-                centralLabel: { fontItalic: fontItalic }
+                centralLabel: { fontItalicPercentage: fontItalic }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -474,7 +474,7 @@ describe("Sunburst", () => {
             const fontFamily: string = "Arial";
             const expectedFamily: string = "Arial";
             dataView.metadata.objects = {
-                centralLabel: { fontFamily: fontFamily }
+                centralLabel: { fontFamilyPercentage: fontFamily }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
