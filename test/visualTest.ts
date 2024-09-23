@@ -130,7 +130,7 @@ describe("Sunburst", () => {
 
             it("should NOT be visible when 1 element is selected and showSelected settings = false", (done: DoneFn) => {    
                 dataView.metadata.objects = {
-                    group: { showSelected: false }
+                    centralLabel: { showSelected: false }
                 };
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     visualBuilder.sliceClick("ALABAMA");
@@ -151,7 +151,7 @@ describe("Sunburst", () => {
                         renderTimeout(() => {
                             const percent: string | null = visualBuilder.percentageLabel.textContent;
 
-                            expect(percent).toBe("41.67%");
+                            expect(percent).toBe("8.33%");
                             expect(visualBuilder.visibleCategoryLabels?.length).toBe(1);
                             expect(visualBuilder.categoryLabel.classList.contains(LabelVisibleClass)).toBeFalse();
                             expect(visualBuilder.percentageLabel.classList.contains(LabelVisibleClass)).toBeTrue();
@@ -167,7 +167,7 @@ describe("Sunburst", () => {
                         visualBuilder.sliceClick("ALABAMA");
                             renderTimeout(() => {
                                 const percent: string | null = visualBuilder.percentageLabel.textContent;
-                                expect(percent).toBe("19.44%");
+                                expect(percent).toBe("2.78%");
                                 done();
                         }, DefaultWaitForRender);
                     });
@@ -179,7 +179,7 @@ describe("Sunburst", () => {
                         visualBuilder.sliceClick("ALASKA", ClickEventType.CtrlKey);
                             renderTimeout(() => {
                                 const percent: string | null = visualBuilder.percentageLabel.textContent;
-                                expect(percent).toBe("41.67%");
+                                expect(percent).toBe("8.33%");
                                 done();
                         }, DefaultWaitForRender);
                     });
@@ -188,11 +188,11 @@ describe("Sunburst", () => {
                 it("should display percentage of selected parent slice", (done: DoneFn) => {    
                     visualBuilder.updateRenderTimeout(dataView, () => {
                         visualBuilder.sliceClick("ALABAMA");
-                        visualBuilder.sliceClick("Europe", ClickEventType.CtrlKey);
+                        visualBuilder.sliceClick("Asia", ClickEventType.CtrlKey);
                         visualBuilder.sliceClick("ALASKA", ClickEventType.CtrlKey);
                             renderTimeout(() => {
                                 const percent: string | null = visualBuilder.percentageLabel.textContent;
-                                expect(percent).toBe("72.22%");
+                                expect(percent).toBe("27.78%");
                                 done();
                         }, DefaultWaitForRender);
                     });
@@ -227,7 +227,7 @@ describe("Sunburst", () => {
                 const fontWeight: boolean = true;
                 const expectedWeight: string = "bold";
                 dataView.metadata.objects = {
-                    group: { labelFontBold: fontWeight }
+                    group: { fontBoldLabel: fontWeight }
                 };
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
@@ -242,7 +242,7 @@ describe("Sunburst", () => {
                 const textDecoration: boolean = true;
                 const expectedDecoration: string = "underline";
                 dataView.metadata.objects = {
-                    group: { labelFontUnderline: textDecoration }
+                    group: { fontUnderlineLabel: textDecoration }
                 };
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
@@ -257,7 +257,7 @@ describe("Sunburst", () => {
                 const fontItalic: boolean = true;
                 const expectedStyle: string = "italic";
                 dataView.metadata.objects = {
-                    group: { labelFontItalic: fontItalic }
+                    group: { fontItalicLabel: fontItalic }
                 };
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
@@ -272,7 +272,7 @@ describe("Sunburst", () => {
                 const fontFamily: string = "Arial";
                 const expectedFamily: string = "Arial";
                 dataView.metadata.objects = {
-                    group: { labelFontFamily: fontFamily }
+                    group: { fontFamilyLabel: fontFamily }
                 };
                 visualBuilder.updateRenderTimeout(dataView, () => {
                     const dataLabels: HTMLElement[] = visualBuilder.dataLabels;
@@ -385,7 +385,7 @@ describe("Sunburst", () => {
 
         it("percentage font size should be correct", (done: DoneFn) => {
             dataView.metadata.objects = {
-                group: { showSelected: false }
+                centralLabel: { showSelected: false }
             };
 
             visualBuilder.updateRenderTimeout(dataView, () => {
@@ -403,10 +403,10 @@ describe("Sunburst", () => {
         });
 
         it("percentage label font size should be correct", (done: DoneFn) => {
-            const fontSize: number = 22;
-            const expectedFontSize: string = "44px";
+            const fontSize: number = 21;
+            const expectedFontSize: string = "28px";
             dataView.metadata.objects = {
-                group: { fontSize: fontSize }
+                centralLabel: { fontSizePercentage: fontSize }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -423,7 +423,7 @@ describe("Sunburst", () => {
             const fontWeight: boolean = true;
             const expectedWeight: string = "bold";
             dataView.metadata.objects = {
-                group: { fontBold: fontWeight }
+                centralLabel: { fontBoldPercentage: fontWeight }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -440,7 +440,7 @@ describe("Sunburst", () => {
             const textDecoration: boolean = true;
             const expectedDecoration: string = "underline";
             dataView.metadata.objects = {
-                group: { fontUnderline: textDecoration }
+                centralLabel: { fontUnderlinePercentage: textDecoration }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -457,7 +457,7 @@ describe("Sunburst", () => {
             const fontItalic: boolean = true;
             const expectedStyle: string = "italic";
             dataView.metadata.objects = {
-                group: { fontItalic: fontItalic }
+                centralLabel: { fontItalicPercentage: fontItalic }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];
@@ -474,7 +474,7 @@ describe("Sunburst", () => {
             const fontFamily: string = "Arial";
             const expectedFamily: string = "Arial";
             dataView.metadata.objects = {
-                group: { fontFamily: fontFamily }
+                centralLabel: { fontFamilyPercentage: fontFamily }
             };
             visualBuilder.updateRenderTimeout(dataView, () => {
                 const firstSlice: HTMLElement = visualBuilder.slices[0];

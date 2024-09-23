@@ -42,72 +42,115 @@
     }
   ],
   "objects": {
-    "group": {
+    "centralLabel": {
       "properties": {
-        "showSelected": {
+        "indentation": {
           "type": {
-            "bool": true
+            "numeric": true
           }
         },
-        "fontSize": {
+        "fontSizeCategory": {
           "type": {
             "formatting": {
               "fontSize": true
             }
           }
         },
-        "fontFamily": {
+        "fontFamilyCategory": {
             "type": {
               "formatting": {
                 "fontFamily": true
               }
             }
         },
-        "fontBold": {
+        "fontBoldCategory": {
           "type": {
             "bool": true
           }
         },
-        "fontUnderline": {
+        "fontUnderlineCategory": {
           "type": {
             "bool": true
           }
         },
-        "fontItalic": {
+        "fontItalicCategory": {
           "type": {
              "bool": true
           }
         },
-        "showDataLabels": {
+        "showSelected": {
           "type": {
             "bool": true
           }
         },
-        "labelFontSize": {
+        "customizeStyle": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontSizePercentage": {
           "type": {
             "formatting": {
               "fontSize": true
             }
           }
         },
-        "labelFontFamily": {
+        "fontFamilyPercentage": {
+            "type": {
+              "formatting": {
+                "fontFamily": true
+              }
+            }
+        },
+        "fontBoldPercentage": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontUnderlinePercentage": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontItalicPercentage": {
+          "type": {
+             "bool": true
+          }
+        }
+      }
+    },
+    "group": {
+      "properties": {
+        "showDataLabels": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontSizeLabel": {
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "fontFamilyLabel": {
           "type": {
             "formatting": {
               "fontFamily": true
             }
           }
         },
-        "labelFontBold": {
+        "fontBoldLabel": {
           "type": {
             "bool": true
           }
         },
-        "labelFontUnderline": {
+        "fontUnderlineLabel": {
           "type": {
             "bool": true
           }
         },
-        "labelFontItalic": {
+        "fontItalicLabel": {
           "type": {
             "bool": true
           }
@@ -245,13 +288,15 @@
     }
   },
   "sorting": {
-     "implicit": {
-       "clauses": [
-         {
-           "role": "Values",
-           "direction": 1
-         }
-       ]
-     }
-   }
+    "default": {}
+  },
+  "tooltips": {
+    "supportedTypes": {
+      "default": true,
+      "canvas": true
+    },
+    "roles": [
+      "tooltips"
+    ]
+  }
 }

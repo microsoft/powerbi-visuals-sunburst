@@ -42,20 +42,21 @@ class BaseFontCardSettings extends formattingSettings.FontControl {
     private static boldName: string = "fontBold";
     private static italicName: string = "fontItalic";
     private static underlineName: string = "fontUnderline";
+    private static fontName: string = "font";
     public static defaultFontFamily: string = "wf_standard-font, helvetica, arial, sans-serif";
     public static minFontSize: number = 8;
     public static maxFontSize: number = 60;
-    constructor(defaultFontSize: number, font?: string, fontfamily?: string, fontSize?: string, bold?: string, italic?: string, underline?: string){
+    constructor(defaultFontSize: number, settingName: string = ""){
         super(
             new formattingSettings.FontControl({
-                name: font ?? "font",
+                name: BaseFontCardSettings.fontName + settingName,
                 displayNameKey: "Visual_FontControl",
                 fontFamily: new formattingSettings.FontPicker({
-                    name: fontfamily ?? BaseFontCardSettings.fontFamilyName,
+                    name: BaseFontCardSettings.fontFamilyName + settingName,
                     value: BaseFontCardSettings.defaultFontFamily
                 }),
                 fontSize: new formattingSettings.NumUpDown({
-                    name: fontSize ?? BaseFontCardSettings.fontSizeName,
+                    name: BaseFontCardSettings.fontSizeName + settingName,
                     displayNameKey: "Visual_FontSize",
                     value: defaultFontSize,
                     options: {
@@ -70,15 +71,15 @@ class BaseFontCardSettings extends formattingSettings.FontControl {
                     }
                 }),
                 bold: new formattingSettings.ToggleSwitch({
-                    name: bold ?? BaseFontCardSettings.boldName,
+                    name: BaseFontCardSettings.boldName + settingName,
                     value: false
                 }),
                 italic: new formattingSettings.ToggleSwitch({
-                    name: italic ?? BaseFontCardSettings.italicName,
+                    name: BaseFontCardSettings.italicName + settingName,
                     value: false
                 }),
                 underline: new formattingSettings.ToggleSwitch({
-                    name: underline ?? BaseFontCardSettings.underlineName,
+                    name: BaseFontCardSettings.underlineName + settingName,
                     value: false
                 })
             })
@@ -88,19 +89,63 @@ class BaseFontCardSettings extends formattingSettings.FontControl {
 
 class SelectedCategoryGroup extends FormattingSettingsCard {
     public defaultShowSelected: boolean = true;
+    public defaultCustomizeStyle: boolean = false;
     public defaultFontSize: number = 14;
+    public defaultIndentation: number = 0;
 
     public showSelected = new formattingSettings.ToggleSwitch({
         name: "showSelected",
         displayNameKey: "Visual_ShowCategoryLabel",
         value: this.defaultShowSelected,
     });
-    public font = new BaseFontCardSettings(this.defaultFontSize);
+
+    public indentation = new formattingSettings.Slider({
+        name: "indentation",
+        displayNameKey: "Visual_Indentation",
+        value: this.defaultIndentation,
+        options: {
+            maxValue: {
+                type: powerbi.visuals.ValidatorType.Max,
+                value: 100
+            },
+            minValue: {
+                type: powerbi.visuals.ValidatorType.Min,
+                value: 0
+            }
+        }
+    });
+
+    public customizeStyle = new formattingSettings.ToggleSwitch({
+        name: "customizeStyle",
+        displayNameKey: "Visual_CustomizeStyle",
+        value: this.defaultCustomizeStyle,
+    });
+
+    public font = new BaseFontCardSettings(this.defaultFontSize, "Category");
 
     topLevelSlice: formattingSettings.ToggleSwitch = this.showSelected;
     name: string = "selectedCategoryGroup";
     displayNameKey: string = "Visual_ShowCategoryLabel";
+    slices: FormattingSettingsSlice[] = [ this.indentation, this.customizeStyle, this.font];
+}
+
+class PercentageLabelGroup extends FormattingSettingsCard {
+    public defaultFontSize: number = 21;
+
+    public font = new BaseFontCardSettings(this.defaultFontSize, "Percentage");
+
+    name: string = "percentageLabelGroup";
+    displayNameKey: string = "Visual_PercentageLabel";
     slices: FormattingSettingsSlice[] = [this.font];
+}
+
+class SunburstCentralLabelSettings extends FormattingSettingsCompositeCard {
+    public percentageLabel = new PercentageLabelGroup();
+    public categoryLabel = new SelectedCategoryGroup();
+
+    public groups: FormattingSettingsGroup[] = [this.percentageLabel, this.categoryLabel];
+    public name: string = "centralLabel";
+    public displayNameKey: string = "Visual_CentralLabel";
 }
 
 class LabelsGroup extends FormattingSettingsCard {
@@ -112,7 +157,7 @@ class LabelsGroup extends FormattingSettingsCard {
         displayNameKey: "Visual_ShowDataLabels",
         value: this.defaultShowDataLabels,
     });
-    public font = new BaseFontCardSettings(this.defaultLabelFontSize,"labelFont", "labelFontFamily", "labelFontSize", "labelFontBold", "labelFontItalic", "labelFontUnderline");
+    public font = new BaseFontCardSettings(this.defaultLabelFontSize, "Label");
 
     topLevelSlice: formattingSettings.ToggleSwitch = this.showDataLabels;
     name: string = "labelsGroup";
@@ -127,11 +172,10 @@ class ColorsGroup extends FormattingSettingsCard {
 }
 
 class SunburstGroupSettings extends FormattingSettingsCompositeCard {
-    public selectedCategory = new SelectedCategoryGroup();
     public labels = new LabelsGroup();
     public colors = new ColorsGroup();
 
-    public groups: FormattingSettingsGroup[] = [this.selectedCategory, this.labels, this.colors];
+    public groups: FormattingSettingsGroup[] = [this.labels, this.colors];
     public name: string = "group";
     public displayNameKey: string = "Visual_Groups";
     public analyticsPane: boolean = false;
@@ -251,11 +295,12 @@ class LegendSettings extends FormattingSettingsCompositeCard {
 }
 
 export class SunburstSettings extends FormattingSettingsModel {
+    public centralLabel: SunburstCentralLabelSettings = new SunburstCentralLabelSettings();
     public group: SunburstGroupSettings = new SunburstGroupSettings();
     public legend: LegendSettings = new LegendSettings();
     public tooltip: SunburstTooltipSettings = new SunburstTooltipSettings();
 
-    public cards: Array<FormattingSettingsCard> = [this.group, this.tooltip, this.legend];
+    public cards: Array<FormattingSettingsCard> = [this.centralLabel, this.group, this.tooltip, this.legend];
 
     public setSlicesForTopCategoryColorPickers(topCategories: SunburstDataPoint[], LegendPropertyIdentifier: powerbiVisualsApi.DataViewObjectPropertyIdentifier, ColorHelper) {
         if (topCategories && topCategories.length > 0) {

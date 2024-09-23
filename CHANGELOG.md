@@ -1,3 +1,11 @@
+## 2.6.0.0
+* Added interactivity to the legend items
+* Added default sorting
+* Added report page tooltip
+* Added sorting
+* Changed colors assignment
+* API 5.11.0
+
 ## 2.5.1.0
 * Replaced interactivity utils with selection manager
 * API 5.9.1

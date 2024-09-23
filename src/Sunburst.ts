@@ -79,6 +79,7 @@ import ILegend = LI.ILegend;
 import LegendData = LI.LegendData;
 import MarkerShape = LI.MarkerShape;
 import LegendPosition = LI.LegendPosition;
+import LegendDataPoint = LI.LegendDataPoint;
 
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 
@@ -99,6 +100,7 @@ interface IAppCssConstants {
     percentageLabel: ClassAndSelector;
     sliceLabel: ClassAndSelector;
     legend: ClassAndSelector;
+    legendItem: ClassAndSelector;
 }
 
 export class Sunburst implements IVisual {
@@ -127,7 +129,7 @@ export class Sunburst implements IVisual {
 
         this.selectedCategoryLabel.classed(
             this.appCssConstants.labelVisible.className,
-            isShown && canDisplayCategory && this.settings.group.selectedCategory.showSelected.value
+            isShown && canDisplayCategory && this.settings.centralLabel.categoryLabel.showSelected.value
         );
     }
 
@@ -145,6 +147,7 @@ export class Sunburst implements IVisual {
     private percentageFormatter: IValueFormatter;
     private selectedCategoryLabel: Selection<BaseType, string, BaseType, string>;
     private legendSelection: Selection<BaseType, any, BaseType, any>;
+    private legendItems: Selection<BaseType, LegendDataPoint, BaseType, any>;
 
     private appCssConstants: IAppCssConstants = {
         main: createClassAndSelector("sunburst"),
@@ -157,7 +160,8 @@ export class Sunburst implements IVisual {
         categoryLabel: createClassAndSelector("sunburst__category-label"),
         percentageLabel: createClassAndSelector("sunburst__percentage-label"),
         sliceLabel: createClassAndSelector("sunburst__slice-label"),
-        legend: createClassAndSelector("legend")
+        legend: createClassAndSelector("legend"),
+        legendItem: createClassAndSelector("legendItem")
     };
 
     private colorPalette: IColorPalette;
@@ -208,7 +212,7 @@ export class Sunburst implements IVisual {
             .attr("preserveAspectRatio", "xMidYMid meet");
 
         const selectionManager = options.host.createSelectionManager();
-        this.behavior = new SunburstBehavior(selectionManager);
+        this.behavior = new SunburstBehavior(selectionManager, this.colorHelper);
 
         this.main = this.svg.append("g");
         this.main
@@ -233,8 +237,6 @@ export class Sunburst implements IVisual {
 
         // create legend container
         this.legend = createLegend(options.element,
-            false,
-            null,
             true,
             LegendPosition.Top
         );
@@ -301,11 +303,11 @@ export class Sunburst implements IVisual {
             }
 
             const behaviorOptions: SunburstBehaviorOptions = {
-                selection,
+                elements: selection,
                 clearCatcher: this.svg,
-                legend: this.legendSelection,
+                legend: this.legendItems,
+                legendClearCatcher: this.legendSelection,
                 onSelect: this.onVisualSelection.bind(this),
-                dataPoints: this.data.dataPoints,
                 dataPointsTree: this.data.root
             };
 
@@ -403,8 +405,8 @@ export class Sunburst implements IVisual {
 
     private partition(data: SunburstDataPoint) {
         const root = d3Hierarchy<SunburstDataPoint>(data)
-            .sum(d => d.value)
-            .sort((a, b) => b.value - a.value);
+            .sum(d => d.value);
+            
         return d3Partition<SunburstDataPoint>()
             .size([2 * Math.PI, Sunburst.OuterRadius * Sunburst.OuterRadius])(root)
             .each(d => {
@@ -516,7 +518,6 @@ export class Sunburst implements IVisual {
         newDataPointNode.children = [];
 
         if (level === 1 && originParentNode.children.length > 0) {
-            this.colorPalette.getColor(name).value;
             for (const child of originParentNode.children) {
                 const childName: string = child.value != null ? `${child.value}` : "";
                 this.colorPalette.getColor(childName).value;
@@ -611,6 +612,7 @@ export class Sunburst implements IVisual {
         this.settings.legend.text.labelColor.value.value = this.colorHelper.getHighContrastColor("foreground", this.settings.legend.text.labelColor.value.value);
         const topCategories: SunburstDataPoint[] = this.data.root.children;
         this.settings.setSlicesForTopCategoryColorPickers(topCategories, Sunburst.LegendPropertyIdentifier, ColorHelper);
+        this.settings.centralLabel.categoryLabel.font.visible = this.settings.centralLabel.categoryLabel.customizeStyle.value;
     }
 
     private static createLegend(data: SunburstData, settings: SunburstSettings): LegendData {
@@ -645,16 +647,26 @@ export class Sunburst implements IVisual {
     }
 
     private setCategoryLabelPosition(width: number, canDisplayCategory: boolean): void {
-        if (this.settings.group.selectedCategory.showSelected.value && canDisplayCategory) {
+        if (this.settings.centralLabel.categoryLabel.showSelected.value && canDisplayCategory) {
             if (this.selectedCategoryLabel) {
-                const labelSize: number = this.settings.group.selectedCategory.font.fontSize.value;
+                const settings = this.settings.centralLabel.categoryLabel.customizeStyle.value
+                    ? this.settings.centralLabel.categoryLabel.font
+                    : this.settings.centralLabel.percentageLabel.font;
+
+                const labelSize: number = PixelConverter.fromPointToPixel(this.settings.centralLabel.categoryLabel.customizeStyle.value
+                    ? this.settings.centralLabel.categoryLabel.font.fontSize.value
+                    : this.settings.centralLabel.percentageLabel.font.fontSize.value / Sunburst.PercentageFontSizeMultiplier);
+
+                const labelVerticalIndentation: number = this.settings.centralLabel.categoryLabel.indentation.value / 2;
+                const labelTransform: number = (labelSize * -Sunburst.CategoryLineInterval) - labelVerticalIndentation;
+
                 this.selectedCategoryLabel
-                    .attr(CssConstants.transformProperty, translate(0, labelSize * -Sunburst.CategoryLineInterval))
+                    .attr(CssConstants.transformProperty, translate(0, labelTransform))
                     .style("font-size", PixelConverter.toString(labelSize))
-                    .style("font-family", this.settings.group.selectedCategory.font.fontFamily.value)
-                    .style("font-weight", this.settings.group.selectedCategory.font.bold.value ? "bold" : "normal")
-                    .style("font-style", this.settings.group.selectedCategory.font.italic.value ? "italic" : "normal")
-                    .style("text-decoration", this.settings.group.selectedCategory.font.underline.value ? "underline" : "none")
+                    .style("font-family", settings.fontFamily.value)
+                    .style("font-weight", settings.bold.value ? "bold" : "normal")
+                    .style("font-style", settings.italic.value ? "italic" : "normal")
+                    .style("text-decoration", settings.underline.value ? "underline" : "none")
                     .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
             }
         }
@@ -664,15 +676,24 @@ export class Sunburst implements IVisual {
     }
 
     private setPercentageLabelPosition(width: number, canDisplayCategory: boolean): void {
-        const labelSize: number = this.settings.group.selectedCategory.font.fontSize.value * Sunburst.PercentageFontSizeMultiplier;
+        const labelFontSettings = this.settings.centralLabel.percentageLabel.font;
+        const labelSize: number = PixelConverter.fromPointToPixel(labelFontSettings.fontSize.value);
+        const labelVerticalIndentation: number = this.settings.centralLabel.categoryLabel.showSelected.value && this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className)
+            ? this.settings.centralLabel.categoryLabel.indentation.value / 2
+            : 0;
         const labelTransform: number = labelSize *
-            (this.settings.group.selectedCategory.showSelected.value && canDisplayCategory ?
+            (this.settings.centralLabel.categoryLabel.showSelected.value && canDisplayCategory ?
                 Sunburst.MultilinePercentageLineInterval :
-                Sunburst.DefaultPercentageLineInterval);
+                Sunburst.DefaultPercentageLineInterval)
+            + labelVerticalIndentation;
 
         this.percentageLabel
             .attr(CssConstants.transformProperty, translate(0, labelTransform))
             .style("font-size", PixelConverter.toString(labelSize))
+            .style("font-family", labelFontSettings.fontFamily.value)
+            .style("font-weight", labelFontSettings.bold.value ? "bold" : "normal")
+            .style("font-style", labelFontSettings.italic.value ? "italic" : "normal")
+            .style("text-decoration", labelFontSettings.underline.value ? "underline" : "none")
             .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
     }
 
@@ -717,10 +738,13 @@ export class Sunburst implements IVisual {
                 break;
         }
 
+        this.legendItems = this.legendSelection
+            .selectAll(this.appCssConstants.legendItem.selectorName);
+
         this.legendSelection.selectAll("text")
-        .style("font-weight",  () => this.settings.legend.text.font.bold.value ? "bold" : "normal")
-        .style("font-style",  () => this.settings.legend.text.font.italic.value ? "italic" : "normal")
-        .style("text-decoration", () => this.settings.legend.text.font.underline.value ? "underline" : "none");
+            .style("font-weight",  () => this.settings.legend.text.font.bold.value ? "bold" : "normal")
+            .style("font-style",  () => this.settings.legend.text.font.italic.value ? "italic" : "normal")
+            .style("text-decoration", () => this.settings.legend.text.font.underline.value ? "underline" : "none");
     }
 
     private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {
