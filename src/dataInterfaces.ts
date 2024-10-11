@@ -25,8 +25,13 @@
  */
 
 import { TooltipEnabledDataPoint } from "powerbi-visuals-utils-tooltiputils";
-import { interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
-import SelectableDataPoint = interactivitySelectionService.SelectableDataPoint;
+import ISelectionId = powerbi.visuals.ISelectionId;
+
+export interface SunburstLabel {
+    text: string;
+    total: number;
+    color: string;
+}
 
 export interface SunburstData {
     root: SunburstDataPoint; // Tree data points
@@ -35,8 +40,7 @@ export interface SunburstData {
 }
 
 export interface SunburstDataPoint extends
-    TooltipEnabledDataPoint,
-    SelectableDataPoint {
+    TooltipEnabledDataPoint {
     children?: SunburstDataPoint[];
     value?: number;
     color?: string;
@@ -51,5 +55,7 @@ export interface SunburstDataPoint extends
         x1: number;
         y1: number;
     };
+    selected: boolean;
+    identity: ISelectionId;
 }
 

@@ -34,15 +34,19 @@ const testRecursivePath = "test/visualTest.ts";
 const srcOriginalRecursivePath = "src/**/*.ts";
 const coverageFolder = "coverage";
 
-process.env.CHROME_BIN = require("puppeteer").executablePath();
-
-//import { Config, ConfigOptions } from "karma";
+process.env.CHROME_BIN = require("playwright-chromium").chromium.executablePath();
 
 module.exports = (config) => {
     config.set({
         mode: "development",
         browserNoActivityTimeout: 100000,
-        browsers: ["ChromeHeadless"],
+        browsers: ['ChromeHeadlessNoSandbox'],
+        customLaunchers: {
+            ChromeHeadlessNoSandbox: {
+                base: 'ChromeHeadless',
+                flags: ['--no-sandbox']
+            }
+        },
         colors: true,
         frameworks: ["jasmine"],
         reporters: [
