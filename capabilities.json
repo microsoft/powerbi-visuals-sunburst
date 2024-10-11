@@ -1,5 +1,6 @@
 {
   "privileges": [],
+  "supportsKeyboardFocus": true,
   "dataRoles": [
     {
       "name": "Nodes",
@@ -41,36 +42,120 @@
     }
   ],
   "objects": {
-    "group": {
-      "displayName": "Group",
-      "displayNameKey": "Visual_Group",
+    "centralLabel": {
       "properties": {
-        "showSelected": {
-          "displayName": "Show category label",
-          "displayNameKey": "Visual_ShowCategoryLabel",
+        "indentation": {
           "type": {
-            "bool": true
+            "numeric": true
           }
         },
-        "showDataLabels": {
-          "displayName": "Show data labels",
-          "displayNameKey": "Visual_ShowDataLabels",
-          "type": {
-            "bool": true
-          }
-        },
-        "fontSize": {
-          "displayName": "Font size",
-          "displayNameKey": "Visual_FontSize",
+        "fontSizeCategory": {
           "type": {
             "formatting": {
               "fontSize": true
             }
           }
         },
+        "fontFamilyCategory": {
+            "type": {
+              "formatting": {
+                "fontFamily": true
+              }
+            }
+        },
+        "fontBoldCategory": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontUnderlineCategory": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontItalicCategory": {
+          "type": {
+             "bool": true
+          }
+        },
+        "showSelected": {
+          "type": {
+            "bool": true
+          }
+        },
+        "customizeStyle": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontSizePercentage": {
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "fontFamilyPercentage": {
+            "type": {
+              "formatting": {
+                "fontFamily": true
+              }
+            }
+        },
+        "fontBoldPercentage": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontUnderlinePercentage": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontItalicPercentage": {
+          "type": {
+             "bool": true
+          }
+        }
+      }
+    },
+    "group": {
+      "properties": {
+        "showDataLabels": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontSizeLabel": {
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "fontFamilyLabel": {
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "fontBoldLabel": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontUnderlineLabel": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontItalicLabel": {
+          "type": {
+            "bool": true
+          }
+        },
         "fill": {
-          "displayName": "Top category color",
-          "displayNameKey": "Visual_TopCategoryColor",
           "type": {
             "fill": {
               "solid": {
@@ -82,12 +167,8 @@
       }
     },
     "tooltip": {
-      "displayName": "Tooltip",
-      "displayNameKey": "Visual_Tooltip",
       "properties": {
         "displayUnits": {
-          "displayName": "Display Units",
-          "displayNameKey": "Visual_DisplayUnits",
           "type": {
             "formatting": {
               "labelDisplayUnits": true
@@ -95,8 +176,6 @@
           }
         },
         "precision": {
-          "displayName": "Decimal Places",
-          "displayNameKey": "Visual_Precision",
           "type": {
             "numeric": true
           }
@@ -104,23 +183,13 @@
       }
     },
     "legend": {
-      "displayName": "Legend",
-      "description": "Display legend options",
-      "descriptionKey": "Visual_Description_Legend",
-      "displayNameKey": "Visual_DisplayLegendOptions",
       "properties": {
         "show": {
-          "displayName": "Show",
-          "displayNameKey": "Visual_Show",
           "type": {
             "bool": true
           }
         },
         "position": {
-          "displayName": "Position",
-          "displayNameKey": "Visual_Position",
-          "description": "Select the location for the legend",
-          "descriptionKey": "Visual_Description_Position",
           "type": {
             "enumeration": [
               {
@@ -167,27 +236,17 @@
           }
         },
         "showTitle": {
-          "displayName": "Title",
-          "displayNameKey": "Visual_Title",
-          "description": "Display a title for legend symbols",
-          "descriptionKey": "Visual_Description_Title",
           "type": {
             "bool": true
           }
         },
         "titleText": {
-          "displayName": "Legend Name",
-          "displayNameKey": "Visual_LegendName",
-          "description": "Title text",
-          "descriptionKey": "Visual_Description_LegendName",
           "type": {
             "text": true
           },
           "suppressFormatPainterCopy": true
         },
         "labelColor": {
-          "displayName": "Color",
-          "displayNameKey": "Visual_Color",
           "type": {
             "fill": {
               "solid": {
@@ -197,25 +256,47 @@
           }
         },
         "fontSize": {
-          "displayName": "Text Size",
-          "displayNameKey": "Visual_TextSize",
           "type": {
             "formatting": {
-              "fontSize": true
+            "fontSize": true
             }
+          }
+        },
+        "fontFamily": {
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "fontBold": {
+          "type": {
+            "bool": true
+          }
+        },
+        "fontItalic": {
+          "type": {
+             "bool": true
+          }
+        },
+        "fontUnderline": {
+          "type": {
+            "bool": true
           }
         }
       }
     }
   },
-   "sorting": {
-        "implicit": {
-            "clauses": [
-                {
-                    "role": "Values",
-                    "direction": 1
-                }
-            ]
-        }
-    }
+  "sorting": {
+    "default": {}
+  },
+  "tooltips": {
+    "supportedTypes": {
+      "default": true,
+      "canvas": true
+    },
+    "roles": [
+      "tooltips"
+    ]
+  }
 }

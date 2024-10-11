@@ -26,9 +26,6 @@
 
 "use strict";
 
-import "core-js/stable";
-import "regenerator-runtime/runtime";
-
 import "../style/sunburst.less";
 import { BaseType, Selection, select as d3Select } from "d3-selection";
 import { Arc, arc as d3Arc } from "d3-shape";
@@ -38,11 +35,6 @@ import powerbiVisualsApi from "powerbi-visuals-api";
 import DataView = powerbiVisualsApi.DataView;
 import IViewport = powerbiVisualsApi.IViewport;
 import PrimitiveValue = powerbiVisualsApi.PrimitiveValue;
-
-import VisualObjectInstance = powerbiVisualsApi.VisualObjectInstance;
-import VisualObjectInstanceEnumeration = powerbiVisualsApi.VisualObjectInstanceEnumeration;
-import EnumerateVisualObjectInstancesOptions = powerbiVisualsApi.EnumerateVisualObjectInstancesOptions;
-import VisualObjectInstanceEnumerationObject = powerbiVisualsApi.VisualObjectInstanceEnumerationObject;
 
 import DataViewHierarchyLevel = powerbiVisualsApi.DataViewHierarchyLevel;
 import DataViewObjects = powerbiVisualsApi.DataViewObjects;
@@ -55,16 +47,16 @@ import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
 import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
 import IVisualEventService = powerbiVisualsApi.extensibility.IVisualEventService;
-import ISelectionManager = powerbiVisualsApi.extensibility.ISelectionManager;
 import IVisual = powerbiVisualsApi.extensibility.visual.IVisual;
 import IVisualHost = powerbiVisualsApi.extensibility.visual.IVisualHost;
 import VisualUpdateOptions = powerbiVisualsApi.extensibility.visual.VisualUpdateOptions;
 import VisualConstructorOptions = powerbiVisualsApi.extensibility.visual.VisualConstructorOptions;
+import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import { ColorHelper } from "powerbi-visuals-utils-colorutils";
 import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutils";
 import {
     ITooltipServiceWrapper,
-    createTooltipServiceWrapper
+    createTooltipServiceWrapper,
 } from "powerbi-visuals-utils-tooltiputils";
 
 import {
@@ -87,14 +79,12 @@ import ILegend = LI.ILegend;
 import LegendData = LI.LegendData;
 import MarkerShape = LI.MarkerShape;
 import LegendPosition = LI.LegendPosition;
+import LegendDataPoint = LI.LegendDataPoint;
 
-import { interactivityBaseService, interactivitySelectionService } from "powerbi-visuals-utils-interactivityutils";
-import IInteractivityService = interactivityBaseService.IInteractivityService;
-import IInteractiveBehavior = interactivityBaseService.IInteractiveBehavior;
-import createInteractivitySelectionService = interactivitySelectionService.createInteractivitySelectionService;
+import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 
-import { Behavior, BehaviorOptions } from "./behavior";
-import { SunburstData, SunburstDataPoint } from "./dataInterfaces";
+import { SunburstBehavior, SunburstBehaviorOptions } from "./behavior";
+import { SunburstData, SunburstDataPoint, SunburstLabel } from "./dataInterfaces";
 import { SunburstSettings } from "./SunburstSettings";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
@@ -109,6 +99,8 @@ interface IAppCssConstants {
     categoryLabel: ClassAndSelector;
     percentageLabel: ClassAndSelector;
     sliceLabel: ClassAndSelector;
+    legend: ClassAndSelector;
+    legendItem: ClassAndSelector;
 }
 
 export class Sunburst implements IVisual {
@@ -129,7 +121,7 @@ export class Sunburst implements IVisual {
         propertyName: "fill"
     };
 
-    private toggleLabels(isShown: boolean = true) {
+    private toggleLabels(isShown: boolean, canDisplayCategory: boolean) {
         this.percentageLabel.classed(
             this.appCssConstants.labelVisible.className,
             isShown
@@ -137,13 +129,14 @@ export class Sunburst implements IVisual {
 
         this.selectedCategoryLabel.classed(
             this.appCssConstants.labelVisible.className,
-            isShown && this.settings.group.showSelected
+            isShown && canDisplayCategory && this.settings.centralLabel.categoryLabel.showSelected.value
         );
     }
 
-    private settings: SunburstSettings;
+    public settings: SunburstSettings;
+    private formattingSettingsService: FormattingSettingsService;
+    private localizationManager: ILocalizationManager;
     private visualHost: IVisualHost;
-    private selectionManager: ISelectionManager;
     private events: IVisualEventService;
     private data: SunburstData;
     private arc: Arc<any, any>;
@@ -153,6 +146,8 @@ export class Sunburst implements IVisual {
     private percentageLabel: Selection<BaseType, string, BaseType, string>;
     private percentageFormatter: IValueFormatter;
     private selectedCategoryLabel: Selection<BaseType, string, BaseType, string>;
+    private legendSelection: Selection<BaseType, any, BaseType, any>;
+    private legendItems: Selection<BaseType, LegendDataPoint, BaseType, any>;
 
     private appCssConstants: IAppCssConstants = {
         main: createClassAndSelector("sunburst"),
@@ -164,14 +159,15 @@ export class Sunburst implements IVisual {
         labelVisible: createClassAndSelector("sunburst__label--visible"),
         categoryLabel: createClassAndSelector("sunburst__category-label"),
         percentageLabel: createClassAndSelector("sunburst__percentage-label"),
-        sliceLabel: createClassAndSelector("sunburst__slice-label")
+        sliceLabel: createClassAndSelector("sunburst__slice-label"),
+        legend: createClassAndSelector("legend"),
+        legendItem: createClassAndSelector("legendItem")
     };
 
     private colorPalette: IColorPalette;
     private colorHelper: ColorHelper;
 
-    private interactivityService: IInteractivityService<any>;
-    private behavior: IInteractiveBehavior = new Behavior();
+    private behavior: SunburstBehavior;
 
     private tooltipService: ITooltipServiceWrapper;
     private viewport: IViewport;
@@ -181,6 +177,9 @@ export class Sunburst implements IVisual {
     constructor(options: VisualConstructorOptions) {
 
         this.visualHost = options.host;
+
+        this.localizationManager = this.visualHost.createLocalizationManager();
+        this.formattingSettingsService = new FormattingSettingsService(this.localizationManager);
 
         this.events = options.host.eventService;
 
@@ -201,8 +200,6 @@ export class Sunburst implements IVisual {
 
         this.colorPalette = options.host.colorPalette;
 
-        this.interactivityService = createInteractivitySelectionService(options.host);
-
         this.chartWrapper = d3Select(options.element)
             .append("div")
             .classed(this.appCssConstants.main.className, true);
@@ -214,10 +211,14 @@ export class Sunburst implements IVisual {
             .attr("height", "100%")
             .attr("preserveAspectRatio", "xMidYMid meet");
 
-        this.selectionManager = options.host.createSelectionManager();
+        const selectionManager = options.host.createSelectionManager();
+        this.behavior = new SunburstBehavior(selectionManager, this.colorHelper);
 
         this.main = this.svg.append("g");
-        this.main.attr(CssConstants.transformProperty, translate(Sunburst.CentralPoint, Sunburst.CentralPoint));
+        this.main
+            .attr(CssConstants.transformProperty, translate(Sunburst.CentralPoint, Sunburst.CentralPoint))
+            .attr("role", "listbox")
+            .attr("aria-multiselectable", "true");
 
         this.selectedCategoryLabel = this.svg
             .append("text")
@@ -236,13 +237,12 @@ export class Sunburst implements IVisual {
 
         // create legend container
         this.legend = createLegend(options.element,
-            false,
-            null,
             true,
             LegendPosition.Top
         );
 
-        this.renderContextMenu();
+        this.legendSelection = d3Select(options.element)
+            .selectAll(this.appCssConstants.legend.selectorName);
     }
 
     public update(options: VisualUpdateOptions): void {
@@ -269,11 +269,11 @@ export class Sunburst implements IVisual {
 
             this.viewport = options.viewport;
 
-            this.settings = this.parseSettings(options.dataViews[0]);
+            this.settings = this.formattingSettingsService.populateFormattingSettingsModel(SunburstSettings, options.dataViews[0]);
 
             const formatter: IValueFormatter = valueFormatter.create({
-                value: this.settings.tooltip.displayUnits,
-                precision: this.settings.tooltip.precision,
+                value: this.settings.tooltip.displayUnits.value,
+                precision: this.settings.tooltip.precision.value,
                 cultureSelector: this.visualHost.locale
             });
 
@@ -285,6 +285,7 @@ export class Sunburst implements IVisual {
                 formatter
             );
 
+            this.parseSettings();
 
             const selection = this.render(this.colorHelper);
 
@@ -301,20 +302,17 @@ export class Sunburst implements IVisual {
                 this.chartWrapper.attr("style", null);
             }
 
-            if (this.interactivityService) {
-                const behaviorOptions: BehaviorOptions = {
-                    selection,
-                    clearCatcher: this.svg,
-                    interactivityService: this.interactivityService,
-                    onSelect: this.onVisualSelection.bind(this),
-                    dataPoints: this.data.dataPoints,
-                    behavior: this.behavior
-                };
+            const behaviorOptions: SunburstBehaviorOptions = {
+                elements: selection,
+                clearCatcher: this.svg,
+                legend: this.legendItems,
+                legendClearCatcher: this.legendSelection,
+                onSelect: this.onVisualSelection.bind(this),
+                dataPointsTree: this.data.root
+            };
 
-                this.interactivityService.bind(behaviorOptions);
-
-                this.behavior.renderSelection(false);
-            }
+            this.behavior.bindEvents(behaviorOptions);
+            this.behavior.renderSelection();
 
             this.events && this.events.renderingFinished(options);
         }
@@ -324,52 +322,9 @@ export class Sunburst implements IVisual {
         }
     }
 
-    public enumerateObjectInstances(options: EnumerateVisualObjectInstancesOptions): VisualObjectInstanceEnumeration {
-        const instanceEnumeration: VisualObjectInstanceEnumeration = SunburstSettings.enumerateObjectInstances(
-            this.settings || SunburstSettings.getDefault(),
-            options
-        );
-
-        if (options.objectName === Sunburst.LegendPropertyIdentifier.objectName) {
-            const topCategories: SunburstDataPoint[] = this.data.root.children;
-            this.enumerateColors(topCategories, instanceEnumeration);
-        }
-
-        return (<VisualObjectInstanceEnumerationObject>instanceEnumeration).instances || [];
-    }
-
-    private enumerateColors(topCategories: SunburstDataPoint[], instanceEnumeration: VisualObjectInstanceEnumeration): void {
-        if (topCategories && topCategories.length > 0) {
-            topCategories.forEach((category: SunburstDataPoint) => {
-                const displayName: string = category.name.toString();
-                const identity: ISelectionId = <ISelectionId>category.identity;
-
-                this.addAnInstanceToEnumeration(instanceEnumeration, {
-                    displayName,
-                    objectName: Sunburst.LegendPropertyIdentifier.objectName.toString(),
-                    selector: ColorHelper.normalizeSelector(identity.getSelector(), false),
-                    properties: {
-                        fill: { solid: { color: category.color } }
-                    }
-                });
-
-                this.enumerateColors(category.children, instanceEnumeration);
-            });
-        }
-    }
-
-    private addAnInstanceToEnumeration(
-        instanceEnumeration: VisualObjectInstanceEnumeration,
-        instance: VisualObjectInstance
-    ): void {
-
-        if ((<VisualObjectInstanceEnumerationObject>instanceEnumeration).instances) {
-            (<VisualObjectInstanceEnumerationObject>instanceEnumeration)
-                .instances
-                .push(instance);
-        } else {
-            (<VisualObjectInstance[]>instanceEnumeration).push(instance);
-        }
+    public getFormattingModel(): powerbi.visuals.FormattingModel {
+        const model = this.formattingSettingsService.buildFormattingModel(this.settings);
+        return model;
     }
 
     private render(colorHelper: ColorHelper): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
@@ -392,23 +347,23 @@ export class Sunburst implements IVisual {
             .style("fill", slice => colorHelper.isHighContrast ? null : slice.data.color)
             .style("stroke", slice => colorHelper.isHighContrast ? slice.data.color : null)
             .style("stroke-width", () => colorHelper.isHighContrast ? PixelConverter.toString(2) : null)
-            .attr("d", this.arc);
+            .attr("d", this.arc)
+            .attr("role", "option")
+            .attr("tabindex", "0")
+            .attr('aria-label', (d: HierarchyRectangularNode<SunburstDataPoint>) => d.data.name);
 
-        if (this.settings.group.showDataLabels) {
-            // eslint-disable-next-line
-            const self = this;
-
-            pathSelectionMerged.each(function (d: HierarchyRectangularNode<SunburstDataPoint>, i: number) {
+        if (this.settings.group.labels.showDataLabels.value) {
+            pathSelectionMerged.each((d: HierarchyRectangularNode<SunburstDataPoint>, i: number, groups: ArrayLike<BaseType>) => {
                 const firstArcSection: RegExp = /(^.+?)L/;
-                const currentSelection = d3Select(this);
+                const currentSelection = d3Select(groups[i]);
                 const arcRegExpArray: RegExpExecArray = firstArcSection.exec(currentSelection.attr("d"));
 
                 // if slice is section
                 if (arcRegExpArray) {
                     let newArc: string = arcRegExpArray[1];
                     newArc = newArc.replace(/,/g, " ");
-                    self.main.append("path")
-                        .classed(self.appCssConstants.sliceHidden.className, true)
+                    this.main.append("path")
+                        .classed(this.appCssConstants.sliceHidden.className, true)
                         .attr("id", "sliceLabel_" + i)
                         .attr("d", newArc);
                 } else {
@@ -417,7 +372,7 @@ export class Sunburst implements IVisual {
                 }
             });
 
-            const properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(this.main.node() as any);
+            const properties: TextProperties = textMeasurementService.getSvgMeasurementProperties(<any>this.main.node());
             const ellipsesWidth: number = textMeasurementService.measureSvgTextWidth(properties, "\u2026");
 
             this.main
@@ -426,11 +381,17 @@ export class Sunburst implements IVisual {
                 .enter()
                 .append("text")
                 .style("fill", colorHelper.getHighContrastColor("foreground", null))
+                .style("font-size", PixelConverter.fromPoint(this.settings.group.labels.font.fontSize.value))
+                .style("font-family", this.settings.group.labels.font.fontFamily.value)
+                .style("font-weight", this.settings.group.labels.font.bold.value ? "bold" : "normal")
+                .style("font-style", this.settings.group.labels.font.italic.value ? "italic" : "normal")
+                .style("text-decoration", this.settings.group.labels.font.underline.value ? "underline" : "none")
                 .classed(this.appCssConstants.sliceLabel.className, true)
                 // font size + slice padding
                 .attr("dy", (d) => {
                     return Sunburst.LabelShift - d.depth * Sunburst.LabelShiftMultiplier;
                 })
+                .attr("role", "presentation")
                 .append("textPath")
                 .attr("startOffset", "50%")
                 .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
@@ -438,16 +399,14 @@ export class Sunburst implements IVisual {
         }
 
         this.renderTooltip(pathSelectionMerged);
-        this.setCategoryLabelPosition(this.viewport.width);
-        this.setPercentageLabelPosition(this.viewport.width);
 
         return pathSelectionMerged;
     }
 
     private partition(data: SunburstDataPoint) {
         const root = d3Hierarchy<SunburstDataPoint>(data)
-            .sum(d => d.value)
-            .sort((a, b) => b.value - a.value);
+            .sum(d => d.value);
+            
         return d3Partition<SunburstDataPoint>()
             .size([2 * Math.PI, Sunburst.OuterRadius * Sunburst.OuterRadius])(root)
             .each(d => {
@@ -461,21 +420,22 @@ export class Sunburst implements IVisual {
             });
     }
 
-    private onVisualSelection(dataPoint: SunburstDataPoint): void {
-        const isSelected: boolean = !!(dataPoint && dataPoint.selected);
-
-        this.toggleLabels(isSelected);
-
-        if (!isSelected) {
+    private onVisualSelection(dataPointLabel: SunburstLabel, hasSelection: boolean, canDisplayCategory: boolean): void {
+        this.toggleLabels(hasSelection, canDisplayCategory);
+    
+        if (!hasSelection){
             return;
         }
 
-        const percentage: string = this.getFormattedValue(dataPoint.total / this.data.total, this.percentageFormatter);
+        const color: string = this.colorHelper.getHighContrastColor("foreground", dataPointLabel.color);
+        const percentage: string = this.getFormattedValue(dataPointLabel.total / this.data.total, this.percentageFormatter);
         this.percentageLabel.data([percentage]);
-        this.percentageLabel.style("fill", dataPoint.color);
-        this.selectedCategoryLabel.data([dataPoint ? dataPoint.tooltipInfo[0].displayName : ""]);
-        this.selectedCategoryLabel.style("fill", dataPoint.color);
-        this.calculateLabelPosition();
+        this.percentageLabel.style("fill", color);
+
+        this.selectedCategoryLabel.data([dataPointLabel.text]);
+        this.selectedCategoryLabel.style("fill", color);
+
+        this.calculateLabelPosition(canDisplayCategory);
     }
 
     private convert(
@@ -558,10 +518,9 @@ export class Sunburst implements IVisual {
         newDataPointNode.children = [];
 
         if (level === 1 && originParentNode.children.length > 0) {
-            const initialColor: string = this.colorPalette.getColor(name).value;
             for (const child of originParentNode.children) {
                 const childName: string = child.value != null ? `${child.value}` : "";
-                const initialColor: string = this.colorPalette.getColor(childName).value;
+                this.colorPalette.getColor(childName).value;
             }
         }
 
@@ -649,22 +608,22 @@ export class Sunburst implements IVisual {
             : formatter.format(value);
     }
 
-    private parseSettings(dataView: DataView): SunburstSettings {
-        const settings: SunburstSettings = SunburstSettings.parse<SunburstSettings>(dataView);
-
-        settings.legend.labelColor = this.colorHelper.getHighContrastColor("foreground", settings.legend.labelColor);
-
-        return settings;
+    private parseSettings(): void {
+        this.settings.legend.text.labelColor.value.value = this.colorHelper.getHighContrastColor("foreground", this.settings.legend.text.labelColor.value.value);
+        const topCategories: SunburstDataPoint[] = this.data.root.children;
+        this.settings.setSlicesForTopCategoryColorPickers(topCategories, Sunburst.LegendPropertyIdentifier, ColorHelper);
+        this.settings.centralLabel.categoryLabel.font.visible = this.settings.centralLabel.categoryLabel.customizeStyle.value;
     }
 
     private static createLegend(data: SunburstData, settings: SunburstSettings): LegendData {
         const rootCategory: SunburstDataPoint[] = data.root.children;
 
         const legendData: LegendData = {
-            fontSize: settings.legend.fontSize,
+            fontSize: settings.legend.text.font.fontSize.value,
+            fontFamily: settings.legend.text.font.fontFamily.value,
             dataPoints: [],
-            title: settings.legend.showTitle ? (settings.legend.titleText) : null,
-            labelColor: settings.legend.labelColor
+            title: settings.legend.title.showTitle.value ? (settings.legend.title.titleText.value) : null,
+            labelColor: settings.legend.text.labelColor.value.value,
         };
 
         legendData.dataPoints = rootCategory.map((dataPoint: SunburstDataPoint) => {
@@ -679,24 +638,36 @@ export class Sunburst implements IVisual {
         return legendData;
     }
 
-    private calculateLabelPosition(): void {
+    private calculateLabelPosition(canDisplayCategory: boolean): void {
         const innerRadius: number = Math.min(
             ...this.data.root.children.map((x: SunburstDataPoint) => Math.sqrt(x.coords.y0))
         );
-        this.setPercentageLabelPosition(innerRadius);
-        this.setCategoryLabelPosition(innerRadius);
+        this.setPercentageLabelPosition(innerRadius * 2, canDisplayCategory);
+        this.setCategoryLabelPosition(innerRadius * 2, canDisplayCategory);
     }
 
-    private setCategoryLabelPosition(width: number): void {
-        // eslint-disable-next-line
-        const self = this;
-        if (this.settings.group.showSelected) {
+    private setCategoryLabelPosition(width: number, canDisplayCategory: boolean): void {
+        if (this.settings.centralLabel.categoryLabel.showSelected.value && canDisplayCategory) {
             if (this.selectedCategoryLabel) {
-                const labelSize: number = this.settings.group.fontSize;
+                const settings = this.settings.centralLabel.categoryLabel.customizeStyle.value
+                    ? this.settings.centralLabel.categoryLabel.font
+                    : this.settings.centralLabel.percentageLabel.font;
+
+                const labelSize: number = PixelConverter.fromPointToPixel(this.settings.centralLabel.categoryLabel.customizeStyle.value
+                    ? this.settings.centralLabel.categoryLabel.font.fontSize.value
+                    : this.settings.centralLabel.percentageLabel.font.fontSize.value / Sunburst.PercentageFontSizeMultiplier);
+
+                const labelVerticalIndentation: number = this.settings.centralLabel.categoryLabel.indentation.value / 2;
+                const labelTransform: number = (labelSize * -Sunburst.CategoryLineInterval) - labelVerticalIndentation;
+
                 this.selectedCategoryLabel
-                    .attr(CssConstants.transformProperty, translate(0, labelSize * -Sunburst.CategoryLineInterval))
+                    .attr(CssConstants.transformProperty, translate(0, labelTransform))
                     .style("font-size", PixelConverter.toString(labelSize))
-                    .text((x: string) => x).each(function () { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
+                    .style("font-family", settings.fontFamily.value)
+                    .style("font-weight", settings.bold.value ? "bold" : "normal")
+                    .style("font-style", settings.italic.value ? "italic" : "normal")
+                    .style("text-decoration", settings.underline.value ? "underline" : "none")
+                    .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
             }
         }
         else {
@@ -704,19 +675,26 @@ export class Sunburst implements IVisual {
         }
     }
 
-    private setPercentageLabelPosition(width: number): void {
-        // eslint-disable-next-line
-        const self = this;
-        const labelSize: number = this.settings.group.fontSize * Sunburst.PercentageFontSizeMultiplier;
+    private setPercentageLabelPosition(width: number, canDisplayCategory: boolean): void {
+        const labelFontSettings = this.settings.centralLabel.percentageLabel.font;
+        const labelSize: number = PixelConverter.fromPointToPixel(labelFontSettings.fontSize.value);
+        const labelVerticalIndentation: number = this.settings.centralLabel.categoryLabel.showSelected.value && this.selectedCategoryLabel.classed(this.appCssConstants.labelVisible.className)
+            ? this.settings.centralLabel.categoryLabel.indentation.value / 2
+            : 0;
         const labelTransform: number = labelSize *
-            (this.settings.group.showSelected ?
+            (this.settings.centralLabel.categoryLabel.showSelected.value && canDisplayCategory ?
                 Sunburst.MultilinePercentageLineInterval :
-                Sunburst.DefaultPercentageLineInterval);
+                Sunburst.DefaultPercentageLineInterval)
+            + labelVerticalIndentation;
 
         this.percentageLabel
             .attr(CssConstants.transformProperty, translate(0, labelTransform))
             .style("font-size", PixelConverter.toString(labelSize))
-            .text((x: string) => x).each(function () { self.wrapText(d3Select(this), Sunburst.DefaultDataLabelPadding, width); });
+            .style("font-family", labelFontSettings.fontFamily.value)
+            .style("font-weight", labelFontSettings.bold.value ? "bold" : "normal")
+            .style("font-style", labelFontSettings.italic.value ? "italic" : "normal")
+            .style("text-decoration", labelFontSettings.underline.value ? "underline" : "none")
+            .text((x: string) => x).each((d: string, i: number, groups: ArrayLike<BaseType>) => { this.wrapText(d3Select(groups[i]), Sunburst.DefaultDataLabelPadding, width); });
     }
 
     private renderTooltip(selection: Selection<BaseType, any, BaseType, any>): void {
@@ -731,24 +709,13 @@ export class Sunburst implements IVisual {
         );
     }
 
-    private renderContextMenu() {
-        this.svg.on('contextmenu', (event) => {
-            const dataPoint: any = d3Select(event.target).datum();
-            this.selectionManager.showContextMenu((dataPoint && dataPoint.data && dataPoint.data.identity) ? dataPoint.data.identity : {}, {
-                x: event.clientX,
-                y: event.clientY
-            });
-            event.preventDefault();
-        });
-    }
-
     private renderLegend(): void {
         if (!this.data) {
             return;
         }
 
-        const position: LegendPosition = this.settings.legend.show
-            ? LegendPosition[this.settings.legend.position]
+        const position: LegendPosition = this.settings.legend.show.value
+            ? LegendPosition[this.settings.legend.options.position.value]
             : LegendPosition.None;
 
         this.legend.changeOrientation(position);
@@ -770,14 +737,18 @@ export class Sunburst implements IVisual {
                 this.viewport.height -= this.legend.getMargins().height;
                 break;
         }
+
+        this.legendItems = this.legendSelection
+            .selectAll(this.appCssConstants.legendItem.selectorName);
+
+        this.legendSelection.selectAll("text")
+            .style("font-weight",  () => this.settings.legend.text.font.bold.value ? "bold" : "normal")
+            .style("font-style",  () => this.settings.legend.text.font.italic.value ? "italic" : "normal")
+            .style("text-decoration", () => this.settings.legend.text.font.underline.value ? "underline" : "none");
     }
 
     private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {
-        
-        // let width = (<SVGPathElement>d3Select("#sliceLabel_" + i).node()).getTotalLength();
-
-        // width = width || 0;
-        const width = (<SVGPathElement>d3Select("#sliceLabel_"+i).node()).getTotalLength() || 0;
+        const width = (<SVGPathElement>d3Select("#sliceLabel_" + i).node()).getTotalLength() || 0;
         const maxWidth = width - 2 * Sunburst.DefaultDataLabelPadding;
         let textWidth: number = textMeasurementService.measureSvgTextWidth(properties, text);
         let newText = text;

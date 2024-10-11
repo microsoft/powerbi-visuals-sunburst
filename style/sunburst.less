@@ -23,6 +23,16 @@
         fill: none;
         fill-rule: nonzero;
     }
+
+    &:focus {
+        outline: none;
+    }
+    
+    &:focus-visible {
+        outline: none;
+        stroke-width: 6px !important;
+        filter: contrast(170%);
+    }
 }
 
 .sunburst__slice-label {
