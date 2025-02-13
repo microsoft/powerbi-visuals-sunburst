@@ -175,10 +175,41 @@ class LabelsGroup extends FormattingSettingsCard {
 
     public font = new BaseFontCardSettings(this.defaultLabelFontSize, "Label");
 
+    public color: formattingSettings.ColorPicker = new formattingSettings.ColorPicker({
+        name: "fontColor",
+        displayName: "Color",
+        value: { value: "#252423" }
+    });
+
     topLevelSlice: formattingSettings.ToggleSwitch = this.showDataLabels;
     name: string = SunburstObjectNames.Label;
     displayNameKey: string = "Visual_ShowDataLabels";
-    slices: FormattingSettingsSlice[] = [this.font, this.labelColor];
+    slices: FormattingSettingsSlice[] = [this.font, this.labelColor, this.color];
+}
+
+class SunburstValueSettings extends FormattingSettingsCard {
+    public defaultLShowDataValues: boolean = false;
+    public defaultDelimiter: string = ":";
+
+    public name: string = "value";
+    public displayNameKey: string = "Visual_ShowDataValues";
+    public analyticsPane: boolean = false;
+
+    public showDataValues = new formattingSettings.ToggleSwitch({
+        name: "showDataValues",
+        displayNameKey: "Visual_ShowDataValues",
+        value: this.defaultLShowDataValues,
+    });
+
+    public delimiter: formattingSettings.TextInput = new formattingSettings.TextInput({
+        name: "delimiter",
+        displayNameKey: "Visual_Delimiter",
+        value: this.defaultDelimiter,
+        placeholder: ""
+    });
+
+    topLevelSlice: formattingSettings.ToggleSwitch = this.showDataValues;
+    slices: FormattingSettingsSlice[] = [this.delimiter];
 }
 
 class ColorsGroup extends FormattingSettingsCard {
@@ -313,10 +344,11 @@ class LegendSettings extends FormattingSettingsCompositeCard {
 export class SunburstSettings extends FormattingSettingsModel {
     public centralLabel: SunburstCentralLabelSettings = new SunburstCentralLabelSettings();
     public group: SunburstGroupSettings = new SunburstGroupSettings();
+    public value: SunburstValueSettings = new SunburstValueSettings();
     public legend: LegendSettings = new LegendSettings();
     public tooltip: SunburstTooltipSettings = new SunburstTooltipSettings();
 
-    public cards: Array<FormattingSettingsCard> = [this.centralLabel, this.group, this.tooltip, this.legend];
+    public cards: Array<FormattingSettingsCard> = [this.centralLabel, this.group, this.value, this.tooltip, this.legend];
 
     public setSlicesForTopCategoryColorPickers(topCategories: SunburstDataPoint[], LegendPropertyIdentifier: powerbiVisualsApi.DataViewObjectPropertyIdentifier, ColorHelper) {
         if (topCategories && topCategories.length > 0) {

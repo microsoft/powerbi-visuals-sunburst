@@ -429,7 +429,7 @@ export class Sunburst implements IVisual {
                 .append("textPath")
                 .attr("startOffset", "50%")
                 .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
-                .text((d, i) => this.wrapPathText(d.data.name, i, properties, ellipsesWidth));
+                .text((d, i) => this.wrapPathText(d.data.name, d.data.value, this.settings.value.delimiter.value, i, properties, ellipsesWidth));
 
             const labelsSelection = this.main.selectAll(this.appCssConstants.sliceLabel.selectorName);
             this.applyOnObjectStylesToLabels(labelsSelection, isFormatMode);
@@ -873,9 +873,12 @@ export class Sunburst implements IVisual {
             .attr(SubSelectableDirectEdit, visualTitleEditSubSelection);
     }
 
-    private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {
+    private wrapPathText(text: string, value: number, delimiter: string, i: number, properties: TextProperties, ellipsisWidth: number) {
         const width = (<SVGPathElement>d3Select("#sliceLabel_" + i).node()).getTotalLength() || 0;
         const maxWidth = width - 2 * Sunburst.DefaultDataLabelPadding;
+        if (this.settings.value.showDataValues.value){
+            text = `${text}${delimiter}${value.toString()}`;
+        }
         let textWidth: number = textMeasurementService.measureSvgTextWidth(properties, text);
         let newText = text;
 

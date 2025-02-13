@@ -1,6 +1,7 @@
 {
   "privileges": [],
   "supportsKeyboardFocus": true,
+  "supportsMultiVisualSelection": true,
   "dataRoles": [
     {
       "name": "Nodes",
@@ -171,6 +172,20 @@
                 "color": true
               }
             }
+          }
+        }
+      }
+    },
+    "value": {
+      "properties": {
+        "showDataValues": {
+          "type": {
+            "bool": true
+          }
+        },
+        "delimiter": {
+          "type": {
+            "text": true
           }
         }
       }
