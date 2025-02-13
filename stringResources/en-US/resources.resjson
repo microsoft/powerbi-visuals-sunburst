@@ -18,6 +18,8 @@
 	"Visual_Underline": "Underline",
 	"Visual_ShowDataLabels": "Data labels",
 	"Visual_LabelFontControl": "Label font",
+	"Visual_ShowDataValues": "Values",
+	"Visual_Delimiter": "Delimiter",
 	"Visual_Tooltip": "Tooltip",
 	"Visual_DisplayUnits": "Display units",
 	"Visual_Precision": "Decimal places",
