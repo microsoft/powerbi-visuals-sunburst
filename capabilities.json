@@ -298,5 +298,7 @@
     "roles": [
       "tooltips"
     ]
-  }
+  },
+  "supportsOnObjectFormatting": true,
+  "enablePointerEventsFormatMode": true
 }
