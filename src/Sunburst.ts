@@ -35,6 +35,7 @@ import powerbiVisualsApi from "powerbi-visuals-api";
 import DataView = powerbiVisualsApi.DataView;
 import IViewport = powerbiVisualsApi.IViewport;
 import PrimitiveValue = powerbiVisualsApi.PrimitiveValue;
+import VisualUpdateType = powerbi.VisualUpdateType;
 
 import DataViewHierarchyLevel = powerbiVisualsApi.DataViewHierarchyLevel;
 import DataViewObjects = powerbiVisualsApi.DataViewObjects;
@@ -43,6 +44,7 @@ import DataViewTreeNode = powerbiVisualsApi.DataViewTreeNode;
 
 import ISelectionIdBuilder = powerbiVisualsApi.visuals.ISelectionIdBuilder;
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
+import CustomVisualSubSelection = powerbi.visuals.CustomVisualSubSelection;
 
 import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
 import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
@@ -87,6 +89,8 @@ import { SunburstBehavior, SunburstBehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint, SunburstLabel } from "./dataInterfaces";
 import { SunburstSettings } from "./SunburstSettings";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
+
+import { SunburstOnObjectService } from "./onObject/SunbusrtOnObjectService";
 
 interface IAppCssConstants {
     main: ClassAndSelector;
@@ -136,6 +140,8 @@ export class Sunburst implements IVisual {
     public settings: SunburstSettings;
     private formattingSettingsService: FormattingSettingsService;
     private localizationManager: ILocalizationManager;
+    public visualOnObjectFormatting: SunburstOnObjectService;
+
     private visualHost: IVisualHost;
     private events: IVisualEventService;
     private data: SunburstData;
@@ -180,6 +186,7 @@ export class Sunburst implements IVisual {
 
         this.localizationManager = this.visualHost.createLocalizationManager();
         this.formattingSettingsService = new FormattingSettingsService(this.localizationManager);
+        this.visualOnObjectFormatting = new SunburstOnObjectService(options.element, options.host, this.localizationManager);
 
         this.events = options.host.eventService;
 
@@ -308,17 +315,32 @@ export class Sunburst implements IVisual {
                 legend: this.legendItems,
                 legendClearCatcher: this.legendSelection,
                 onSelect: this.onVisualSelection.bind(this),
-                dataPointsTree: this.data.root
+                dataPointsTree: this.data.root,
+                isFormatMode: options.formatMode
             };
 
             this.behavior.bindEvents(behaviorOptions);
             this.behavior.renderSelection();
+
+            this.applyOnObjectFormatting(options.formatMode, options.type, options.subSelections);
 
             this.events && this.events.renderingFinished(options);
         }
         catch (e) {
             console.error(e);
             this.events && this.events.renderingFailed(options);
+        }
+    }
+
+    private applyOnObjectFormatting(isFormatMode: boolean, updateType: VisualUpdateType, subSelections?: CustomVisualSubSelection[]): void{
+        this.visualOnObjectFormatting.setFormatMode(isFormatMode);
+
+        const shouldUpdateSubSelection = updateType & (powerbi.VisualUpdateType.Data
+            | powerbi.VisualUpdateType.Resize
+            | powerbi.VisualUpdateType.FormattingSubSelectionChange);
+
+        if (isFormatMode && shouldUpdateSubSelection) {
+            this.visualOnObjectFormatting.updateOutlinesFromSubSelections(subSelections, true);
         }
     }
 
