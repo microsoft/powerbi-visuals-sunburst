@@ -40,5 +40,8 @@
 	"Visual_Description_Title": "Display a title for legend symbols",
 	"Visual_Description_LegendName": "Title text",
 	"Visual_Short_Description": "Multilevel donut chart for effectively visualizing hierarchical data",
-	"Visual_Long_Description": "Sunburst chart is used to visualize hierarchical data, depicted by concentric circles. The circle in the centre represents the root node, with the hierarchy moving outward from the center. A segment of the inner circle bears a hierarchical relationship to those segments of the outer circle which lie within the angular sweep of the parent segment.\nThis is an open source visual. Get the code from GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst"
+	"Visual_Long_Description": "Sunburst chart is used to visualize hierarchical data, depicted by concentric circles. The circle in the centre represents the root node, with the hierarchy moving outward from the center. A segment of the inner circle bears a hierarchical relationship to those segments of the outer circle which lie within the angular sweep of the parent segment.\nThis is an open source visual. Get the code from GitHub: https://github.com/Microsoft/powerbi-visuals-sunburst",
+	"Visual_OnObject_FormatLegend": "Format legend",
+	"Visual_OnObject_AddTitle": "Add legend title",
+	"Visual_OnObject_Delete": "Delete"
 }

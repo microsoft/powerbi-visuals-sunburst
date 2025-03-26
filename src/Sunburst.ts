@@ -90,7 +90,9 @@ import { SunburstData, SunburstDataPoint, SunburstLabel } from "./dataInterfaces
 import { SunburstSettings } from "./SunburstSettings";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
+import { SunburstObjectNames } from "./onObject/onObjectEnums";
 import { SunburstOnObjectService } from "./onObject/SunbusrtOnObjectService";
+import { HtmlSubSelectableClass, SubSelectableDisplayNameAttribute, SubSelectableObjectNameAttribute } from "powerbi-visuals-utils-onobjectutils";
 
 interface IAppCssConstants {
     main: ClassAndSelector;
@@ -299,7 +301,7 @@ export class Sunburst implements IVisual {
             if (this.data) {
                 this.legendData = Sunburst.createLegend(this.data, this.settings);
 
-                this.renderLegend();
+                this.renderLegend(options.formatMode);
             }
 
             if (this.settings.legend.show) {
@@ -731,7 +733,7 @@ export class Sunburst implements IVisual {
         );
     }
 
-    private renderLegend(): void {
+    private renderLegend(isFormatMode: boolean): void {
         if (!this.data) {
             return;
         }
@@ -767,6 +769,15 @@ export class Sunburst implements IVisual {
             .style("font-weight",  () => this.settings.legend.text.font.bold.value ? "bold" : "normal")
             .style("font-style",  () => this.settings.legend.text.font.italic.value ? "italic" : "normal")
             .style("text-decoration", () => this.settings.legend.text.font.underline.value ? "underline" : "none");
+
+        this.applyOnObjectStylesToLegend(isFormatMode);
+    }
+
+    private applyOnObjectStylesToLegend(isFormatMode: boolean): void {
+        this.legendSelection.select("#legendGroup")
+            .classed(HtmlSubSelectableClass, isFormatMode && this.settings.legend.show.value)
+            .attr(SubSelectableObjectNameAttribute, SunburstObjectNames.Legend)
+            .attr(SubSelectableDisplayNameAttribute, "Legend");
     }
 
     private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {
