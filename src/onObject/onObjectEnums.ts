@@ -2,7 +2,8 @@ import powerbi from "powerbi-visuals-api";
 import SubSelectableDirectEdit = powerbi.visuals.SubSelectableDirectEdit;
 import SubSelectableDirectEditStyle = powerbi.visuals.SubSelectableDirectEditStyle;
 
-import { IFontReference, ILegendReference } from "./interfaces";
+import { IColorReference, IFontReference, ILegendReference } from "./interfaces";
+import { SunburstOnObjectService } from "./SunbusrtOnObjectService";
 
 export const enum SunburstObjectNames {
     Legend = "legend",
@@ -10,6 +11,7 @@ export const enum SunburstObjectNames {
     LegendText = "legendText",
     LegendOptions = "legendOptions",
     Group = "group",
+    Color = "colorsGroup"
 }
 
 export const TitleEdit: SubSelectableDirectEdit = {
@@ -70,5 +72,14 @@ export const legendReferences: ILegendReference = {
     color: {
         objectName: SunburstObjectNames.Legend,
         propertyName: "labelColor"
+    }
+}
+
+export const colorReferences: IColorReference = {
+    cardUid: "Visual-group-card",
+    groupUid: "colorsGroup-group",
+    fill: {
+        objectName: SunburstObjectNames.Group,
+        propertyName: "fill"
     }
 }

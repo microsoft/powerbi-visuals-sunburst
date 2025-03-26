@@ -1,5 +1,7 @@
 import powerbi from "powerbi-visuals-api";
 
+import ISelectionId = powerbi.visuals.ISelectionId;
+
 import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 
 import CustomVisualSubSelection = powerbi.visuals.CustomVisualSubSelection;
@@ -8,6 +10,8 @@ import SubSelectionShortcutsKey = powerbi.visuals.SubSelectionShortcutsKey;
 import VisualSubSelectionShortcuts = powerbi.visuals.VisualSubSelectionShortcuts;
 import SubSelectionStylesType = powerbi.visuals.SubSelectionStylesType;
 import VisualShortcutType = powerbi.visuals.VisualShortcutType;
+import SubSelectionRegionOutlineFragment = powerbi.visuals.SubSelectionRegionOutlineFragment;
+
 import VisualOnObjectFormatting = powerbi.extensibility.visual.VisualOnObjectFormatting;
 
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
@@ -15,14 +19,16 @@ import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import { HtmlSubSelectionHelper, SubSelectableObjectNameAttribute } from "powerbi-visuals-utils-onobjectutils";
 
 import { select as d3Select } from "d3-selection";
-import { legendReferences, SunburstObjectNames } from "./onObjectEnums";
+import { colorReferences, legendReferences, SunburstObjectNames } from "./onObjectEnums";
+import { SunburstDataPoint } from "../dataInterfaces";
+import { HierarchyRectangularNode } from "d3-hierarchy";
 
 export class SunburstOnObjectService implements VisualOnObjectFormatting {
     private subSelectionHelper: SunburstSubSelectionHelper;
     private localizationManager: ILocalizationManager;
     
-    constructor(element: HTMLElement, host: IVisualHost, localizationManager: ILocalizationManager){
-        this.subSelectionHelper = new SunburstSubSelectionHelper(element, host);
+    constructor(element: HTMLElement, host: IVisualHost, localizationManager: ILocalizationManager, getArcOutlines: (selectionId: ISelectionId) => SubSelectionRegionOutlineFragment[]){
+        this.subSelectionHelper = new SunburstSubSelectionHelper(element, host, getArcOutlines);
         this.localizationManager = localizationManager;
     }
     
@@ -40,6 +46,8 @@ export class SunburstOnObjectService implements VisualOnObjectFormatting {
             switch (visualObject.objectName) {
                 case SunburstObjectNames.Legend:
                     return this.getLegendStyles();
+                case SunburstObjectNames.Color:
+                    return this.getColorStyles(subSelections);
             }
         }
     }
@@ -52,6 +60,8 @@ export class SunburstOnObjectService implements VisualOnObjectFormatting {
                     return this.getLegendShortcuts();
                 case SunburstObjectNames.LegendTitle:
                     return this.getLegendTitleShortcuts();
+                case SunburstObjectNames.Color:
+                    return this.getColorShortcuts(subSelections);
             }
         }
     }
@@ -162,6 +172,36 @@ export class SunburstOnObjectService implements VisualOnObjectFormatting {
         ];
     }
 
+    private getColorStyles(subSelections: CustomVisualSubSelection[]): SubSelectionStyles {
+        const selector = subSelections[0].customVisualObjects[0].selectionId?.getSelector();
+        return {
+            type: SubSelectionStylesType.Shape,
+            fill: {
+                reference: {
+                    ...colorReferences.fill,
+                    selector
+                },
+                label: this.localizationManager.getDisplayName("Visual_Fill")
+            },
+        };
+    }
+    private getColorShortcuts(subSelections: CustomVisualSubSelection[]): VisualSubSelectionShortcuts {
+        const selector = subSelections[0].customVisualObjects[0].selectionId?.getSelector();
+        return [
+            {
+                type: VisualShortcutType.Reset,
+                relatedResetFormattingIds: [{
+                    ...colorReferences.fill,
+                    selector
+                }],
+            },
+            {
+                type: VisualShortcutType.Navigate,
+                destinationInfo: { cardUid: colorReferences.cardUid, groupUid: colorReferences.groupUid },
+                label: this.localizationManager.getDisplayName("Visual_OnObject_FormatColors")
+            }
+        ];
+    }
     ////
 
     public getSubSelectables(filter?: SubSelectionStylesType): CustomVisualSubSelection[] | undefined{
@@ -171,20 +211,27 @@ export class SunburstOnObjectService implements VisualOnObjectFormatting {
 
 export class SunburstSubSelectionHelper {
     private subSelectionHelper: HtmlSubSelectionHelper;
+    private getArcOutlines: (selectionId: ISelectionId) => SubSelectionRegionOutlineFragment[];
 
-    constructor(element: HTMLElement, host: IVisualHost){
+    constructor(element: HTMLElement, host: IVisualHost, getArcOutlines: (selectionId: ISelectionId) => SubSelectionRegionOutlineFragment[]){
         this.subSelectionHelper = HtmlSubSelectionHelper.createHtmlSubselectionHelper({
             hostElement: element,
             subSelectionService: host.subSelectionService,
             selectionIdCallback: (e) => this.selectionIdCallback(e),
             customOutlineCallback: (e) => this.customOutlineCallback(e)
         });
+
+        this.getArcOutlines = getArcOutlines;
     }
 
     public selectionIdCallback(e: Element): powerbi.visuals.ISelectionId {
         const elementType: string = d3Select(e).attr(SubSelectableObjectNameAttribute);
 
         switch (elementType) {
+            case SunburstObjectNames.Color: {
+                const datum = d3Select<Element, HierarchyRectangularNode<SunburstDataPoint>>(e).datum();
+                return datum.data.identity;
+            }
             default:
                 return undefined;
         }
@@ -192,7 +239,13 @@ export class SunburstSubSelectionHelper {
 
     public customOutlineCallback(subSelections: CustomVisualSubSelection): powerbi.visuals.SubSelectionRegionOutlineFragment[] {
         const elementType: string = subSelections.customVisualObjects[0].objectName;
+
         switch (elementType) {
+            case SunburstObjectNames.Color: {
+                const subSelectionIdentity: powerbi.visuals.ISelectionId = subSelections.customVisualObjects[0].selectionId;
+                const result = this.getArcOutlines(subSelectionIdentity);
+                return result;
+            }
             default:
                 return undefined;
         }

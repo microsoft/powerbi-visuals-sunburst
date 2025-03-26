@@ -44,5 +44,8 @@
 	"Visual_OnObject_FormatLegend": "Format legend",
 	"Visual_OnObject_AddTitle": "Add legend title",
 	"Visual_OnObject_Delete": "Delete",
-	"Visual_OnObject_FormatTitle": "Format legend title"
+	"Visual_OnObject_FormatTitle": "Format legend title",
+	"Visual_OnObject_Segment": "segment",
+	"Visual_Fill": "Fill",
+	"Visual_OnObject_FormatColors": "Format colors"
 }

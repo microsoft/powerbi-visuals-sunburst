@@ -18,3 +18,7 @@ export interface ILegendReference extends IFontReference {
     position?: FormattingId;
     titleText?: FormattingId;
 }
+
+export interface IColorReference extends GroupFormattingModelReference {
+    fill?: FormattingId;
+}

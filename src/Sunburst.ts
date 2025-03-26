@@ -45,6 +45,9 @@ import DataViewTreeNode = powerbiVisualsApi.DataViewTreeNode;
 import ISelectionIdBuilder = powerbiVisualsApi.visuals.ISelectionIdBuilder;
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 import CustomVisualSubSelection = powerbi.visuals.CustomVisualSubSelection;
+import SubSelectionStylesType = powerbi.visuals.SubSelectionStylesType;
+import SubSelectionRegionOutlineFragment = powerbi.visuals.SubSelectionRegionOutlineFragment;
+import SubSelectionOutlineType = powerbi.visuals.SubSelectionOutlineType;
 
 import IColorPalette = powerbiVisualsApi.extensibility.IColorPalette;
 import VisualTooltipDataItem = powerbiVisualsApi.extensibility.VisualTooltipDataItem;
@@ -92,7 +95,8 @@ import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/in
 
 import { SunburstObjectNames, visualTitleEditSubSelection } from "./onObject/onObjectEnums";
 import { SunburstOnObjectService } from "./onObject/SunbusrtOnObjectService";
-import { HtmlSubSelectableClass, SubSelectableDirectEdit, SubSelectableDisplayNameAttribute, SubSelectableObjectNameAttribute } from "powerbi-visuals-utils-onobjectutils";
+import { HtmlSubSelectableClass, SubSelectableDirectEdit, SubSelectableDisplayNameAttribute, SubSelectableObjectNameAttribute, SubSelectableTypeAttribute } from "powerbi-visuals-utils-onobjectutils";
+import { IPoint } from "powerbi-visuals-utils-svgutils/lib/shapes/shapesInterfaces";
 
 interface IAppCssConstants {
     main: ClassAndSelector;
@@ -188,7 +192,7 @@ export class Sunburst implements IVisual {
 
         this.localizationManager = this.visualHost.createLocalizationManager();
         this.formattingSettingsService = new FormattingSettingsService(this.localizationManager);
-        this.visualOnObjectFormatting = new SunburstOnObjectService(options.element, options.host, this.localizationManager);
+        this.visualOnObjectFormatting = new SunburstOnObjectService(options.element, options.host, this.localizationManager, this.getCustomOutlineArc.bind(this));
 
         this.events = options.host.eventService;
 
@@ -296,7 +300,7 @@ export class Sunburst implements IVisual {
 
             this.parseSettings();
 
-            const selection = this.render(this.colorHelper);
+            const selection = this.render(this.colorHelper, options.formatMode);
 
             if (this.data) {
                 this.legendData = Sunburst.createLegend(this.data, this.settings);
@@ -304,12 +308,7 @@ export class Sunburst implements IVisual {
                 this.renderLegend(options.formatMode);
             }
 
-            if (this.settings.legend.show) {
-                this.chartWrapper.style("width", PixelConverter.toString(this.viewport.width));
-                this.chartWrapper.style("height", PixelConverter.toString(this.viewport.height));
-            } else {
-                this.chartWrapper.attr("style", null);
-            }
+            this.updateChartWrapper(this.settings.legend.show.value, this.viewport);
 
             const behaviorOptions: SunburstBehaviorOptions = {
                 elements: selection,
@@ -334,6 +333,15 @@ export class Sunburst implements IVisual {
         }
     }
 
+    private updateChartWrapper(isLegendShown: boolean, viewport: IViewport): void {
+        if (isLegendShown) {
+            this.chartWrapper.style("width", PixelConverter.toString(viewport.width));
+            this.chartWrapper.style("height", PixelConverter.toString(viewport.height));
+        } else {
+            this.chartWrapper.attr("style", null);
+        }
+    }
+
     private applyOnObjectFormatting(isFormatMode: boolean, updateType: VisualUpdateType, subSelections?: CustomVisualSubSelection[]): void{
         this.visualOnObjectFormatting.setFormatMode(isFormatMode);
 
@@ -351,7 +359,7 @@ export class Sunburst implements IVisual {
         return model;
     }
 
-    private render(colorHelper: ColorHelper): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
+    private render(colorHelper: ColorHelper, isFormatMode: boolean): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
         const root = this.partition(this.data.root).descendants().slice(1);
         const pathSelection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> =
             this.main
@@ -375,6 +383,8 @@ export class Sunburst implements IVisual {
             .attr("role", "option")
             .attr("tabindex", "0")
             .attr('aria-label', (d: HierarchyRectangularNode<SunburstDataPoint>) => d.data.name);
+
+        this.applyOnObjectStylesToSlices(pathSelectionMerged, isFormatMode);
 
         if (this.settings.group.labels.showDataLabels.value) {
             pathSelectionMerged.each((d: HierarchyRectangularNode<SunburstDataPoint>, i: number, groups: ArrayLike<BaseType>) => {
@@ -425,6 +435,70 @@ export class Sunburst implements IVisual {
         this.renderTooltip(pathSelectionMerged);
 
         return pathSelectionMerged;
+    }
+
+    private applyOnObjectStylesToSlices(pathSelection: any, isFormatMode: boolean): void{
+        pathSelection
+            .attr(SubSelectableObjectNameAttribute, SunburstObjectNames.Color)
+            .attr(SubSelectableDisplayNameAttribute, (dp) => `"${dp.data.name}" ${this.localizationManager.getDisplayName("Visual_OnObject_Segment")}`)
+            .attr(SubSelectableTypeAttribute, SubSelectionStylesType.Shape)
+            .classed(HtmlSubSelectableClass, isFormatMode);
+    }
+
+    private getCustomOutlineArc(selectionId: ISelectionId): SubSelectionRegionOutlineFragment[]{
+        const root = this.partition(this.data.root).descendants().slice(1);
+        const dataPoint = root.find(x=>x.data.identity.equals(selectionId));
+
+        const legendPosition: LegendPosition = this.legend.getOrientation();
+        const centerPoint: IPoint = {
+            x: this.viewport.width / 2 + this.getXShift(legendPosition),
+            y: this.viewport.height / 2 + this.getYShift(legendPosition)
+        };
+        const arcScale = this.getArcScale();
+
+        const result: powerbi.visuals.SubSelectionRegionOutlineFragment[] = [{
+            id: selectionId.getKey(),
+            outline: {
+                type: SubSelectionOutlineType.Arc,
+                startAngle: dataPoint.x0,
+                endAngle: dataPoint.x1,
+                center: centerPoint,
+                innerRadius: Math.sqrt(dataPoint.y0) * arcScale,
+                outerRadius: Math.sqrt(dataPoint.y1) * arcScale,
+            }
+        }];
+        return result;
+    }
+
+    private getArcScale(): number{
+        const currentSvgBox = (this.svg.node() as SVGSVGElement).getBoundingClientRect();
+        const currentSvgHeight = currentSvgBox.height;
+        const currentSvgWidth = currentSvgBox.width;
+
+        const scaleX = currentSvgWidth/Sunburst.ViewBoxSize;
+        const scaleY = currentSvgHeight/Sunburst.ViewBoxSize;
+        const scale = Math.min(scaleX, scaleY);
+        return scale;
+    }
+
+    private getXShift(legendPosition: LegendPosition): number {
+        switch (legendPosition) {
+            case LegendPosition.Left:
+            case LegendPosition.LeftCenter:
+                return this.legend.getMargins().width;
+            default:
+                return 0;
+        }
+    }
+
+    private getYShift(legendPosition: LegendPosition): number {
+        switch (legendPosition) {
+            case LegendPosition.Top:
+            case LegendPosition.TopCenter:
+                return this.legend.getMargins().height;
+            default:
+                return 0;
+        }
     }
 
     private partition(data: SunburstDataPoint) {
@@ -666,6 +740,7 @@ export class Sunburst implements IVisual {
         const innerRadius: number = Math.min(
             ...this.data.root.children.map((x: SunburstDataPoint) => Math.sqrt(x.coords.y0))
         );
+
         this.setPercentageLabelPosition(innerRadius * 2, canDisplayCategory);
         this.setCategoryLabelPosition(innerRadius * 2, canDisplayCategory);
     }
