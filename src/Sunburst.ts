@@ -90,9 +90,9 @@ import { SunburstData, SunburstDataPoint, SunburstLabel } from "./dataInterfaces
 import { SunburstSettings } from "./SunburstSettings";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
-import { SunburstObjectNames } from "./onObject/onObjectEnums";
+import { SunburstObjectNames, visualTitleEditSubSelection } from "./onObject/onObjectEnums";
 import { SunburstOnObjectService } from "./onObject/SunbusrtOnObjectService";
-import { HtmlSubSelectableClass, SubSelectableDisplayNameAttribute, SubSelectableObjectNameAttribute } from "powerbi-visuals-utils-onobjectutils";
+import { HtmlSubSelectableClass, SubSelectableDirectEdit, SubSelectableDisplayNameAttribute, SubSelectableObjectNameAttribute } from "powerbi-visuals-utils-onobjectutils";
 
 interface IAppCssConstants {
     main: ClassAndSelector;
@@ -778,6 +778,12 @@ export class Sunburst implements IVisual {
             .classed(HtmlSubSelectableClass, isFormatMode && this.settings.legend.show.value)
             .attr(SubSelectableObjectNameAttribute, SunburstObjectNames.Legend)
             .attr(SubSelectableDisplayNameAttribute, "Legend");
+
+        this.legendSelection.select(".legendTitle")
+            .classed(HtmlSubSelectableClass, isFormatMode && this.settings.legend.show.value && this.settings.legend.title.showTitle.value)
+            .attr(SubSelectableObjectNameAttribute, SunburstObjectNames.LegendTitle)
+            .attr(SubSelectableDisplayNameAttribute, "Title")
+            .attr(SubSelectableDirectEdit, visualTitleEditSubSelection);
     }
 
     private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {

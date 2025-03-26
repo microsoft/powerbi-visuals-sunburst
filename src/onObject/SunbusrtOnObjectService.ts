@@ -50,6 +50,8 @@ export class SunburstOnObjectService implements VisualOnObjectFormatting {
             switch (visualObject.objectName) {
                 case SunburstObjectNames.Legend:
                     return this.getLegendShortcuts();
+                case SunburstObjectNames.LegendTitle:
+                    return this.getLegendTitleShortcuts();
             }
         }
     }
@@ -98,19 +100,6 @@ export class SunburstOnObjectService implements VisualOnObjectFormatting {
     private getLegendShortcuts(): VisualSubSelectionShortcuts{
         return [
             {
-                type: VisualShortcutType.Reset,
-                relatedResetFormattingIds: [
-                    legendReferences.bold,
-                    legendReferences.fontFamily,
-                    legendReferences.fontSize,
-                    legendReferences.italic,
-                    legendReferences.underline,
-                    legendReferences.color,
-                    legendReferences.showTitle,
-                    legendReferences.titleText
-                ]
-            },
-            {
                 type: VisualShortcutType.Picker,
                 ...legendReferences.position,
                 label: this.localizationManager.getDisplayName("Visual_Position")
@@ -129,12 +118,50 @@ export class SunburstOnObjectService implements VisualOnObjectFormatting {
                 type: VisualShortcutType.Divider,
             },
             {
+                type: VisualShortcutType.Reset,
+                relatedResetFormattingIds: [
+                    legendReferences.bold,
+                    legendReferences.fontFamily,
+                    legendReferences.fontSize,
+                    legendReferences.italic,
+                    legendReferences.underline,
+                    legendReferences.color,
+                    legendReferences.showTitle,
+                    legendReferences.titleText
+                ]
+            },
+            {
                 type: VisualShortcutType.Navigate,
                 destinationInfo: { cardUid: legendReferences.cardUid, groupUid: legendReferences.groupUid },
                 label: this.localizationManager.getDisplayName("Visual_OnObject_FormatLegend")
             }
         ];
     }
+    private getLegendTitleShortcuts(): VisualSubSelectionShortcuts {
+        return [
+            {
+                type: VisualShortcutType.Toggle,
+                ...legendReferences.showTitle,
+                disabledLabel: this.localizationManager.getDisplayName("Visual_OnObject_Delete")
+            },
+            {
+                type: VisualShortcutType.Divider,
+            },
+            {
+                type: VisualShortcutType.Reset,
+                relatedResetFormattingIds: [
+                    legendReferences.showTitle,
+                    legendReferences.titleText
+                ]
+            },
+            {
+                type: VisualShortcutType.Navigate,
+                destinationInfo: { cardUid: legendReferences.cardUid, groupUid: "legendTitle-group" },
+                label: this.localizationManager.getDisplayName("Visual_OnObject_FormatTitle")
+            }
+        ];
+    }
+
     ////
 
     public getSubSelectables(filter?: SubSelectionStylesType): CustomVisualSubSelection[] | undefined{

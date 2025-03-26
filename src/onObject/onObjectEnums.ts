@@ -12,6 +12,16 @@ export const enum SunburstObjectNames {
     Group = "group",
 }
 
+export const TitleEdit: SubSelectableDirectEdit = {
+    reference: {
+        objectName: SunburstObjectNames.Legend,
+        propertyName: "titleText"
+    },
+    style: SubSelectableDirectEditStyle.HorizontalLeft,
+}
+
+export const visualTitleEditSubSelection = JSON.stringify(TitleEdit);
+
 const createBaseFontReference = (objectName: string): IFontReference => {
     return {
         fontFamily: {
