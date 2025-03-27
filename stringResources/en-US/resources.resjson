@@ -28,7 +28,7 @@
 	"Visual_ShowTitle": "Show title",
 	"Visual_Text": "Text",
 	"Visual_Title": "Title",
-	"Visual_LegendLabelColor": "Label color",
+	"Visual_LabelColor": "Label color",
 	"Visual_FontControl": "Font",
 	"Visual_Colors": "Colors",
 	"Visual_Indentation": "Indentation",
@@ -47,5 +47,6 @@
 	"Visual_OnObject_FormatTitle": "Format legend title",
 	"Visual_OnObject_Segment": "segment",
 	"Visual_Fill": "Fill",
-	"Visual_OnObject_FormatColors": "Format colors"
+	"Visual_OnObject_FormatColors": "Format colors",
+	"Visual_OnObject_FormatLabels": "Format data labels"
 }

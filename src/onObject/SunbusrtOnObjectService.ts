@@ -19,7 +19,7 @@ import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import { HtmlSubSelectionHelper, SubSelectableObjectNameAttribute } from "powerbi-visuals-utils-onobjectutils";
 
 import { select as d3Select } from "d3-selection";
-import { colorReferences, legendReferences, SunburstObjectNames } from "./onObjectEnums";
+import { colorReferences, dataLabelsReferences, legendReferences, SunburstObjectNames } from "./onObjectEnums";
 import { SunburstDataPoint } from "../dataInterfaces";
 import { HierarchyRectangularNode } from "d3-hierarchy";
 
@@ -48,6 +48,8 @@ export class SunburstOnObjectService implements VisualOnObjectFormatting {
                     return this.getLegendStyles();
                 case SunburstObjectNames.Color:
                     return this.getColorStyles(subSelections);
+                case SunburstObjectNames.Label:
+                    return this.getLabelsStyles();
             }
         }
     }
@@ -62,6 +64,8 @@ export class SunburstOnObjectService implements VisualOnObjectFormatting {
                     return this.getLegendTitleShortcuts();
                 case SunburstObjectNames.Color:
                     return this.getColorShortcuts(subSelections);
+                case SunburstObjectNames.Label:
+                    return this.getLabelsShortcuts();
             }
         }
     }
@@ -202,10 +206,80 @@ export class SunburstOnObjectService implements VisualOnObjectFormatting {
             }
         ];
     }
-    ////
 
     public getSubSelectables(filter?: SubSelectionStylesType): CustomVisualSubSelection[] | undefined{
         return this.subSelectionHelper.getAllSubSelectables(filter);
+    }
+
+    private getLabelsStyles(): SubSelectionStyles {
+        return {
+            type: SubSelectionStylesType.Text,
+            fontFamily: {
+                reference: {
+                    ...dataLabelsReferences.fontFamily
+                },
+                label: dataLabelsReferences.fontFamily.propertyName
+            },
+            bold: {
+                reference: {
+                    ...dataLabelsReferences.bold
+                },
+                label: dataLabelsReferences.bold.propertyName
+            },
+            italic: {
+                reference: {
+                    ...dataLabelsReferences.italic
+                },
+                label: dataLabelsReferences.italic.propertyName
+            },
+            underline: {
+                reference: {
+                    ...dataLabelsReferences.underline
+                },
+                label: dataLabelsReferences.underline.propertyName
+            },
+            fontSize: {
+                reference: {
+                    ...dataLabelsReferences.fontSize
+                },
+                label: dataLabelsReferences.fontSize.propertyName
+            },
+            fontColor: {
+                reference: {
+                    ...dataLabelsReferences.color
+                },
+                label: dataLabelsReferences.color.propertyName
+            }
+        };
+    }
+    private getLabelsShortcuts(): VisualSubSelectionShortcuts {
+        return [
+            {
+                type: VisualShortcutType.Toggle,
+                ...dataLabelsReferences.show,
+                disabledLabel: this.localizationManager.getDisplayName("Visual_OnObject_Delete")
+            },
+            {
+                type: VisualShortcutType.Divider,
+            },
+            {
+                type: VisualShortcutType.Reset,
+                relatedResetFormattingIds: [
+                    dataLabelsReferences.bold,
+                    dataLabelsReferences.fontFamily,
+                    dataLabelsReferences.fontSize,
+                    dataLabelsReferences.italic,
+                    dataLabelsReferences.underline,
+                    dataLabelsReferences.color,
+                    dataLabelsReferences.show
+                ]
+            },
+            {
+                type: VisualShortcutType.Navigate,
+                destinationInfo: { cardUid: dataLabelsReferences.cardUid, groupUid: dataLabelsReferences.groupUid },
+                label: this.localizationManager.getDisplayName("Visual_OnObject_FormatLabels")
+            }
+        ];
     }
 }
 

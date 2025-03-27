@@ -414,7 +414,7 @@ export class Sunburst implements IVisual {
                 .data(root)
                 .enter()
                 .append("text")
-                .style("fill", colorHelper.getHighContrastColor("foreground", null))
+                .style("fill", colorHelper.getHighContrastColor("foreground", this.settings.group.labels.labelColor.value.value))
                 .style("font-size", PixelConverter.fromPoint(this.settings.group.labels.font.fontSize.value))
                 .style("font-family", this.settings.group.labels.font.fontFamily.value)
                 .style("font-weight", this.settings.group.labels.font.bold.value ? "bold" : "normal")
@@ -430,6 +430,9 @@ export class Sunburst implements IVisual {
                 .attr("startOffset", "50%")
                 .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
                 .text((d, i) => this.wrapPathText(d.data.name, i, properties, ellipsesWidth));
+
+            const labelsSelection = this.main.selectAll(this.appCssConstants.sliceLabel.selectorName);
+            this.applyOnObjectStylesToLabels(labelsSelection, isFormatMode);
         }
 
         this.renderTooltip(pathSelectionMerged);
@@ -443,6 +446,15 @@ export class Sunburst implements IVisual {
             .attr(SubSelectableDisplayNameAttribute, (dp) => `"${dp.data.name}" ${this.localizationManager.getDisplayName("Visual_OnObject_Segment")}`)
             .attr(SubSelectableTypeAttribute, SubSelectionStylesType.Shape)
             .classed(HtmlSubSelectableClass, isFormatMode);
+    }
+
+    private applyOnObjectStylesToLabels(labelsSelection: any, isFormatMode: boolean): void{
+        labelsSelection
+            .style("pointer-events", isFormatMode ? "auto" : "none")
+            .attr(SubSelectableObjectNameAttribute, SunburstObjectNames.Label)
+            .attr(SubSelectableDisplayNameAttribute, this.localizationManager.getDisplayName("Visual_ShowDataLabels"))
+            .attr(SubSelectableTypeAttribute, SubSelectionStylesType.Text)
+            .classed(HtmlSubSelectableClass, isFormatMode && this.settings.group.labels.showDataLabels.value);
     }
 
     private getCustomOutlineArc(selectionId: ISelectionId): SubSelectionRegionOutlineFragment[]{

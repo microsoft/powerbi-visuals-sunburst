@@ -151,18 +151,26 @@ class SunburstCentralLabelSettings extends FormattingSettingsCompositeCard {
 class LabelsGroup extends FormattingSettingsCard {
     public defaultShowDataLabels: boolean = true;
     public defaultLabelFontSize: number = 12;
+    public defaultLabelColor: string = "#000000";
 
     public showDataLabels = new formattingSettings.ToggleSwitch({
         name: "showDataLabels",
         displayNameKey: "Visual_ShowDataLabels",
         value: this.defaultShowDataLabels,
     });
+
+    public labelColor = new formattingSettings.ColorPicker({
+        name: "labelColor",
+        displayNameKey: "Visual_LabelColor",
+        value: { value: this.defaultLabelColor },
+    });
+
     public font = new BaseFontCardSettings(this.defaultLabelFontSize, "Label");
 
     topLevelSlice: formattingSettings.ToggleSwitch = this.showDataLabels;
     name: string = "labelsGroup";
     displayNameKey: string = "Visual_ShowDataLabels";
-    slices: FormattingSettingsSlice[] = [this.font];
+    slices: FormattingSettingsSlice[] = [this.font, this.labelColor];
 }
 
 class ColorsGroup extends FormattingSettingsCard {
@@ -235,7 +243,7 @@ class LegendTextGroup extends FormattingSettingsCard {
 
     public labelColor = new formattingSettings.ColorPicker({
         name: "labelColor",
-        displayNameKey: "Visual_LegendLabelColor",
+        displayNameKey: "Visual_LabelColor",
         value: { value: this.defaultLabelColor },
     });
 

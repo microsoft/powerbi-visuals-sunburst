@@ -22,3 +22,7 @@ export interface ILegendReference extends IFontReference {
 export interface IColorReference extends GroupFormattingModelReference {
     fill?: FormattingId;
 }
+
+export interface IDataLabelReference extends IFontReference {
+    show?: FormattingId;
+}

@@ -2,7 +2,7 @@ import powerbi from "powerbi-visuals-api";
 import SubSelectableDirectEdit = powerbi.visuals.SubSelectableDirectEdit;
 import SubSelectableDirectEditStyle = powerbi.visuals.SubSelectableDirectEditStyle;
 
-import { IColorReference, IFontReference, ILegendReference } from "./interfaces";
+import { IColorReference, IDataLabelReference, IFontReference, ILegendReference } from "./interfaces";
 import { SunburstOnObjectService } from "./SunbusrtOnObjectService";
 
 export const enum SunburstObjectNames {
@@ -11,7 +11,8 @@ export const enum SunburstObjectNames {
     LegendText = "legendText",
     LegendOptions = "legendOptions",
     Group = "group",
-    Color = "colorsGroup"
+    Color = "colorsGroup",
+    Label = "labelsGroup"
 }
 
 export const TitleEdit: SubSelectableDirectEdit = {
@@ -24,27 +25,27 @@ export const TitleEdit: SubSelectableDirectEdit = {
 
 export const visualTitleEditSubSelection = JSON.stringify(TitleEdit);
 
-const createBaseFontReference = (objectName: string): IFontReference => {
+const createBaseFontReference = (objectName: string, settingName: string = ""): IFontReference => {
     return {
         fontFamily: {
             objectName: objectName,
-            propertyName: "fontFamily"
+            propertyName: "fontFamily" + settingName
         },
         bold: {
             objectName: objectName,
-            propertyName: "fontBold"
+            propertyName: "fontBold" + settingName
         },
         italic: {
             objectName: objectName,
-            propertyName: "fontItalic"
+            propertyName: "fontItalic" + settingName
         },
         underline: {
             objectName: objectName,
-            propertyName: "fontUnderline"
+            propertyName: "fontUnderline" + settingName
         },
         fontSize: {
             objectName: objectName,
-            propertyName: "fontSize"
+            propertyName: "fontSize" + settingName
         }
     }
 }
@@ -81,5 +82,19 @@ export const colorReferences: IColorReference = {
     fill: {
         objectName: SunburstObjectNames.Group,
         propertyName: "fill"
+    }
+}
+
+export const dataLabelsReferences: IDataLabelReference = {
+    ...createBaseFontReference(SunburstObjectNames.Group, "Label"),
+    cardUid: "Visual-group-card",
+    groupUid: "labelsGroup-group",
+    show: {
+        objectName: SunburstObjectNames.Group,
+        propertyName: "showDataLabels"
+    },
+    color: {
+        objectName: SunburstObjectNames.Group,
+        propertyName: "labelColor"
     }
 }
