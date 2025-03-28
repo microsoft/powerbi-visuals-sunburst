@@ -864,12 +864,12 @@ export class Sunburst implements IVisual {
         this.legendSelection.select("#legendGroup")
             .classed(HtmlSubSelectableClass, isFormatMode && this.settings.legend.show.value)
             .attr(SubSelectableObjectNameAttribute, SunburstObjectNames.Legend)
-            .attr(SubSelectableDisplayNameAttribute, "Legend");
+            .attr(SubSelectableDisplayNameAttribute, this.localizationManager.getDisplayName("Visual_Legend"));
 
         this.legendSelection.select(".legendTitle")
             .classed(HtmlSubSelectableClass, isFormatMode && this.settings.legend.show.value && this.settings.legend.title.showTitle.value)
             .attr(SubSelectableObjectNameAttribute, SunburstObjectNames.LegendTitle)
-            .attr(SubSelectableDisplayNameAttribute, "Title")
+            .attr(SubSelectableDisplayNameAttribute, this.localizationManager.getDisplayName("Visual_Title"))
             .attr(SubSelectableDirectEdit, visualTitleEditSubSelection);
     }
 
