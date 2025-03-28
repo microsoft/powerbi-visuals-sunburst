@@ -278,7 +278,7 @@ export class Sunburst implements IVisual {
         }
 
         try {
-            this.events && this.events.renderingStarted(options);
+            this.events.renderingStarted(options);
 
             this.viewport = options.viewport;
 
@@ -325,11 +325,11 @@ export class Sunburst implements IVisual {
 
             this.applyOnObjectFormatting(options.formatMode, options.type, options.subSelections);
 
-            this.events && this.events.renderingFinished(options);
+            this.events.renderingFinished(options);
         }
         catch (e) {
             console.error(e);
-            this.events && this.events.renderingFailed(options);
+            this.events.renderingFailed(options);
         }
     }
 
@@ -630,7 +630,7 @@ export class Sunburst implements IVisual {
         if (level === 1 && originParentNode.children.length > 0) {
             for (const child of originParentNode.children) {
                 const childName: string = child.value != null ? `${child.value}` : "";
-                this.colorPalette.getColor(childName).value;
+                this.colorPalette.getColor(childName);
             }
         }
 

@@ -11,8 +11,7 @@
     "start": "pbiviz start",
     "package": "pbiviz package",
     "cert": "pbiviz --install-cert",
-    "lint": "npm run eslint",
-    "eslint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "npx eslint .",
     "pretest": "pbiviz package --resources --no-minify --no-pbiviz",
     "test": "karma start"
   },

@@ -6,7 +6,6 @@ import IVisualHost = powerbi.extensibility.visual.IVisualHost;
 
 import CustomVisualSubSelection = powerbi.visuals.CustomVisualSubSelection;
 import SubSelectionStyles = powerbi.visuals.SubSelectionStyles;
-import SubSelectionShortcutsKey = powerbi.visuals.SubSelectionShortcutsKey;
 import VisualSubSelectionShortcuts = powerbi.visuals.VisualSubSelectionShortcuts;
 import SubSelectionStylesType = powerbi.visuals.SubSelectionStylesType;
 import SubSelectionRegionOutlineFragment = powerbi.visuals.SubSelectionRegionOutlineFragment;
