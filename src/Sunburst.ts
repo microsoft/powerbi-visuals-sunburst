@@ -90,10 +90,10 @@ import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel
 
 import { SunburstBehavior, SunburstBehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint, SunburstLabel } from "./dataInterfaces";
-import { SunburstSettings } from "./SunburstSettings";
+import { SunburstObjectNames, SunburstSettings } from "./SunburstSettings";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
-import { SunburstObjectNames, visualTitleEditSubSelection } from "./onObject/onObjectEnums";
+import { visualTitleEditSubSelection } from "./onObject/references";
 import { SunburstOnObjectService } from "./onObject/SunbusrtOnObjectService";
 import { HtmlSubSelectableClass, SubSelectableDirectEdit, SubSelectableDisplayNameAttribute, SubSelectableObjectNameAttribute, SubSelectableTypeAttribute } from "powerbi-visuals-utils-onobjectutils";
 import { IPoint } from "powerbi-visuals-utils-svgutils/lib/shapes/shapesInterfaces";

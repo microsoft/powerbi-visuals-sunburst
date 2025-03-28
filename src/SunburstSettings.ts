@@ -36,6 +36,14 @@ import { SunburstDataPoint } from "./dataInterfaces";
 import powerbiVisualsApi from "powerbi-visuals-api";
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
+export const enum SunburstObjectNames {
+    Legend = "legend",
+    LegendTitle = "legendTitle",
+    Group = "group",
+    Color = "colorsGroup",
+    Label = "labelsGroup"
+}
+
 class BaseFontCardSettings extends formattingSettings.FontControl {
     private static fontFamilyName: string = "fontFamily";
     private static fontSizeName: string = "fontSize";
@@ -168,13 +176,13 @@ class LabelsGroup extends FormattingSettingsCard {
     public font = new BaseFontCardSettings(this.defaultLabelFontSize, "Label");
 
     topLevelSlice: formattingSettings.ToggleSwitch = this.showDataLabels;
-    name: string = "labelsGroup";
+    name: string = SunburstObjectNames.Label;
     displayNameKey: string = "Visual_ShowDataLabels";
     slices: FormattingSettingsSlice[] = [this.font, this.labelColor];
 }
 
 class ColorsGroup extends FormattingSettingsCard {
-    name: string = "colorsGroup";
+    name: string = SunburstObjectNames.Color;
     displayNameKey: string = "Visual_Colors";
     slices: FormattingSettingsSlice[] = [];
 }
@@ -184,7 +192,7 @@ class SunburstGroupSettings extends FormattingSettingsCompositeCard {
     public colors = new ColorsGroup();
 
     public groups: FormattingSettingsGroup[] = [this.labels, this.colors];
-    public name: string = "group";
+    public name: string = SunburstObjectNames.Group ;
     public displayNameKey: string = "Visual_Groups";
     public analyticsPane: boolean = false;
 }
@@ -257,7 +265,7 @@ class LegendTextGroup extends FormattingSettingsCard {
 
 class LegendTitleGroup extends FormattingSettingsCard {
     public defaultShowTitle: boolean = true;
-    public defaultTitleText: string = "Legend";
+    public defaultTitleText: string = SunburstObjectNames.Legend;
 
     public showTitle = new formattingSettings.ToggleSwitch({
         name: "showTitle",
@@ -274,7 +282,7 @@ class LegendTitleGroup extends FormattingSettingsCard {
         placeholder: "Title Text",
     });
 
-    name: string = "legendTitle";
+    name: string = SunburstObjectNames.LegendTitle;
     displayName: string = "Title";
     displayNameKey: string = "Visual_Title";
     slices: FormattingSettingsSlice[] = [this.titleText];

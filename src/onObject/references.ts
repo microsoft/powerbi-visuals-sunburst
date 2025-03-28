@@ -3,17 +3,7 @@ import SubSelectableDirectEdit = powerbi.visuals.SubSelectableDirectEdit;
 import SubSelectableDirectEditStyle = powerbi.visuals.SubSelectableDirectEditStyle;
 
 import { IColorReference, IDataLabelReference, IFontReference, ILegendReference } from "./interfaces";
-import { SunburstOnObjectService } from "./SunbusrtOnObjectService";
-
-export const enum SunburstObjectNames {
-    Legend = "legend",
-    LegendTitle = "legendTitle",
-    LegendText = "legendText",
-    LegendOptions = "legendOptions",
-    Group = "group",
-    Color = "colorsGroup",
-    Label = "labelsGroup"
-}
+import { SunburstObjectNames } from "../SunburstSettings";
 
 export const TitleEdit: SubSelectableDirectEdit = {
     reference: {
@@ -46,6 +36,10 @@ const createBaseFontReference = (objectName: string, settingName: string = ""): 
         fontSize: {
             objectName: objectName,
             propertyName: "fontSize" + settingName
+        },
+        color: {
+            objectName: objectName,
+            propertyName: "labelColor"
         }
     }
 }
@@ -69,10 +63,6 @@ export const legendReferences: ILegendReference = {
     position: {
         objectName: SunburstObjectNames.Legend,
         propertyName: "position"
-    },
-    color: {
-        objectName: SunburstObjectNames.Legend,
-        propertyName: "labelColor"
     }
 }
 
@@ -92,9 +82,5 @@ export const dataLabelsReferences: IDataLabelReference = {
     show: {
         objectName: SunburstObjectNames.Group,
         propertyName: "showDataLabels"
-    },
-    color: {
-        objectName: SunburstObjectNames.Group,
-        propertyName: "labelColor"
     }
 }
