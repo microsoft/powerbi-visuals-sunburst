@@ -1,3 +1,12 @@
+## 2.7.0.0
+
+### New features
+* Added on-Object formatting API
+* Added color setting for data labels
+
+### Other
+* Updated dependencies
+
 ## 2.6.0.0
 * Added interactivity to the legend items
 * Added default sorting
