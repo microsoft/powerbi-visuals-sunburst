@@ -265,7 +265,7 @@ class LegendTextGroup extends FormattingSettingsCard {
 
 class LegendTitleGroup extends FormattingSettingsCard {
     public defaultShowTitle: boolean = true;
-    public defaultTitleText: string = SunburstObjectNames.Legend;
+    public defaultTitleText: string = "Legend";
 
     public showTitle = new formattingSettings.ToggleSwitch({
         name: "showTitle",
