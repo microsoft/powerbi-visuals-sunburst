@@ -36,6 +36,14 @@ import { SunburstDataPoint } from "./dataInterfaces";
 import powerbiVisualsApi from "powerbi-visuals-api";
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
 
+export const enum SunburstObjectNames {
+    Legend = "legend",
+    LegendTitle = "legendTitle",
+    Group = "group",
+    Color = "colorsGroup",
+    Label = "labelsGroup"
+}
+
 class BaseFontCardSettings extends formattingSettings.FontControl {
     private static fontFamilyName: string = "fontFamily";
     private static fontSizeName: string = "fontSize";
@@ -151,22 +159,30 @@ class SunburstCentralLabelSettings extends FormattingSettingsCompositeCard {
 class LabelsGroup extends FormattingSettingsCard {
     public defaultShowDataLabels: boolean = true;
     public defaultLabelFontSize: number = 12;
+    public defaultLabelColor: string = "#000000";
 
     public showDataLabels = new formattingSettings.ToggleSwitch({
         name: "showDataLabels",
         displayNameKey: "Visual_ShowDataLabels",
         value: this.defaultShowDataLabels,
     });
+
+    public labelColor = new formattingSettings.ColorPicker({
+        name: "labelColor",
+        displayNameKey: "Visual_LabelColor",
+        value: { value: this.defaultLabelColor },
+    });
+
     public font = new BaseFontCardSettings(this.defaultLabelFontSize, "Label");
 
     topLevelSlice: formattingSettings.ToggleSwitch = this.showDataLabels;
-    name: string = "labelsGroup";
+    name: string = SunburstObjectNames.Label;
     displayNameKey: string = "Visual_ShowDataLabels";
-    slices: FormattingSettingsSlice[] = [this.font];
+    slices: FormattingSettingsSlice[] = [this.font, this.labelColor];
 }
 
 class ColorsGroup extends FormattingSettingsCard {
-    name: string = "colorsGroup";
+    name: string = SunburstObjectNames.Color;
     displayNameKey: string = "Visual_Colors";
     slices: FormattingSettingsSlice[] = [];
 }
@@ -176,7 +192,7 @@ class SunburstGroupSettings extends FormattingSettingsCompositeCard {
     public colors = new ColorsGroup();
 
     public groups: FormattingSettingsGroup[] = [this.labels, this.colors];
-    public name: string = "group";
+    public name: string = SunburstObjectNames.Group ;
     public displayNameKey: string = "Visual_Groups";
     public analyticsPane: boolean = false;
 }
@@ -235,7 +251,7 @@ class LegendTextGroup extends FormattingSettingsCard {
 
     public labelColor = new formattingSettings.ColorPicker({
         name: "labelColor",
-        displayNameKey: "Visual_LegendLabelColor",
+        displayNameKey: "Visual_LabelColor",
         value: { value: this.defaultLabelColor },
     });
 
@@ -266,7 +282,7 @@ class LegendTitleGroup extends FormattingSettingsCard {
         placeholder: "Title Text",
     });
 
-    name: string = "legendTitle";
+    name: string = SunburstObjectNames.LegendTitle;
     displayName: string = "Title";
     displayNameKey: string = "Visual_Title";
     slices: FormattingSettingsSlice[] = [this.titleText];

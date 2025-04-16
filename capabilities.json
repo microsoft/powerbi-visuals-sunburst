@@ -155,6 +155,15 @@
             "bool": true
           }
         },
+        "labelColor": {
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
         "fill": {
           "type": {
             "fill": {
@@ -298,5 +307,7 @@
     "roles": [
       "tooltips"
     ]
-  }
+  },
+  "supportsOnObjectFormatting": true,
+  "enablePointerEventsFormatMode": true
 }

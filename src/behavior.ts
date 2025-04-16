@@ -48,6 +48,7 @@ export interface SunburstBehaviorOptions {
     legendClearCatcher: d3Selection<any>;
     onSelect?: (label: SunburstLabel, hasSelection: boolean, canDisplayCategory: boolean) => void;
     dataPointsTree: SunburstDataPoint;
+    isFormatMode: boolean;
 }
 
 export class SunburstBehavior {
@@ -184,6 +185,32 @@ export class SunburstBehavior {
         this.legendIcons = options.legend.selectAll(".legendIcon");
         this.onSelect = options.onSelect;
 
+        this.applyOnObjectFormatMode(options.isFormatMode);
+    }
+
+    private applyOnObjectFormatMode(isFormatMode: boolean){
+        if (isFormatMode){
+            // remove event listeners which are irrelevant for format mode.
+            this.removeEventListeners();
+            this.selectionManager.clear();
+        } else {
+            this.addEventListeners();
+        }
+    }
+
+    private removeEventListeners(): void{
+        this.elements.on("click", null);
+        this.elements.on("contextmenu", null);
+        this.elements.on("keydown", null);
+        this.clearCatcher.on("click", null);
+        this.clearCatcher.on("contextmenu", null);
+        this.legendClearCatcher.on("click", null);
+        this.legendClearCatcher.on("contextmenu", null);
+        this.legendItems.on("click", null);
+        this.legendItems.on("contextmenu", null);
+    }
+
+    private addEventListeners(): void {
         this.applySelectionStateToData();
 
         this.bindContextMenuEvent(this.elements);
