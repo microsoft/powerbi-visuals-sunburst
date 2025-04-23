@@ -51,5 +51,8 @@
 	"Visual_OnObject_Segment": "segment",
 	"Visual_Fill": "Fill",
 	"Visual_OnObject_FormatColors": "Format colors",
-	"Visual_OnObject_FormatLabels": "Format data labels"
+	"Visual_OnObject_FormatLabels": "Format data labels",
+	"Visual_OnObject_FormatValues": "Format values",
+	"Visual_OnObject_DeleteValues": "Delete values",
+	"Visual_OnObject_AddValues": "Add values"
 }

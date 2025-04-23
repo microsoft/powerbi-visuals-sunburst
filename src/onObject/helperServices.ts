@@ -8,7 +8,7 @@ import VisualShortcutType = powerbi.visuals.VisualShortcutType;
 
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 
-import { colorReferences, dataLabelsReferences, legendReferences } from "./references";
+import { colorReferences, dataLabelsReferences, legendReferences, valuesReferences } from "./references";
 import { IFontReference } from "./interfaces";
 
 export class SubSelectionStylesService {
@@ -167,6 +167,12 @@ export class SubSelectionShortcutsService {
                 disabledLabel: localizationManager.getDisplayName("Visual_OnObject_Delete")
             },
             {
+                type: VisualShortcutType.Toggle,
+                ...valuesReferences.show,
+                disabledLabel: localizationManager.getDisplayName("Visual_OnObject_DeleteValues"),
+                enabledLabel: localizationManager.getDisplayName("Visual_OnObject_AddValues")
+            },
+            {
                 type: VisualShortcutType.Divider,
             },
             {
@@ -178,13 +184,20 @@ export class SubSelectionShortcutsService {
                     dataLabelsReferences.italic,
                     dataLabelsReferences.underline,
                     dataLabelsReferences.color,
-                    dataLabelsReferences.show
+                    dataLabelsReferences.show,
+                    valuesReferences.show,
+                    valuesReferences.format
                 ]
             },
             {
                 type: VisualShortcutType.Navigate,
                 destinationInfo: { cardUid: dataLabelsReferences.cardUid, groupUid: dataLabelsReferences.groupUid },
                 label: localizationManager.getDisplayName("Visual_OnObject_FormatLabels")
+            },
+            {
+                type: VisualShortcutType.Navigate,
+                destinationInfo: { cardUid: valuesReferences.cardUid, groupUid: valuesReferences.groupUid },
+                label: localizationManager.getDisplayName("Visual_OnObject_FormatValues")
             }
         ];
     }
