@@ -173,17 +173,13 @@
               }
             }
           }
-        }
-      }
-    },
-    "value": {
-      "properties": {
+        },
         "showDataValues": {
           "type": {
             "bool": true
           }
         },
-        "delimiter": {
+        "format": {
           "type": {
             "text": true
           }
