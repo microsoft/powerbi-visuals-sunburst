@@ -90,7 +90,7 @@ import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel
 
 import { SunburstBehavior, SunburstBehaviorOptions } from "./behavior";
 import { SunburstData, SunburstDataPoint, SunburstLabel } from "./dataInterfaces";
-import { SunburstObjectNames, SunburstSettings } from "./SunburstSettings";
+import { LabelsGroup, SunburstObjectNames, SunburstSettings } from "./SunburstSettings";
 import { TextProperties } from "powerbi-visuals-utils-formattingutils/lib/src/interfaces";
 
 import { visualTitleEditSubSelection } from "./onObject/references";
@@ -283,6 +283,7 @@ export class Sunburst implements IVisual {
             this.viewport = options.viewport;
 
             this.settings = this.formattingSettingsService.populateFormattingSettingsModel(SunburstSettings, options.dataViews[0]);
+            this.settings.parseSettings();
 
             const formatter: IValueFormatter = valueFormatter.create({
                 value: this.settings.tooltip.displayUnits.value,
@@ -360,6 +361,7 @@ export class Sunburst implements IVisual {
     }
 
     private render(colorHelper: ColorHelper, isFormatMode: boolean): Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> {
+        const labelsSettings: LabelsGroup = this.settings.group.labels;
         const root = this.partition(this.data.root).descendants().slice(1);
         const pathSelection: Selection<BaseType, HierarchyRectangularNode<SunburstDataPoint>, BaseType, SunburstDataPoint> =
             this.main
@@ -386,7 +388,7 @@ export class Sunburst implements IVisual {
 
         this.applyOnObjectStylesToSlices(pathSelectionMerged, isFormatMode);
 
-        if (this.settings.group.labels.showDataLabels.value) {
+        if (labelsSettings.showDataLabels.value) {
             pathSelectionMerged.each((d: HierarchyRectangularNode<SunburstDataPoint>, i: number, groups: ArrayLike<BaseType>) => {
                 const firstArcSection: RegExp = /(^.+?)L/;
                 const currentSelection = d3Select(groups[i]);
@@ -414,12 +416,12 @@ export class Sunburst implements IVisual {
                 .data(root)
                 .enter()
                 .append("text")
-                .style("fill", colorHelper.getHighContrastColor("foreground", this.settings.group.labels.labelColor.value.value))
-                .style("font-size", PixelConverter.fromPoint(this.settings.group.labels.font.fontSize.value))
-                .style("font-family", this.settings.group.labels.font.fontFamily.value)
-                .style("font-weight", this.settings.group.labels.font.bold.value ? "bold" : "normal")
-                .style("font-style", this.settings.group.labels.font.italic.value ? "italic" : "normal")
-                .style("text-decoration", this.settings.group.labels.font.underline.value ? "underline" : "none")
+                .style("fill", colorHelper.getHighContrastColor("foreground", labelsSettings.labelColor.value.value))
+                .style("font-size", PixelConverter.fromPoint(labelsSettings.font.fontSize.value))
+                .style("font-family", labelsSettings.font.fontFamily.value)
+                .style("font-weight", labelsSettings.font.bold.value ? "bold" : "normal")
+                .style("font-style", labelsSettings.font.italic.value ? "italic" : "normal")
+                .style("text-decoration", labelsSettings.font.underline.value ? "underline" : "none")
                 .classed(this.appCssConstants.sliceLabel.className, true)
                 // font size + slice padding
                 .attr("dy", (d) => {
@@ -429,7 +431,7 @@ export class Sunburst implements IVisual {
                 .append("textPath")
                 .attr("startOffset", "50%")
                 .attr("xlink:href", (d, i) => "#sliceLabel_" + i)
-                .text((d, i) => this.wrapPathText(d.data.name, i, properties, ellipsesWidth));
+                .text((d, i) => this.wrapPathText(d.data.name, d.data.total, this.settings.group.values.format.value, i, properties, ellipsesWidth));
 
             const labelsSelection = this.main.selectAll(this.appCssConstants.sliceLabel.selectorName);
             this.applyOnObjectStylesToLabels(labelsSelection, isFormatMode);
@@ -873,9 +875,13 @@ export class Sunburst implements IVisual {
             .attr(SubSelectableDirectEdit, visualTitleEditSubSelection);
     }
 
-    private wrapPathText(text: string, i: number, properties: TextProperties, ellipsisWidth: number) {
+    private wrapPathText(text: string, value: number, format: string,  i: number, properties: TextProperties, ellipsisWidth: number) {
         const width = (<SVGPathElement>d3Select("#sliceLabel_" + i).node()).getTotalLength() || 0;
         const maxWidth = width - 2 * Sunburst.DefaultDataLabelPadding;
+        if (this.settings.group.values.showDataValues.value){
+            const varianceFormatter: valueFormatter.IValueFormatter = valueFormatter.create({format});
+            text = `${text}${varianceFormatter.format(value)}`
+        }
         let textWidth: number = textMeasurementService.measureSvgTextWidth(properties, text);
         let newText = text;
 

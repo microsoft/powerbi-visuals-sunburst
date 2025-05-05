@@ -2,7 +2,7 @@ import powerbi from "powerbi-visuals-api";
 import SubSelectableDirectEdit = powerbi.visuals.SubSelectableDirectEdit;
 import SubSelectableDirectEditStyle = powerbi.visuals.SubSelectableDirectEditStyle;
 
-import { IColorReference, IDataLabelReference, IFontReference, ILegendReference } from "./interfaces";
+import { IColorReference, IDataLabelReference, IFontReference, ILegendReference, IValuesReference } from "./interfaces";
 import { SunburstObjectNames } from "../SunburstSettings";
 
 export const TitleEdit: SubSelectableDirectEdit = {
@@ -82,5 +82,18 @@ export const dataLabelsReferences: IDataLabelReference = {
     show: {
         objectName: SunburstObjectNames.Group,
         propertyName: "showDataLabels"
+    }
+}
+
+export const valuesReferences: IValuesReference = {
+    cardUid: "Visual-group-card",
+    groupUid: "valuesGroup-group",
+    show: {
+        objectName: SunburstObjectNames.Group,
+        propertyName: "showDataValues"
+    },
+    format: {
+        objectName: SunburstObjectNames.Group,
+        propertyName: "format"
     }
 }

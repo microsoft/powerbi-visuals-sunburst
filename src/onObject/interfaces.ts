@@ -26,3 +26,8 @@ export interface IColorReference extends GroupFormattingModelReference {
 export interface IDataLabelReference extends IFontReference {
     show: FormattingId;
 }
+
+export interface IValuesReference extends GroupFormattingModelReference {
+    show: FormattingId,
+    format: FormattingId;
+}

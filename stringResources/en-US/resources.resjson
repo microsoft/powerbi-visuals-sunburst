@@ -18,6 +18,9 @@
 	"Visual_Underline": "Underline",
 	"Visual_ShowDataLabels": "Data labels",
 	"Visual_LabelFontControl": "Label font",
+	"Visual_ShowDataValues": "Values",
+	"Visual_Format": "Format",
+	"Visual_FormatDescription": "Enter a custom format string",
 	"Visual_Tooltip": "Tooltip",
 	"Visual_DisplayUnits": "Display units",
 	"Visual_Precision": "Decimal places",
@@ -48,5 +51,8 @@
 	"Visual_OnObject_Segment": "segment",
 	"Visual_Fill": "Fill",
 	"Visual_OnObject_FormatColors": "Format colors",
-	"Visual_OnObject_FormatLabels": "Format data labels"
+	"Visual_OnObject_FormatLabels": "Format data labels",
+	"Visual_OnObject_FormatValues": "Format values",
+	"Visual_OnObject_DeleteValues": "Delete values",
+	"Visual_OnObject_AddValues": "Add values"
 }

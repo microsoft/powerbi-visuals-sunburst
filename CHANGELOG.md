@@ -3,6 +3,7 @@
 ### New features
 * Added on-Object formatting API
 * Added color setting for data labels
+* Added values to the dataLabels
 
 ### Other
 * Updated dependencies

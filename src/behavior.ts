@@ -231,9 +231,9 @@ export class SunburstBehavior {
             const selectedId = <ISelectionId>this.selectionManager.getSelectionIds()[0];
             const selectedDataPoint: HierarchyRectangularNode<SunburstDataPoint> = this.dataPoints.find((el: HierarchyRectangularNode<SunburstDataPoint>) => el.data.identity.equals(selectedId));
             const label: SunburstLabel = {
-                text: selectedDataPoint.data.tooltipInfo[0].displayName,
-                total: selectedDataPoint.data.total,
-                color: selectedDataPoint.data.color
+                text: selectedDataPoint?.data.tooltipInfo[0].displayName,
+                total: selectedDataPoint?.data.total,
+                color: selectedDataPoint?.data.color
             };
             return label;
         }
