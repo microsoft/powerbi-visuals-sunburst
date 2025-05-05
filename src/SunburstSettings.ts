@@ -183,7 +183,7 @@ export class LabelsGroup extends FormattingSettingsCard {
 }
 
 class ValuesGroup extends FormattingSettingsCard {
-    public defaultFormat: string = ":#,#.#";
+    public defaultFormat: string = ": #,#.#";
     public defaultShowDataValues: boolean = false;
 
     public showDataValues = new formattingSettings.ToggleSwitch({
